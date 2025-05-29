@@ -1,0 +1,30 @@
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy project to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: "."
+          target: "/home/ubuntu/myapp"
+
+      - name: Run deploy script on EC2
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/myapp
+            ./gradlew build
+            docker-compose down
+            docker-compose up -d
