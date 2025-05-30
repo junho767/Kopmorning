@@ -22,6 +22,17 @@ jobs:
           source: "."
           target: "/home/ubuntu/myapp"
 
+      - name: Upload application-secret.yml to EC2
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cat <<EOF > /home/ubuntu/myapp/backend/src/main/resources/application-secret.yml
+            ${{ secrets.APPLICATION-DEV-SECRET.YML }}
+            EOF
+
       - name: Run Gradle Build on EC2
         uses: appleboy/ssh-action@v0.1.8
         with:
