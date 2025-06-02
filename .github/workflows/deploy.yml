@@ -21,9 +21,11 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/kopmorning:latest .
+        working-directory: backend
 
       - name: Push Docker image to Docker Hub
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/kopmorning:latest
+        working-directory: backend
 
       - name: Setup SSH key
         run: |
