@@ -19,6 +19,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      - name: Build with Gradle
+        run: ./gradlew clean build
+        working-directory: backend
+
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/kopmorning:latest .
         working-directory: backend
