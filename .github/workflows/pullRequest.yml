@@ -26,9 +26,9 @@ jobs:
         env:
           APPLICATION_DEV_SECRET_YML: ${{ secrets.APPLICATION_DEV_SECRET_YML }}
 
-      - name: Check if application-dev-secret.yml exists
+      - name: Check if application-secret.yml exists
         run: |
-          if [ -f backend/src/main/resources/application-dev-secret.yml ]; then
+          if [ -f backend/src/main/resources/application-secret.yml ]; then
             echo "✅ application-dev-secret.yml exists."
           else
             echo "❌ application-dev-secret.yml does NOT exist."
