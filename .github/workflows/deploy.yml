@@ -13,6 +13,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create application-prod-secret.yml
+        run: |
+          echo "$APPLICATION_PROD_SECRET_YML" > src/main/resources/application-secret.yml
+        working-directory: backend
+        env:
+          APPLICATION_DEV_SECRET_YML: ${{ secrets.APPLICATION_PROD_SECRET_YML }}
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
