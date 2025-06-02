@@ -22,6 +22,14 @@ jobs:
         with:
           java-version: 21
           distribution: temurin
+      - name: Check current directory and list files
+        run: |
+          echo "Current working directory:"
+          pwd
+          echo "Top-level files and directories:"
+          ls -al
+          echo "src/main/resources exists?"
+          ls -al src/main || echo "src/main does not exist"
 
       - name: Cache Gradle packages
         uses: actions/cache@v4
