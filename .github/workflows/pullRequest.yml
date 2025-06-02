@@ -9,6 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Create application-dev-secret.yml
+        run: |
+          echo "$APPLICATION_DEV_SECRET_YML" > src/main/resources/application-dev-secret.yml
+        env:
+          APPLICATION_DEV_SECRET_YML: ${{ secrets.APPLICATION_DEV_SECRET_YML }}
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
