@@ -42,6 +42,10 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
+      - name: Grant execute permission for gradlew
+        working-directory: backend
+        run: chmod +x gradlew
+
       - name: Run Gradle Build
         working-directory: backend
         run: ./gradlew build
