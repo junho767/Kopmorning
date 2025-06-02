@@ -21,10 +21,20 @@ jobs:
 
       - name: Create application-dev-secret.yml
         run: |
-          echo "$APPLICATION_DEV_SECRET_YML" > src/main/resources/application-dev-secret.yml
+          echo "$APPLICATION_DEV_SECRET_YML" > backend/src/main/resources/application-dev-secret.yml
         working-directory: backend
         env:
           APPLICATION_DEV_SECRET_YML: ${{ secrets.APPLICATION_DEV_SECRET_YML }}
+
+      - name: Check if application-dev-secret.yml exists
+        run: |
+          if [ -f backend/src/main/resources/application-dev-secret.yml ]; then
+            echo "✅ application-dev-secret.yml exists."
+          else
+            echo "❌ application-dev-secret.yml does NOT exist."
+            exit 1
+          fi
+      
 
       - name: Set up JDK
         uses: actions/setup-java@v4
