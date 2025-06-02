@@ -21,7 +21,7 @@ jobs:
 
       - name: Create application-dev-secret.yml
         run: |
-          echo "$APPLICATION_DEV_SECRET_YML" > backend/src/main/resources/application-dev-secret.yml
+          echo "$APPLICATION_DEV_SECRET_YML" > src/main/resources/application-secret.yml
         working-directory: backend
         env:
           APPLICATION_DEV_SECRET_YML: ${{ secrets.APPLICATION_DEV_SECRET_YML }}
