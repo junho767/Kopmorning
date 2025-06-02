@@ -43,7 +43,8 @@ jobs:
             gradle-${{ runner.os }}-
 
       - name: Run Gradle Build
-        run: ./gradlew clean build --continue
+        working-directory: backend
+        run: ./gradlew build
 
       - name: Upload Test Results
         if: always()
