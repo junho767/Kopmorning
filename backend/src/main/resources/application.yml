@@ -2,4 +2,4 @@ spring:
   config:
     import: "classpath:application-secret.yml"
   profiles:
-    active: ${ACTIVE.YML}
+    active: ${ACTIVE_YML:prod}
