@@ -7,12 +7,62 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+      - name: Check current directory and list files
+        run: |
+          echo "Current working directory:"
+          pwd
+          echo "Top-level files and directories:"
+          ls -al
+          echo "src/main/resources exists?"
+          ls -al src/main || echo "src/main does not exist"  
+
+      - name: Create application-dev-secret.yml
+        run: |
+          echo "$APPLICATION_DEV_SECRET_YML" > src/main/resources/application-secret.yml
+        working-directory: backend
+        env:
+          APPLICATION_DEV_SECRET_YML: ${{ secrets.APPLICATION_DEV_SECRET_YML }}
+
+      - name: Check if application-secret.yml exists
+        run: |
+          if [ -f backend/src/main/resources/application-secret.yml ]; then
+            echo "✅ application-dev-secret.yml exists."
+          else
+            echo "❌ application-dev-secret.yml does NOT exist."
+            exit 1
+          fi
+      
+
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: 21
           distribution: temurin
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Grant execute permission for gradlew
+        working-directory: backend
+        run: chmod +x gradlew
+
       - name: Run Gradle Build
-        run: ./gradlew clean build
+        working-directory: backend
+        run: ./gradlew build -i
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/test-results/test
