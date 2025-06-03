@@ -2,4 +2,25 @@ spring:
   config:
     import: "classpath:application-secret.yml"
   profiles:
-    active: ${ACTIVE_YML:prod}
+    active: ${ACTIVE.YML}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE.CLIENT_ID}
+            client-secret: ${GOOGLE.SECURITY_PASSWORD}
+            scope:
+              - profile
+              - email
+
+
+jwt:
+  secret: ${JWT.SECRET}
+  expiration:
+    access-token: ${JWT.EXPIRATION.ACCESS_TOKEN}
+    refresh-token: ${JWT.EXPIRATION.REFRESH_TOKEN}
+  cookie-domain: ${JWT.COOKIE_DOMAIN}
+  cookie-path: ${JWT.COOKIE_PATH}
+
+
