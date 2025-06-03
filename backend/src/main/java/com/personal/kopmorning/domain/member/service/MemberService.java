@@ -1,7 +1,6 @@
 package com.personal.kopmorning.domain.member.service;
 
 import com.personal.kopmorning.domain.member.dto.request.MemberProfileUpdate;
-import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.global.utils.SecurityUtil;
@@ -33,5 +32,10 @@ public class MemberService {
 
     public Member getMemberBySecurityMember() {
         return SecurityUtil.getCurrentMember();
+    }
+
+    // todo : redis 토큰 블랙리스트로 관리하여 로그아웃 처리 예정
+    public void logout(String refreshToken) {
+
     }
 }

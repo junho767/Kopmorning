@@ -29,7 +29,8 @@ public class CookieUtil {
 
     public void addAccessCookie(String token, HttpServletResponse response) {
         Cookie cookie = new Cookie(ACCESS_TOKEN, token);
-        cookie.setPath("/");
+        cookie.setMaxAge(accessTokenExpiration);
+        cookie.setPath(cookiePath);
         cookie.setHttpOnly(true);
         cookie.setSecure(false);
 
@@ -38,11 +39,54 @@ public class CookieUtil {
 
     public void addRefreshCookie(String token, HttpServletResponse response) {
         Cookie cookie = new Cookie(REFRESH_TOKEN, token);
-        cookie.setPath("/");
+        cookie.setMaxAge(refreshTokenExpiration);
+        cookie.setPath(cookiePath);
         cookie.setHttpOnly(true);
         cookie.setSecure(false);
 
         response.addCookie(cookie);
+    }
+
+    public void removeAccessTokenFromCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie(ACCESS_TOKEN, null);
+        cookie.setMaxAge(0);
+        cookie.setPath(cookiePath);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        response.addCookie(cookie);
+    }
+
+    public void removeRefreshTokenFromCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie(REFRESH_TOKEN, null);
+        cookie.setMaxAge(0);
+        cookie.setPath(cookiePath);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        response.addCookie(cookie);
+    }
+
+    public String getAccessTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (ACCESS_TOKEN.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (REFRESH_TOKEN.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 /**
  * todo 배포 시 사용할 refreshToken 쿠키 추가 방법
