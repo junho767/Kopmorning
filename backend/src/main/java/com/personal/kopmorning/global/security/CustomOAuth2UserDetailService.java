@@ -14,6 +14,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserDetailService extends DefaultOAuth2UserService {
@@ -53,6 +55,7 @@ public class CustomOAuth2UserDetailService extends DefaultOAuth2UserService {
                     .name(name)
                     .provider(provider)
                     .provider_id(providerId)
+                    .created_at(LocalDateTime.now())
                     .build();
             memberRepository.save(member);
         }

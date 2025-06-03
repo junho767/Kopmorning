@@ -11,6 +11,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -28,6 +32,9 @@ public class Member {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(unique = true)
+    private String nickname;
+
     @Column(nullable = false)
     private String provider;
 
@@ -36,4 +43,10 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @CreatedDate
+    private LocalDateTime created_at;
+
+    @LastModifiedDate
+    private LocalDateTime updated_at;
 }
