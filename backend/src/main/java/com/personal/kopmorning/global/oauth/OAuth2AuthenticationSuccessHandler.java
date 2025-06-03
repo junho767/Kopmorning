@@ -23,7 +23,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         TokenDto tokenDto = tokenService.generateToken(authentication);
-        log.info("token: {}", tokenDto.toString());
 
         cookieUtil.addAccessCookie(tokenDto.getAccessToken(), response);
         cookieUtil.addRefreshCookie(tokenDto.getRefreshToken(), response);
