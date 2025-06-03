@@ -2,7 +2,6 @@ package com.personal.kopmorning.domain.member.controller;
 
 import com.personal.kopmorning.domain.member.dto.request.MemberProfileUpdate;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
-import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.service.MemberService;
 import com.personal.kopmorning.global.entity.RsData;
 import com.personal.kopmorning.global.utils.CookieUtil;
