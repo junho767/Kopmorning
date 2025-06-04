@@ -1,5 +1,7 @@
 package com.personal.kopmorning.domain.member.entity;
 
+import ch.qos.logback.core.status.Status;
+import com.nimbusds.openid.connect.sdk.claims.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,9 +46,24 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    private Member_Status status;
+
+    private LocalDateTime deleteAt;
+
     @CreatedDate
     private LocalDateTime created_at;
 
     @LastModifiedDate
     private LocalDateTime updated_at;
+
+    public void withdraw() {
+        this.status = Member_Status.DELETED;
+        this.deleteAt = LocalDateTime.now();
+    }
+
+    public void isActive() {
+        this.status = Member_Status.ACTIVE;
+        this.deleteAt = null;
+    }
 }

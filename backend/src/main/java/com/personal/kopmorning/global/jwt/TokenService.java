@@ -69,7 +69,7 @@ public class TokenService {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .claim(AUTHORITIES_KEY, Role.ROLE_USER)
+                .claim(AUTHORITIES_KEY, Role.USER)
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -79,7 +79,7 @@ public class TokenService {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .claim(AUTHORITIES_KEY, Role.ROLE_USER)
+                .claim(AUTHORITIES_KEY, Role.USER)
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();

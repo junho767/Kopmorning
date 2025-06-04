@@ -1,12 +1,13 @@
-package com.personal.kopmorning.global.security;
+package com.personal.kopmorning.global.oauth;
 
 import com.personal.kopmorning.domain.member.entity.Member;
+import com.personal.kopmorning.domain.member.entity.Member_Status;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
-import com.personal.kopmorning.global.oauth.OAuthInfo;
 import com.personal.kopmorning.global.oauth.sns.GoogleInfo;
 import com.personal.kopmorning.global.oauth.sns.KaKaoInfo;
 import com.personal.kopmorning.global.oauth.sns.NaverInfo;
+import com.personal.kopmorning.global.security.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -51,12 +52,14 @@ public class CustomOAuth2UserDetailService extends DefaultOAuth2UserService {
         if (member == null) {
             member = Member.builder()
                     .email(email)
-                    .role(Role.ROLE_USER)
                     .name(name)
+                    .role(Role.USER)
+                    .status(Member_Status.NEW)
                     .provider(provider)
                     .provider_id(providerId)
                     .created_at(LocalDateTime.now())
                     .build();
+
             memberRepository.save(member);
         }
 

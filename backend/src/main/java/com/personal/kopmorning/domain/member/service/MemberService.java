@@ -2,6 +2,7 @@ package com.personal.kopmorning.domain.member.service;
 
 import com.personal.kopmorning.domain.member.dto.request.MemberProfileUpdate;
 import com.personal.kopmorning.domain.member.entity.Member;
+import com.personal.kopmorning.domain.member.entity.Member_Status;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.global.jwt.TokenService;
 import com.personal.kopmorning.global.utils.SecurityUtil;
@@ -40,5 +41,21 @@ public class MemberService {
     public void logout(String refreshToken) {
         long expirationTime = tokenService.getExpirationTimeFromToken(refreshToken);
         tokenService.addToBlacklist(refreshToken, expirationTime);
+    }
+
+    // 회원탈퇴 신청
+    @Transactional
+    public void deleteRequest() {
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+                .orElseThrow(() -> new RuntimeException("멤버가 존재하지 않습니다."));
+        member.withdraw();
+    }
+
+    // 회원탈퇴 철회
+    @Transactional
+    public void deleteCancel() {
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+                .orElseThrow(() -> new RuntimeException("멤버가 존재하지 않습니다."));
+        member.isActive();
     }
 }

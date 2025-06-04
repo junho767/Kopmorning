@@ -9,11 +9,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -76,6 +79,25 @@ public class MemberController {
         return new RsData<>(
                 "200",
                 "수정 완료"
+        );
+    }
+
+    // todo : 탈퇴한 유저라면 어떤 식으로 클라이언트에게 표현해야 하는 지 고민해야 할 필요가 있음.
+    @PatchMapping("/delete/cancel")
+    public RsData<?> cancelDelete() {
+        memberService.deleteCancel();
+        return new RsData<>(
+                "200",
+                "탈퇴 처리 취소 성공"
+        );
+    }
+
+    @PatchMapping("/delete")
+    public RsData<?> deleteMember() {
+        memberService.deleteRequest();
+        return new RsData<>(
+                "200",
+                "탈퇴 성공 - 7일 내 계정 부활 가능"
         );
     }
 }
