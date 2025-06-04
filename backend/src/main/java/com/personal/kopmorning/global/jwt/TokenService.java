@@ -4,6 +4,7 @@ import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.global.security.PrincipalDetails;
+import com.personal.kopmorning.global.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -12,26 +13,32 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
 public class TokenService {
     private final Key key;
+    private final JwtUtil jwtUtil;
     private final MemberRepository memberRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";
+    private static final String AUTHORITIES_KEY = "auth";
+    private static final String BLACKLIST_PREFIX = "blackList:";
 
     @Value("${jwt.expiration.access-token}")
     private int accessTokenExpiration;
@@ -39,8 +46,10 @@ public class TokenService {
     private int refreshTokenExpiration;
 
 
-    public TokenService(@Value("${jwt.secret}") String secretKey, MemberRepository memberRepository) {
+    public TokenService(@Value("${jwt.secret}") String secretKey, JwtUtil jwtUtil, MemberRepository memberRepository, RedisTemplate<String, String> redisTemplate) {
+        this.jwtUtil = jwtUtil;
         this.memberRepository = memberRepository;
+        this.redisTemplate = redisTemplate;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -111,6 +120,15 @@ public class TokenService {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    public long getExpirationTimeFromToken(String refreshToken) {
+        return jwtUtil.getRemainingTime(refreshToken);
+    }
+
+    public void addToBlacklist(String accessToken, long expirationTime) {
+        String key = BLACKLIST_PREFIX + accessToken;
+        redisTemplate.opsForValue().set(key, BLACKLIST_PREFIX, expirationTime, TimeUnit.MILLISECONDS);
     }
 }
 

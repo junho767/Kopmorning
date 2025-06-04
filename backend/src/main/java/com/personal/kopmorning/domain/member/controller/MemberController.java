@@ -36,11 +36,6 @@ public class MemberController {
         );
     }
 
-    @GetMapping("/login")
-    public String login() {
-        return "localhost:8080/oauth2/authorization/google";
-    }
-
     @PostMapping("/logout")
     public RsData<?> logout(HttpServletRequest request, HttpServletResponse response) {
         String authHeader = request.getHeader(AUTHORIZATION_HEADER);
