@@ -2,6 +2,8 @@ package com.personal.kopmorning.domain.member.controller;
 
 import com.personal.kopmorning.domain.member.dto.request.MemberProfileUpdate;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
+import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
+import com.personal.kopmorning.domain.member.responseCode.MemberSuccessCode;
 import com.personal.kopmorning.domain.member.service.MemberService;
 import com.personal.kopmorning.global.entity.RsData;
 import com.personal.kopmorning.global.utils.CookieUtil;
@@ -33,8 +35,8 @@ public class MemberController {
     @GetMapping
     public RsData<MemberResponse> getMember() {
         return new RsData<>(
-                "200",
-                "현재 로그인한 유저 정보 반환 성공",
+                MemberSuccessCode.GET_MEMBER_INFO.getCode(),
+                MemberSuccessCode.GET_MEMBER_INFO.getMessage(),
                 new MemberResponse(memberService.getMemberBySecurityMember())
         );
     }
@@ -56,8 +58,8 @@ public class MemberController {
 
         if (accessToken == null || refreshToken == null) {
             return new RsData<>(
-                    "200",
-                    "토큰이 없어요"
+                    MemberErrorCode.TOKEN_MISSING.getCode(),
+                    MemberErrorCode.TOKEN_MISSING.getMessage()
             );
         }
 
@@ -67,8 +69,8 @@ public class MemberController {
         cookieUtil.removeRefreshTokenFromCookie(response);
 
         return new RsData<>(
-                "200",
-                "로그아웃 성공 [쿠키에서 토큰 제거]"
+                MemberSuccessCode.LOGOUT_SUCCESS.getCode(),
+                MemberSuccessCode.LOGOUT_SUCCESS.getMessage()
         );
     }
 
