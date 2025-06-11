@@ -1,6 +1,12 @@
 package com.personal.kopmorning.global.jwt;
 
+import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
+import com.personal.kopmorning.global.exception.security.TokenException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 @Slf4j
@@ -34,8 +41,17 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             }
 
             chain.doFilter(request, response);
-        } catch (Exception e) {
-            log.warn("토큰 오류 : {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_EXPIRE.getCode(),
+                    MemberErrorCode.TOKEN_EXPIRE.getMessage()
+            );
+        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | IOException |
+                 ServletException e) {
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_INVALID.getCode(),
+                    MemberErrorCode.TOKEN_INVALID.getMessage()
+            );
         }
     }
 
