@@ -1,7 +1,5 @@
 package com.personal.kopmorning.domain.member.entity;
 
-import ch.qos.logback.core.status.Status;
-import com.nimbusds.openid.connect.sdk.claims.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

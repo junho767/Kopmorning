@@ -4,10 +4,13 @@ import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
+import com.personal.kopmorning.domain.member.service.MemberService;
+import com.personal.kopmorning.global.exception.member.MemberNotFoundException;
 import com.personal.kopmorning.global.exception.security.TokenException;
 import com.personal.kopmorning.global.security.PrincipalDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -31,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 public class TokenService {
     private final Key key;
     private final MemberRepository memberRepository;
+    private final MemberService memberService;
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String BEARER_TYPE = "Bearer";
@@ -43,8 +47,9 @@ public class TokenService {
     private int refreshTokenExpiration;
 
 
-    public TokenService(@Value("${jwt.secret}") String secretKey, MemberRepository memberRepository, RedisTemplate<String, String> redisTemplate) {
+    public TokenService(@Value("${jwt.secret}") String secretKey, MemberRepository memberRepository, MemberService memberService, RedisTemplate<String, String> redisTemplate) {
         this.memberRepository = memberRepository;
+        this.memberService = memberService;
         this.redisTemplate = redisTemplate;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
@@ -98,16 +103,22 @@ public class TokenService {
         return new UsernamePasswordAuthenticationToken(principal, "", principal.getAuthorities());
     }
 
-    public void validateToken(String accessToken) {
+    public void validateToken(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
-                    .parseClaimsJws(accessToken);
+                    .parseClaimsJws(token);
         } catch (ExpiredJwtException e) {
-            throw new TokenException(MemberErrorCode.TOKEN_EXPIRE.getCode(), MemberErrorCode.TOKEN_EXPIRE.getMessage());
-        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
-            throw new TokenException(MemberErrorCode.TOKEN_INVALID.getCode(), MemberErrorCode.TOKEN_INVALID.getMessage());
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getCode(),
+                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage()
+            );
+        } catch (JwtException e) {
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_INVALID.getCode(),
+                    MemberErrorCode.TOKEN_INVALID.getMessage()
+            );
         }
     }
 
@@ -133,7 +144,15 @@ public class TokenService {
 
     // 토큰에서 이메일(Subject) 추출
     public String extractEmail(String token) {
-        return parseClaims(token).getSubject();
+        String email = parseClaims(token).getSubject();
+
+        if (!memberService.isValidEmail(email)) {
+            throw new MemberNotFoundException(
+                    MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
+                    MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+            );
+        }
+        return email;
     }
 
     // refreshToken 의 남은 기간 추출
@@ -150,9 +169,8 @@ public class TokenService {
     // refreshToken 을 이용한 accessToken 재발급
     public TokenDto reissueRefreshToken(String refreshToken) {
         String email = extractEmail(refreshToken);
-        long expirationTime = getExpirationTimeFromToken(refreshToken);
 
-        if (expirationTime < System.currentTimeMillis()) {
+        if (getRemainingTime(refreshToken) <= 0) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getCode(),
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage()

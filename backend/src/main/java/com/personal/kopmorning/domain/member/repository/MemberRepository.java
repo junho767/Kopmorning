@@ -10,4 +10,6 @@ import java.util.List;
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Member findByEmail(String email);
     List<Member> findAllByStatusAndDeleteAtBefore(Member_Status status, LocalDateTime dateTime);
+
+    boolean existsByEmail(String email);
 }
