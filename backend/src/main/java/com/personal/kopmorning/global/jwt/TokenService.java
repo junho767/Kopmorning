@@ -4,7 +4,6 @@ import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
-import com.personal.kopmorning.domain.member.service.MemberService;
 import com.personal.kopmorning.global.exception.member.MemberNotFoundException;
 import com.personal.kopmorning.global.exception.security.TokenException;
 import com.personal.kopmorning.global.security.PrincipalDetails;
@@ -34,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 public class TokenService {
     private final Key key;
     private final MemberRepository memberRepository;
-    private final MemberService memberService;
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String BEARER_TYPE = "Bearer";
@@ -47,9 +45,8 @@ public class TokenService {
     private int refreshTokenExpiration;
 
 
-    public TokenService(@Value("${jwt.secret}") String secretKey, MemberRepository memberRepository, MemberService memberService, RedisTemplate<String, String> redisTemplate) {
+    public TokenService(@Value("${jwt.secret}") String secretKey, MemberRepository memberRepository, RedisTemplate<String, String> redisTemplate) {
         this.memberRepository = memberRepository;
-        this.memberService = memberService;
         this.redisTemplate = redisTemplate;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
@@ -146,7 +143,7 @@ public class TokenService {
     public String extractEmail(String token) {
         String email = parseClaims(token).getSubject();
 
-        if (!memberService.isValidEmail(email)) {
+        if (!memberRepository.existsByEmail(email)) {
             throw new MemberNotFoundException(
                     MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
                     MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
