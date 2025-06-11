@@ -2,8 +2,9 @@ package com.personal.kopmorning.domain.member.service;
 
 import com.personal.kopmorning.domain.member.dto.request.MemberProfileUpdate;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
+import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
+import com.personal.kopmorning.global.exception.member.MemberNotFoundException;
 import com.personal.kopmorning.global.jwt.TokenService;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
@@ -23,9 +24,11 @@ public class MemberService {
     // 회원 정보 수정 메서드
     @Transactional
     public void update(MemberProfileUpdate request) {
-        // todo: 예외처리 똑바로 하자
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElseThrow(() -> new RuntimeException("멤버가 존재하지 않습니다."));
+                .orElseThrow(() -> new MemberNotFoundException(
+                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                ));
 
         if (member != null) {
             member.setNickname(request.getNickname());
@@ -37,7 +40,6 @@ public class MemberService {
         return SecurityUtil.getCurrentMember();
     }
 
-    // todo : redis 토큰 블랙리스트로 관리하여 로그아웃 처리 예정
     public void logout(String refreshToken) {
         long expirationTime = tokenService.getExpirationTimeFromToken(refreshToken);
         tokenService.addToBlacklist(refreshToken, expirationTime);
@@ -47,7 +49,11 @@ public class MemberService {
     @Transactional
     public void deleteRequest() {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElseThrow(() -> new RuntimeException("멤버가 존재하지 않습니다."));
+                .orElseThrow(() -> new MemberNotFoundException(
+                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                ));
+
         member.withdraw();
     }
 
@@ -55,7 +61,10 @@ public class MemberService {
     @Transactional
     public void deleteCancel() {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElseThrow(() -> new RuntimeException("멤버가 존재하지 않습니다."));
+                .orElseThrow(() -> new MemberNotFoundException(
+                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                ));
         member.isActive();
     }
 }

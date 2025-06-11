@@ -11,14 +11,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -35,8 +32,8 @@ public class MemberController {
     @GetMapping
     public RsData<MemberResponse> getMember() {
         return new RsData<>(
-                MemberSuccessCode.GET_MEMBER_INFO.getCode(),
-                MemberSuccessCode.GET_MEMBER_INFO.getMessage(),
+                MemberSuccessCode.GET_MEMBER.getCode(),
+                MemberSuccessCode.GET_MEMBER.getMessage(),
                 new MemberResponse(memberService.getMemberBySecurityMember())
         );
     }
@@ -69,8 +66,8 @@ public class MemberController {
         cookieUtil.removeRefreshTokenFromCookie(response);
 
         return new RsData<>(
-                MemberSuccessCode.LOGOUT_SUCCESS.getCode(),
-                MemberSuccessCode.LOGOUT_SUCCESS.getMessage()
+                MemberSuccessCode.LOGOUT.getCode(),
+                MemberSuccessCode.LOGOUT.getMessage()
         );
     }
 
@@ -79,8 +76,8 @@ public class MemberController {
         memberService.update(request);
 
         return new RsData<>(
-                "200",
-                "수정 완료"
+                MemberSuccessCode.UPDATE_MEMBER.getCode(),
+                MemberSuccessCode.UPDATE_MEMBER.getMessage()
         );
     }
 
@@ -89,8 +86,8 @@ public class MemberController {
     public RsData<?> cancelDelete() {
         memberService.deleteCancel();
         return new RsData<>(
-                "200",
-                "탈퇴 처리 취소 성공"
+                MemberSuccessCode.DELETE_CANCEL.getCode(),
+                MemberSuccessCode.DELETE_CANCEL.getMessage()
         );
     }
 
@@ -98,8 +95,8 @@ public class MemberController {
     public RsData<?> deleteMember() {
         memberService.deleteRequest();
         return new RsData<>(
-                "200",
-                "탈퇴 성공 - 7일 내 계정 부활 가능"
+                MemberSuccessCode.DELETE_REQUEST.getCode(),
+                MemberSuccessCode.DELETE_REQUEST.getMessage()
         );
     }
 }

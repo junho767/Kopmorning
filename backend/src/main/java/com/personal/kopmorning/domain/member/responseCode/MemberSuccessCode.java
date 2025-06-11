@@ -4,8 +4,11 @@ import lombok.Getter;
 
 @Getter
 public enum MemberSuccessCode {
-    GET_MEMBER_INFO("200-1", "유저 정보 조회 성공"),
-    LOGOUT_SUCCESS("200-2", "로그아웃 성공");
+    GET_MEMBER("200-1", "유저 정보 조회 성공"),
+    UPDATE_MEMBER("200-2", "유저 정보 수정 성공"),
+    LOGOUT("200-3", "로그아웃 성공"),
+    DELETE_REQUEST("200-4", "회원탈퇴 성공"),
+    DELETE_CANCEL("200-5", "회원탈퇴 취소 성공");
 
     private final String code;
     private final String message;
