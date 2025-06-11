@@ -3,12 +3,15 @@ package com.personal.kopmorning.global.jwt;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
+import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
+import com.personal.kopmorning.global.exception.security.TokenException;
 import com.personal.kopmorning.global.security.PrincipalDetails;
-import com.personal.kopmorning.global.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -16,15 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class TokenService {
     private final Key key;
-    private final JwtUtil jwtUtil;
     private final MemberRepository memberRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -46,8 +43,7 @@ public class TokenService {
     private int refreshTokenExpiration;
 
 
-    public TokenService(@Value("${jwt.secret}") String secretKey, JwtUtil jwtUtil, MemberRepository memberRepository, RedisTemplate<String, String> redisTemplate) {
-        this.jwtUtil = jwtUtil;
+    public TokenService(@Value("${jwt.secret}") String secretKey, MemberRepository memberRepository, RedisTemplate<String, String> redisTemplate) {
         this.memberRepository = memberRepository;
         this.redisTemplate = redisTemplate;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
@@ -88,8 +84,12 @@ public class TokenService {
     // todo : 예외 처리 확실하게 해야함.
     public Authentication getAuthentication(String accessToken) {
         Claims claims = parseClaims(accessToken);
+
         if (claims.get(AUTHORITIES_KEY) == null) {
-            log.error("Invalid access token");
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_MISSING.getCode(),
+                    MemberErrorCode.TOKEN_MISSING.getMessage()
+            );
         }
 
         Member member = memberRepository.findByEmail(claims.getSubject());
@@ -98,15 +98,16 @@ public class TokenService {
         return new UsernamePasswordAuthenticationToken(principal, "", principal.getAuthorities());
     }
 
-    // todo : 예외 처리 확실하게 해야함.
     public void validateToken(String accessToken) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(accessToken);
-        } catch (Exception e) {
-            log.error("임시: 유효하지 않은 JWT 토큰이나 예외 발생 - 무시하고 진행", e);
+        } catch (ExpiredJwtException e) {
+            throw new TokenException(MemberErrorCode.TOKEN_EXPIRE.getCode(), MemberErrorCode.TOKEN_EXPIRE.getMessage());
+        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
+            throw new TokenException(MemberErrorCode.TOKEN_INVALID.getCode(), MemberErrorCode.TOKEN_INVALID.getMessage());
         }
     }
 
@@ -118,17 +119,49 @@ public class TokenService {
                     .parseClaimsJws(accessToken)
                     .getBody();
         } catch (ExpiredJwtException e) {
-            return e.getClaims();
+            throw new TokenException(MemberErrorCode.TOKEN_EXPIRE.getCode(), MemberErrorCode.TOKEN_EXPIRE.getMessage());
+        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
+            throw new TokenException(MemberErrorCode.TOKEN_INVALID.getCode(), MemberErrorCode.TOKEN_INVALID.getMessage());
         }
     }
 
-    public long getExpirationTimeFromToken(String refreshToken) {
-        return jwtUtil.getRemainingTime(refreshToken);
+    // refreshToken redis 에 블랙리스트로 저장
+    public void addToBlacklist(String refreshToken, long expirationTime) {
+        String key = BLACKLIST_PREFIX + refreshToken;
+        redisTemplate.opsForValue().set(key, BLACKLIST_PREFIX, expirationTime, TimeUnit.MILLISECONDS);
     }
 
-    public void addToBlacklist(String accessToken, long expirationTime) {
-        String key = BLACKLIST_PREFIX + accessToken;
-        redisTemplate.opsForValue().set(key, BLACKLIST_PREFIX, expirationTime, TimeUnit.MILLISECONDS);
+    // 토큰에서 이메일(Subject) 추출
+    public String extractEmail(String token) {
+        return parseClaims(token).getSubject();
+    }
+
+    // refreshToken 의 남은 기간 추출
+    public long getExpirationTimeFromToken(String refreshToken) {
+        return getRemainingTime(refreshToken);
+    }
+
+    // 토큰에서 만료 시간 추출
+    public long getRemainingTime(String token) {
+        Date expiration = parseClaims(token).getExpiration();
+        return expiration.getTime() - System.currentTimeMillis(); // 남은 시간 밀리초
+    }
+
+    // refreshToken 을 이용한 accessToken 재발급
+    public TokenDto reissueRefreshToken(String refreshToken) {
+        String email = extractEmail(refreshToken);
+        long expirationTime = getExpirationTimeFromToken(refreshToken);
+
+        if (expirationTime < System.currentTimeMillis()) {
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getCode(),
+                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage()
+            );
+        }
+
+        String accessToken = createAccessToken(email);
+
+        return new TokenDto(accessToken, refreshToken, BEARER_TYPE);
     }
 }
 
