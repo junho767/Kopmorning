@@ -14,12 +14,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: pwd
+        run: |
+          pwd
+          ls
+
       - name: Create application-prod-secret.yml
         run: |
           echo "$APPLICATION_PROD_SECRET_YML" > src/main/resources/application-secret.yml
         working-directory: backend
         env:
           APPLICATION_PROD_SECRET_YML: ${{ secrets.APPLICATION_PROD_SECRET_YML }}
+
+      - name: Create .env file
+        run: echo "${{ secrets.DOCKER_ENV_FILE }}" > .env
+        working-directory: backend
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -48,26 +57,17 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts  # ✅ GitHub 키 등록
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy .env to EC2
+        run: |
+          scp -i ~/.ssh/id_rsa backend/.env ubuntu@${{ secrets.EC2_HOST }}:~/myapp/.env
 
       - name: Deploy with docker-compose on EC2
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            set -e
-          
-            cd ~/myapp
-
-            git remote set-url origin git@github.com:junho767/Kopmorning.git
-            git pull origin develop || echo "Git pull failed or no repo cloned"
-
-            cat > .env <<EOT
-          ${DOCKER_ENV_FILE}
-          EOT
-  
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << EOF  
+          cd ~/myapp
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kopmorning:latest
-  
           docker compose down || true
           docker compose up -d --build
           EOF
-        env:
-          DOCKER_ENV_FILE: ${{ secrets.DOCKER_ENV_FILE }}

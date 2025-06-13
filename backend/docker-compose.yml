@@ -35,6 +35,8 @@ services:
     networks:
       - kop-network
     restart: always
+    env_file:
+      - .env
 
 networks:
   kop-network:
