@@ -53,12 +53,13 @@ jobs:
       - name: Deploy with docker-compose on EC2
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << EOF
-            docker stop $(docker ps -q)
-            docker rm $(docker ps -aq)
+            docker ps -q
+          
+            docker ps -aq
           
             cd ~/myapp
-            pwd
-            ls -al
+          
+            git remote set-url origin git@github.com:junho767/Kopmorning.git
             git pull origin develop || echo "Git pull failed or no repo cloned"
 
             cat <<EOT > .env
