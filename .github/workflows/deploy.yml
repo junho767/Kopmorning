@@ -14,11 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: pwd
-        run: |
-          pwd
-          ls
-
       - name: Create application-prod-secret.yml
         run: |
           echo "$APPLICATION_PROD_SECRET_YML" > src/main/resources/application-secret.yml
