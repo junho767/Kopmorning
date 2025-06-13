@@ -2,8 +2,9 @@ services:
   mysql:
     image: mysql:8.0
     container_name: mysql
-    env_file:
-      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: qnfwhtla0913
+      MYSQL_DATABASE: kopmorning
     ports:
       - "3306:3306"
     networks:
@@ -20,7 +21,7 @@ services:
     restart: always
 
   backend:
-    image: ${DOCKER_HUB_USERNAME}/kopmorning:latest
+    image: junholee0913/kopmorning:latest
     container_name: kopmorning
     ports:
       - "8080:8080"
@@ -32,8 +33,6 @@ services:
     networks:
       - kop-network
     restart: always
-    env_file:
-      - .env
 
 networks:
   kop-network:
