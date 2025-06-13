@@ -65,7 +65,14 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << EOF  
           cd ~/myapp
+          
+          docker compose down
+          
+          docker rmi -f \$(docker images "${{ secrets.DOCKER_HUB_USERNAME }}/kopmorning" -q) || true
+          
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/kopmorning:latest
+          
           docker compose down || true
+          
           docker compose up -d
           EOF
