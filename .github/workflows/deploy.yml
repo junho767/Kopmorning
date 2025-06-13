@@ -58,7 +58,7 @@ jobs:
       - name: Copy .env and docker-compose EC2
         run: |
           echo "${{ secrets.DOCKER_ENV_FILE }}" > .env
-          scp -i ~/.ssh/id_rsa backend/.env ubuntu@${{ secrets.EC2_HOST }}:~/myapp/.env
+          scp -i ~/.ssh/id_rsa .env ubuntu@${{ secrets.EC2_HOST }}:~/myapp/.env
           echo "${{ secrets.DOCKER_COMPOSE_YML }}" > docker-compose.yml
           scp -i ~/.ssh/id_rsa docker-compose.yml ubuntu@${{ secrets.EC2_HOST }}:~/myapp/docker-compose.yml
 
