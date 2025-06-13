@@ -50,6 +50,10 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Remove existing files on EC2
+        run: |
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "rm -f ~/myapp/.env ~/myapp/docker-compose.yml"    
+
       - name: Copy .env and docker-compose EC2
         run: |
           echo "${{ secrets.DOCKER_ENV_FILE }}" > .env
