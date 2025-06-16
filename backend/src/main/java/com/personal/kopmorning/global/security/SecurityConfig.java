@@ -7,6 +7,7 @@ import com.personal.kopmorning.global.oauth.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,7 +32,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                .cors(  cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         // Swagger 접근 허용
                         .requestMatchers(
@@ -39,6 +40,8 @@ public class SecurityConfig {
                                 "/swagger-ui/index.html",
                                 "/swagger-ui/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/article/**")
+                        .permitAll()
 
                         // 그 외 요청은 인증 필요
                         .anyRequest().authenticated()

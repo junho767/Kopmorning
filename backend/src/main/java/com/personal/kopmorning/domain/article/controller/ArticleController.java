@@ -2,13 +2,14 @@ package com.personal.kopmorning.domain.article.controller;
 
 import com.personal.kopmorning.domain.article.dto.request.ArticleCreate;
 import com.personal.kopmorning.domain.article.dto.response.ArticleResponse;
-import com.personal.kopmorning.domain.article.entity.Article;
 import com.personal.kopmorning.domain.article.service.ArticleService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -16,6 +17,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ArticleController {
     private final ArticleService articleService;
+
+    @GetMapping
+    public RsData<ArticleResponse> getArticleOne(@RequestParam Long id) {
+        return new RsData<>(
+                "200",
+                "단건 조회 성공",
+                articleService.getArticleOne(id));
+    }
+
+    @GetMapping("/list")
+    public RsData<?> getArticleListByCategory(@RequestParam String category) {
+        return new RsData<>(
+                "200",
+                "다건 조회 성공",
+                articleService.getArticleListByCategory(category)
+        );
+    }
 
     @PostMapping
     public RsData<ArticleResponse> createArticle(@RequestBody ArticleCreate articleCreate) {

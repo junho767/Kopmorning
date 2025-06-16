@@ -67,8 +67,4 @@ public class MemberService {
                 ));
         member.isActive();
     }
-
-    public boolean isValidEmail(String email) {
-        return memberRepository.existsByEmail(email);
-    }
 }

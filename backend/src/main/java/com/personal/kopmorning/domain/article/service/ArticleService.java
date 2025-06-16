@@ -1,6 +1,7 @@
 package com.personal.kopmorning.domain.article.service;
 
 import com.personal.kopmorning.domain.article.dto.request.ArticleCreate;
+import com.personal.kopmorning.domain.article.dto.response.ArticleListResponse;
 import com.personal.kopmorning.domain.article.dto.response.ArticleResponse;
 import com.personal.kopmorning.domain.article.entity.Article;
 import com.personal.kopmorning.domain.article.entity.Category;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,5 +43,28 @@ public class ArticleService {
         articleRepository.save(article);
 
         return new ArticleResponse(article);
+    }
+
+    public ArticleResponse getArticleOne(Long id) {
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물 입니다."));
+
+        return new ArticleResponse(article);
+    }
+
+    public ArticleListResponse getArticleListByCategory(String category) {
+        List<Article> articleList = articleRepository.findByCategory(Category.valueOf(category));
+
+        List<ArticleResponse> articles = articleList.stream()
+                .map(ArticleResponse::new)
+                .toList();
+
+        int total = articles.size();
+
+        return ArticleListResponse.builder()
+                .articles(articles)
+                .total(total)
+                .category(category)
+                .build();
     }
 }
