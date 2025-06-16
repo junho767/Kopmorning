@@ -1,6 +1,7 @@
 package com.personal.kopmorning.domain.article.service;
 
 import com.personal.kopmorning.domain.article.dto.request.ArticleCreate;
+import com.personal.kopmorning.domain.article.dto.request.ArticleUpdate;
 import com.personal.kopmorning.domain.article.dto.response.ArticleListResponse;
 import com.personal.kopmorning.domain.article.dto.response.ArticleResponse;
 import com.personal.kopmorning.domain.article.entity.Article;
@@ -11,6 +12,7 @@ import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
 import com.personal.kopmorning.global.exception.member.MemberNotFoundException;
 import com.personal.kopmorning.global.utils.SecurityUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,7 @@ public class ArticleService {
                 .updatedAt(LocalDateTime.now())
                 .category(Category.valueOf(articleCreate.getCategory()))
                 .likeCount(0L)
+                .viewCount(0L)
                 .build();
 
         articleRepository.save(article);
@@ -45,9 +48,12 @@ public class ArticleService {
         return new ArticleResponse(article);
     }
 
+    @Transactional
     public ArticleResponse getArticleOne(Long id) {
         Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물 입니다."));
+
+        article.setViewCount(article.getViewCount() + 1);
 
         return new ArticleResponse(article);
     }
@@ -66,5 +72,24 @@ public class ArticleService {
                 .total(total)
                 .category(category)
                 .build();
+    }
+
+    @Transactional
+    public void updateArticle(Long id, ArticleUpdate articleUpdate) {
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+                .orElseThrow(() -> new MemberNotFoundException(
+                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                ));
+
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물 입니다."));
+
+        if(!member.getEmail().equals(article.getMember().getEmail())) {
+            throw new RuntimeException("작성자가 아닙니다.");
+        }
+
+        article.setTitle(articleUpdate.getTitle());
+        article.setBody(articleUpdate.getBody());
     }
 }

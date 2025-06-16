@@ -11,6 +11,7 @@ public class ArticleResponse {
     private String title;
     private String body;
     private Long likeCount;
+    private Long viewCount;
     private Long member_id;
     private String category;
     private LocalDateTime createdAt;
@@ -21,6 +22,7 @@ public class ArticleResponse {
         this.title = article.getTitle();
         this.body = article.getBody();
         this.likeCount = article.getLikeCount();
+        this.viewCount = article.getViewCount();
         this.createdAt = article.getCreatedAt();
         this.updatedAt = article.getUpdatedAt();
         this.category = article.getCategory().name();

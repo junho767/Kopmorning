@@ -2,6 +2,8 @@ package com.personal.kopmorning.domain.article.entity;
 
 import com.personal.kopmorning.domain.member.entity.Member;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,11 +29,16 @@ public class Article {
     private Long id;
     private String title;
     private String body;
+    private Long likeCount;
+    private Long viewCount;
+
     @CreatedDate
     private LocalDateTime createdAt;
+
     @LastModifiedDate
     private LocalDateTime updatedAt;
-    private Long likeCount;
+
+    @Enumerated(EnumType.STRING)
     private Category category;
 
     @ManyToOne
