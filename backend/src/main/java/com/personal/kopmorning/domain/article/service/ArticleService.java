@@ -92,4 +92,21 @@ public class ArticleService {
         article.setTitle(articleUpdate.getTitle());
         article.setBody(articleUpdate.getBody());
     }
+
+    public void deleteArticle(Long id) {
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+                .orElseThrow(() -> new MemberNotFoundException(
+                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                ));
+
+        Article article = articleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물 입니다."));
+
+        if(!member.getEmail().equals(article.getMember().getEmail())) {
+            throw new RuntimeException("작성자가 아닙니다.");
+        }
+
+        articleRepository.delete(article);
+    }
 }
