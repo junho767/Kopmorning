@@ -137,7 +137,7 @@ public class ArticleServiceTest {
 
         // then
         assertThat(resp.getTotal()).isEqualTo(1);
-        assertThat(resp.getArticles().get(0).getId()).isEqualTo(stubArticle.getId());
+        assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
         verify(articleRepository, times(1))
                 .findByCategory(Category.FOOTBALL);
     }
