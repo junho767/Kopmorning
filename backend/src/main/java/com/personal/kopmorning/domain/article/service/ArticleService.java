@@ -7,9 +7,11 @@ import com.personal.kopmorning.domain.article.dto.response.ArticleResponse;
 import com.personal.kopmorning.domain.article.entity.Article;
 import com.personal.kopmorning.domain.article.entity.Category;
 import com.personal.kopmorning.domain.article.repository.ArticleRepository;
+import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
+import com.personal.kopmorning.global.exception.Article.ArticleNotFoundException;
 import com.personal.kopmorning.global.exception.member.MemberNotFoundException;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
@@ -25,6 +27,8 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final MemberRepository memberRepository;
 
+    private final static Long INIT_COUNT = 0L;
+
     public ArticleResponse addArticle(ArticleCreate articleCreate) {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
                 .orElseThrow(() -> new MemberNotFoundException(
@@ -39,8 +43,8 @@ public class ArticleService {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .category(Category.valueOf(articleCreate.getCategory()))
-                .likeCount(0L)
-                .viewCount(0L)
+                .likeCount(INIT_COUNT)
+                .viewCount(INIT_COUNT)
                 .build();
 
         articleRepository.save(article);
@@ -51,7 +55,11 @@ public class ArticleService {
     @Transactional
     public ArticleResponse getArticleOne(Long id) {
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물 입니다."));
+                .orElseThrow(() -> new ArticleNotFoundException(
+                                ArticleErrorCode.INVALID_ARTICLE.getCode(),
+                                ArticleErrorCode.INVALID_ARTICLE.getMessage()
+                        )
+                );
 
         article.setViewCount(article.getViewCount() + 1);
 
@@ -83,10 +91,17 @@ public class ArticleService {
                 ));
 
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물 입니다."));
+                .orElseThrow(() -> new ArticleNotFoundException(
+                                ArticleErrorCode.INVALID_ARTICLE.getCode(),
+                                ArticleErrorCode.INVALID_ARTICLE.getMessage()
+                        )
+                );
 
-        if(!member.getEmail().equals(article.getMember().getEmail())) {
-            throw new RuntimeException("작성자가 아닙니다.");
+        if (!member.getEmail().equals(article.getMember().getEmail())) {
+            throw new ArticleNotFoundException(
+                    ArticleErrorCode.NOT_AUTHOR.getCode(),
+                    ArticleErrorCode.NOT_AUTHOR.getMessage()
+            );
         }
 
         article.setTitle(articleUpdate.getTitle());
@@ -101,10 +116,17 @@ public class ArticleService {
                 ));
 
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 게시물 입니다."));
+                .orElseThrow(() -> new ArticleNotFoundException(
+                                ArticleErrorCode.INVALID_ARTICLE.getCode(),
+                                ArticleErrorCode.INVALID_ARTICLE.getMessage()
+                        )
+                );
 
-        if(!member.getEmail().equals(article.getMember().getEmail())) {
-            throw new RuntimeException("작성자가 아닙니다.");
+        if (!member.getEmail().equals(article.getMember().getEmail())) {
+            throw new ArticleNotFoundException(
+                    ArticleErrorCode.NOT_AUTHOR.getCode(),
+                    ArticleErrorCode.NOT_AUTHOR.getMessage()
+            );
         }
 
         articleRepository.delete(article);

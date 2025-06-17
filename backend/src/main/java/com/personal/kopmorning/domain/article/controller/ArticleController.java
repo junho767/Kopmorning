@@ -3,6 +3,7 @@ package com.personal.kopmorning.domain.article.controller;
 import com.personal.kopmorning.domain.article.dto.request.ArticleCreate;
 import com.personal.kopmorning.domain.article.dto.request.ArticleUpdate;
 import com.personal.kopmorning.domain.article.dto.response.ArticleResponse;
+import com.personal.kopmorning.domain.article.responseCode.ArticleSuccessCode;
 import com.personal.kopmorning.domain.article.service.ArticleService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,16 +25,16 @@ public class ArticleController {
     @GetMapping("/{id}")
     public RsData<ArticleResponse> getArticleOne(@PathVariable Long id) {
         return new RsData<>(
-                "200",
-                "단건 조회 성공",
+                ArticleSuccessCode.GET_ONE.getCode(),
+                ArticleSuccessCode.GET_ONE.getMessage(),
                 articleService.getArticleOne(id));
     }
 
     @GetMapping("/list/{category}")
     public RsData<?> getArticleListByCategory(@PathVariable String category) {
         return new RsData<>(
-                "200",
-                "다건 조회 성공",
+                ArticleSuccessCode.GET_LIST.getCode(),
+                ArticleSuccessCode.GET_LIST.getMessage(),
                 articleService.getArticleListByCategory(category)
         );
     }
@@ -42,8 +42,8 @@ public class ArticleController {
     @PostMapping
     public RsData<ArticleResponse> createArticle(@RequestBody ArticleCreate articleCreate) {
         return new RsData<>(
-                "200",
-                "게시물 생성 성공",
+                ArticleSuccessCode.CREATE.getCode(),
+                ArticleSuccessCode.CREATE.getMessage(),
                 articleService.addArticle(articleCreate)
         );
     }
@@ -52,8 +52,8 @@ public class ArticleController {
     public RsData<?> updateArticle(@PathVariable Long id, @RequestBody ArticleUpdate articleUpdate) {
         articleService.updateArticle(id, articleUpdate);
         return new RsData<>(
-                "200",
-                "게시물 수정 성공"
+                ArticleSuccessCode.UPDATE.getCode(),
+                ArticleSuccessCode.UPDATE.getMessage()
         );
     }
 
@@ -61,8 +61,8 @@ public class ArticleController {
     public RsData<?> deleteArticle(@PathVariable Long id) {
         articleService.deleteArticle(id);
         return new RsData<>(
-                "200",
-                "게시물 삭제 성공"
+                ArticleSuccessCode.DELETE.getCode(),
+                ArticleSuccessCode.DELETE.getMessage()
         );
     }
 }
