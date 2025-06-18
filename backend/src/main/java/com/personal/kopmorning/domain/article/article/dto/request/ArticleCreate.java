@@ -1,4 +1,4 @@
-package com.personal.kopmorning.domain.article.dto.request;
+package com.personal.kopmorning.domain.article.article.dto.request;
 
 import lombok.Builder;
 import lombok.Data;

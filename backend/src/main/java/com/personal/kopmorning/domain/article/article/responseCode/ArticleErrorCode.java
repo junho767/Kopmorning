@@ -1,4 +1,4 @@
-package com.personal.kopmorning.domain.article.responseCode;
+package com.personal.kopmorning.domain.article.article.responseCode;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

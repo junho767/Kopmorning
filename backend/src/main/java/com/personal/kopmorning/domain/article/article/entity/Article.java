@@ -1,4 +1,4 @@
-package com.personal.kopmorning.domain.article.entity;
+package com.personal.kopmorning.domain.article.article.entity;
 
 import com.personal.kopmorning.domain.member.entity.Member;
 import jakarta.persistence.Entity;

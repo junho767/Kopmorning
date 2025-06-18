@@ -1,13 +1,13 @@
 package com.personal.kopmorning.Article.service;
 
-import com.personal.kopmorning.domain.article.dto.request.ArticleCreate;
-import com.personal.kopmorning.domain.article.dto.request.ArticleUpdate;
-import com.personal.kopmorning.domain.article.dto.response.ArticleListResponse;
-import com.personal.kopmorning.domain.article.dto.response.ArticleResponse;
-import com.personal.kopmorning.domain.article.entity.Article;
-import com.personal.kopmorning.domain.article.entity.Category;
-import com.personal.kopmorning.domain.article.repository.ArticleRepository;
-import com.personal.kopmorning.domain.article.service.ArticleService;
+import com.personal.kopmorning.domain.article.article.dto.request.ArticleCreate;
+import com.personal.kopmorning.domain.article.article.dto.request.ArticleUpdate;
+import com.personal.kopmorning.domain.article.article.dto.response.ArticleListResponse;
+import com.personal.kopmorning.domain.article.article.dto.response.ArticleResponse;
+import com.personal.kopmorning.domain.article.article.entity.Article;
+import com.personal.kopmorning.domain.article.article.entity.Category;
+import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
+import com.personal.kopmorning.domain.article.article.service.ArticleService;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Member_Status;
 import com.personal.kopmorning.domain.member.entity.Role;

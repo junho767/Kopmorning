@@ -1,8 +1,8 @@
 package com.personal.kopmorning.global.init;
 
-import com.personal.kopmorning.domain.article.entity.Article;
-import com.personal.kopmorning.domain.article.entity.Category;
-import com.personal.kopmorning.domain.article.repository.ArticleRepository;
+import com.personal.kopmorning.domain.article.article.entity.Article;
+import com.personal.kopmorning.domain.article.article.entity.Category;
+import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Member_Status;
 import com.personal.kopmorning.domain.member.entity.Role;

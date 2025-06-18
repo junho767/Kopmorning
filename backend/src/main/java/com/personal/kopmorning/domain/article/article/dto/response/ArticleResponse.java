@@ -1,6 +1,6 @@
-package com.personal.kopmorning.domain.article.dto.response;
+package com.personal.kopmorning.domain.article.article.dto.response;
 
-import com.personal.kopmorning.domain.article.entity.Article;
+import com.personal.kopmorning.domain.article.article.entity.Article;
 import lombok.Data;
 
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package com.personal.kopmorning.domain.article.entity;
+package com.personal.kopmorning.domain.article.article.entity;
 
 public enum Category {
     FREE("자유"),

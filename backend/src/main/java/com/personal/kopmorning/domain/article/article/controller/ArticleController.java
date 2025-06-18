@@ -1,10 +1,10 @@
-package com.personal.kopmorning.domain.article.controller;
+package com.personal.kopmorning.domain.article.article.controller;
 
-import com.personal.kopmorning.domain.article.dto.request.ArticleCreate;
-import com.personal.kopmorning.domain.article.dto.request.ArticleUpdate;
-import com.personal.kopmorning.domain.article.dto.response.ArticleResponse;
-import com.personal.kopmorning.domain.article.responseCode.ArticleSuccessCode;
-import com.personal.kopmorning.domain.article.service.ArticleService;
+import com.personal.kopmorning.domain.article.article.dto.request.ArticleCreate;
+import com.personal.kopmorning.domain.article.article.dto.request.ArticleUpdate;
+import com.personal.kopmorning.domain.article.article.dto.response.ArticleResponse;
+import com.personal.kopmorning.domain.article.article.responseCode.ArticleSuccessCode;
+import com.personal.kopmorning.domain.article.article.service.ArticleService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
