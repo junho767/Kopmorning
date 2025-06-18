@@ -63,18 +63,17 @@ jobs:
 
       - name: Deploy with docker-compose on EC2
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << EOF  
-          cd ~/myapp
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << EOF
           
-          echo "[1] 기존 컨테이너 중지 및 제거"
-          docker compose down
-
-          echo "[2] 모든 이미지 삭제"
-          docker rmi -f \$(docker images -q) || true
+          cd ~/myapp
       
-          echo "[3] 최신 이미지 pull"
+          echo "[1] backend 컨테이너 중지 및 제거"
+          docker compose stop backend || true
+          docker compose rm -f backend || true
+          
+          echo "[2] 최신 이미지 pull"
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/kopmorning:latest
       
-          echo "[4] 컨테이너 재시작"
-          docker compose up -d
+          echo "[3] backend 컨테이너만 다시 실행"
+          docker compose up -d backend
           EOF
