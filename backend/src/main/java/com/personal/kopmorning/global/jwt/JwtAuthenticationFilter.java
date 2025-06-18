@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
@@ -23,11 +24,13 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
     private final TokenService tokenService;
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String BEARER_TYPE = "Bearer";
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String accessToken = CookieUtil.getAccessTokenFromCookie(httpRequest);
+        String accessToken = resolveToken(httpRequest);
 
         try {
             if (accessToken != null) {
@@ -40,15 +43,25 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         } catch (ExpiredJwtException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_EXPIRE.getCode(),
-                    MemberErrorCode.TOKEN_EXPIRE.getMessage()
+                    MemberErrorCode.TOKEN_EXPIRE.getMessage(),
+                    MemberErrorCode.TOKEN_EXPIRE.getHttpStatus()
             );
         } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | IOException |
                  ServletException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_INVALID.getCode(),
-                    MemberErrorCode.TOKEN_INVALID.getMessage()
+                    MemberErrorCode.TOKEN_INVALID.getMessage(),
+                    MemberErrorCode.TOKEN_INVALID.getHttpStatus()
             );
         }
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader(AUTHORIZATION);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TYPE)) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }
 

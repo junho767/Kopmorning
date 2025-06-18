@@ -1,6 +1,8 @@
 package com.personal.kopmorning.global.utils;
 
 import com.personal.kopmorning.domain.member.entity.Member;
+import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
+import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.security.PrincipalDetails;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -9,7 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-@Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SecurityUtil {
 
@@ -19,7 +20,11 @@ public class SecurityUtil {
 
         if (authentication == null || !authentication.isAuthenticated() ||
                 !(authentication.getPrincipal() instanceof PrincipalDetails)) {
-            throw new SecurityException("authentication is not authenticated");
+            throw new MemberException(
+                    MemberErrorCode.MEMBER_UNAUTHENTICATED.getCode(),
+                    MemberErrorCode.MEMBER_UNAUTHENTICATED.getMessage(),
+                    MemberErrorCode.MEMBER_UNAUTHENTICATED.getHttpStatus()
+            );
         }
 
         return ((PrincipalDetails) authentication.getPrincipal()).getMember().getId();
@@ -31,7 +36,11 @@ public class SecurityUtil {
 
         if (authentication == null || !authentication.isAuthenticated() ||
                 !(authentication.getPrincipal() instanceof PrincipalDetails)) {
-            throw new SecurityException("authentication is not authenticated");
+            throw new MemberException(
+                    MemberErrorCode.MEMBER_UNAUTHENTICATED.getCode(),
+                    MemberErrorCode.MEMBER_UNAUTHENTICATED.getMessage(),
+                    MemberErrorCode.MEMBER_UNAUTHENTICATED.getHttpStatus()
+            );
         }
 
         return ((PrincipalDetails) authentication.getPrincipal()).getMember();

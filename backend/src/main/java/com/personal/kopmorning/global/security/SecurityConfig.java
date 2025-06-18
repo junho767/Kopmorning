@@ -7,6 +7,7 @@ import com.personal.kopmorning.global.oauth.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,11 +32,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                .cors(  cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests((authorizeHttpRequests) ->
-                        authorizeHttpRequests
-                                // todo : 추후 인증 필요없는 메서드들 정의 및 모든 요청 인증 거치게
-                                .anyRequest().permitAll()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        // Swagger 접근 허용
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/index.html",
+                                "/swagger-ui/**"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/article/**")
+                        .permitAll()
+
+                        // 그 외 요청은 인증 필요
+                        .anyRequest().authenticated()
                 )
 
                 .headers(headers -> headers
