@@ -43,13 +43,15 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         } catch (ExpiredJwtException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_EXPIRE.getCode(),
-                    MemberErrorCode.TOKEN_EXPIRE.getMessage()
+                    MemberErrorCode.TOKEN_EXPIRE.getMessage(),
+                    MemberErrorCode.TOKEN_EXPIRE.getHttpStatus()
             );
         } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | IOException |
                  ServletException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_INVALID.getCode(),
-                    MemberErrorCode.TOKEN_INVALID.getMessage()
+                    MemberErrorCode.TOKEN_INVALID.getMessage(),
+                    MemberErrorCode.TOKEN_INVALID.getHttpStatus()
             );
         }
     }

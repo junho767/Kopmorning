@@ -11,8 +11,8 @@ import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
-import com.personal.kopmorning.global.exception.Article.ArticleNotFoundException;
-import com.personal.kopmorning.global.exception.member.MemberNotFoundException;
+import com.personal.kopmorning.global.exception.Article.ArticleException;
+import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +31,10 @@ public class ArticleService {
 
     public ArticleResponse addArticle(ArticleCreate articleCreate) {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElseThrow(() -> new MemberNotFoundException(
+                .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
                 ));
 
         Article article = Article.builder()
@@ -55,9 +56,10 @@ public class ArticleService {
     @Transactional
     public ArticleResponse getArticleOne(Long id) {
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new ArticleNotFoundException(
+                .orElseThrow(() -> new ArticleException(
                                 ArticleErrorCode.INVALID_ARTICLE.getCode(),
-                                ArticleErrorCode.INVALID_ARTICLE.getMessage()
+                                ArticleErrorCode.INVALID_ARTICLE.getMessage(),
+                                ArticleErrorCode.INVALID_ARTICLE.getHttpStatus()
                         )
                 );
 
@@ -85,22 +87,25 @@ public class ArticleService {
     @Transactional
     public void updateArticle(Long id, ArticleUpdate articleUpdate) {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElseThrow(() -> new MemberNotFoundException(
+                .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
                 ));
 
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new ArticleNotFoundException(
+                .orElseThrow(() -> new ArticleException(
                                 ArticleErrorCode.INVALID_ARTICLE.getCode(),
-                                ArticleErrorCode.INVALID_ARTICLE.getMessage()
+                                ArticleErrorCode.INVALID_ARTICLE.getMessage(),
+                                ArticleErrorCode.INVALID_ARTICLE.getHttpStatus()
                         )
                 );
 
         if (!member.getEmail().equals(article.getMember().getEmail())) {
-            throw new ArticleNotFoundException(
+            throw new ArticleException(
                     ArticleErrorCode.NOT_AUTHOR.getCode(),
-                    ArticleErrorCode.NOT_AUTHOR.getMessage()
+                    ArticleErrorCode.NOT_AUTHOR.getMessage(),
+                    ArticleErrorCode.NOT_AUTHOR.getHttpStatus()
             );
         }
 
@@ -110,22 +115,24 @@ public class ArticleService {
 
     public void deleteArticle(Long id) {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElseThrow(() -> new MemberNotFoundException(
+                .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
                 ));
-
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new ArticleNotFoundException(
+                .orElseThrow(() -> new ArticleException(
                                 ArticleErrorCode.INVALID_ARTICLE.getCode(),
-                                ArticleErrorCode.INVALID_ARTICLE.getMessage()
+                                ArticleErrorCode.INVALID_ARTICLE.getMessage(),
+                                ArticleErrorCode.INVALID_ARTICLE.getHttpStatus()
                         )
                 );
 
         if (!member.getEmail().equals(article.getMember().getEmail())) {
-            throw new ArticleNotFoundException(
+            throw new ArticleException(
                     ArticleErrorCode.NOT_AUTHOR.getCode(),
-                    ArticleErrorCode.NOT_AUTHOR.getMessage()
+                    ArticleErrorCode.NOT_AUTHOR.getMessage(),
+                    ArticleErrorCode.NOT_AUTHOR.getHttpStatus()
             );
         }
 

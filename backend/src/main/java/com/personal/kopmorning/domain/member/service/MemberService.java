@@ -4,7 +4,7 @@ import com.personal.kopmorning.domain.member.dto.request.MemberProfileUpdate;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
-import com.personal.kopmorning.global.exception.member.MemberNotFoundException;
+import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.jwt.TokenService;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
@@ -25,9 +25,10 @@ public class MemberService {
     @Transactional
     public void update(MemberProfileUpdate request) {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElseThrow(() -> new MemberNotFoundException(
+                .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
                 ));
 
         if (member != null) {
@@ -49,9 +50,10 @@ public class MemberService {
     @Transactional
     public void deleteRequest() {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElseThrow(() -> new MemberNotFoundException(
+                .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
                 ));
 
         member.withdraw();
@@ -61,9 +63,10 @@ public class MemberService {
     @Transactional
     public void deleteCancel() {
         Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElseThrow(() -> new MemberNotFoundException(
+                .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
                 ));
         member.isActive();
     }

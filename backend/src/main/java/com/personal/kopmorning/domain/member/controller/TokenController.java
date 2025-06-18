@@ -28,7 +28,8 @@ public class TokenController {
         if (refreshToken == null) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_MISSING.getCode(),
-                    MemberErrorCode.TOKEN_MISSING.getMessage()
+                    MemberErrorCode.TOKEN_MISSING.getMessage(),
+                    MemberErrorCode.TOKEN_MISSING.getHttpStatus()
             );
         }
 

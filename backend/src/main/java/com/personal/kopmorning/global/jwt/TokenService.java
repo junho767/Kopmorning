@@ -4,7 +4,7 @@ import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
-import com.personal.kopmorning.global.exception.member.MemberNotFoundException;
+import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.exception.security.TokenException;
 import com.personal.kopmorning.global.security.PrincipalDetails;
 import io.jsonwebtoken.Claims;
@@ -90,7 +90,8 @@ public class TokenService {
         if (claims.get(AUTHORITIES_KEY) == null) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_MISSING.getCode(),
-                    MemberErrorCode.TOKEN_MISSING.getMessage()
+                    MemberErrorCode.TOKEN_MISSING.getMessage(),
+                    MemberErrorCode.TOKEN_MISSING.getHttpStatus()
             );
         }
 
@@ -109,12 +110,14 @@ public class TokenService {
         } catch (ExpiredJwtException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getCode(),
-                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage()
+                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage(),
+                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getHttpStatus()
             );
         } catch (JwtException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_INVALID.getCode(),
-                    MemberErrorCode.TOKEN_INVALID.getMessage()
+                    MemberErrorCode.TOKEN_INVALID.getMessage(),
+                    MemberErrorCode.TOKEN_INVALID.getHttpStatus()
             );
         }
     }
@@ -126,10 +129,19 @@ public class TokenService {
                     .build()
                     .parseClaimsJws(accessToken)
                     .getBody();
+
         } catch (ExpiredJwtException e) {
-            throw new TokenException(MemberErrorCode.TOKEN_EXPIRE.getCode(), MemberErrorCode.TOKEN_EXPIRE.getMessage());
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_EXPIRE.getCode(),
+                    MemberErrorCode.TOKEN_EXPIRE.getMessage(),
+                    MemberErrorCode.TOKEN_EXPIRE.getHttpStatus()
+            );
         } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
-            throw new TokenException(MemberErrorCode.TOKEN_INVALID.getCode(), MemberErrorCode.TOKEN_INVALID.getMessage());
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_INVALID.getCode(),
+                    MemberErrorCode.TOKEN_INVALID.getMessage(),
+                    MemberErrorCode.TOKEN_INVALID.getHttpStatus()
+            );
         }
     }
 
@@ -144,9 +156,10 @@ public class TokenService {
         String email = parseClaims(token).getSubject();
 
         if (!memberRepository.existsByEmail(email)) {
-            throw new MemberNotFoundException(
+            throw new MemberException(
                     MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                    MemberErrorCode.MEMBER_NOT_FOUND.getMessage()
+                    MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                    MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
             );
         }
         return email;
@@ -170,7 +183,8 @@ public class TokenService {
         if (getRemainingTime(refreshToken) <= 0) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getCode(),
-                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage()
+                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage(),
+                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getHttpStatus()
             );
         }
 
