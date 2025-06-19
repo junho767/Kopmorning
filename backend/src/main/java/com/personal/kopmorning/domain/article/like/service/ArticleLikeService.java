@@ -23,7 +23,7 @@ public class ArticleLikeService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public void handleLike(Long articleId) {
+    public boolean handleLike(Long articleId) {
         Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
                 .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
@@ -47,9 +47,11 @@ public class ArticleLikeService {
         if (!checkExists) {
             article.increaseLikeCount();
             articleLikeRepository.save(articleLike);
+            return true;
         } else {
             articleLikeRepository.deleteByArticleIdAndMemberId(articleId, member.getId());
             article.decreaseLikeCount();
+            return false;
         }
     }
 }

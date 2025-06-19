@@ -1,5 +1,6 @@
 package com.personal.kopmorning.domain.article.like.controller;
 
+import com.personal.kopmorning.domain.article.article.responseCode.ArticleSuccessCode;
 import com.personal.kopmorning.domain.article.like.service.ArticleLikeService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,18 @@ public class ArticleLikeController {
 
     @PostMapping("/{articleId}")
     public RsData<?> likeArticle(@PathVariable Long articleId) {
-        articleLikeService.handleLike(articleId);
-        return new RsData<>(
-                "200",
-                "좋아요 기능 수행 완료"
-        );
+        boolean isLiked = articleLikeService.handleLike(articleId);
+
+        if (isLiked) {
+            return new RsData<>(
+                    ArticleSuccessCode.ADD_LIKE.getCode(),
+                    ArticleSuccessCode.ADD_LIKE.getMessage()
+            );
+        } else {
+            return new RsData<>(
+                    ArticleSuccessCode.CANCEL_LIKE.getCode(),
+                    ArticleSuccessCode.CANCEL_LIKE.getMessage()
+            );
+        }
     }
 }
