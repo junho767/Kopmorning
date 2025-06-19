@@ -48,6 +48,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             );
         } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | IOException |
                  ServletException e) {
+            log.error("❗에러 발생❗ :  {}", e.getMessage());
             throw new TokenException(
                     MemberErrorCode.TOKEN_INVALID.getCode(),
                     MemberErrorCode.TOKEN_INVALID.getMessage(),

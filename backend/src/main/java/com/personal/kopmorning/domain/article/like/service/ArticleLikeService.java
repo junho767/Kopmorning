@@ -24,7 +24,7 @@ public class ArticleLikeService {
 
     @Transactional
     public void handleLike(Long articleId) {
-        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
                 .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
                         MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),

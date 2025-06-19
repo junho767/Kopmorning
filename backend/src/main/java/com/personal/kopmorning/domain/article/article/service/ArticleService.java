@@ -8,7 +8,6 @@ import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.article.article.responseCode.ArticleErrorCode;
-import com.personal.kopmorning.domain.article.like.entity.ArticleLike;
 import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
@@ -21,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -34,7 +32,7 @@ public class ArticleService {
     private final static Long INIT_COUNT = 0L;
 
     public ArticleResponse addArticle(ArticleCreate articleCreate) {
-        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
                 .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
                         MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
@@ -67,29 +65,28 @@ public class ArticleService {
                         )
                 );
 
-        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
-                .orElse(null);
+        Long memberId = SecurityUtil.getNullableMemberId();
 
-        if(member == null) {
+        if(memberId == null) {
             article.increaseViewCount();
             return new ArticleResponse(article, false);
         }
 
-        boolean checkLike = articleLikeRepository.existsByArticleIdAndMemberId(articleId, member.getId());
+        boolean liked = articleLikeRepository.existsByArticleIdAndMemberId(articleId, memberId);
 
-        return new ArticleResponse(article, checkLike);
+        return new ArticleResponse(article, liked);
     }
 
     public ArticleListResponse getArticleListByCategory(String category) {
         List<Article> articleList = articleRepository.findByCategory(Category.valueOf(category));
-        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId()).orElse(null);
+        Long memberId = SecurityUtil.getNullableMemberId();
 
         // 사용자가 게시물에 좋아요 눌렀는 지 판단
         List<ArticleResponse> articles = articleList.stream()
                 .map(article -> {
                     boolean liked = false;
-                    if (member != null) {
-                        liked = articleLikeRepository.existsByArticleIdAndMemberId(article.getId(), member.getId());
+                    if (memberId != null) {
+                        liked = articleLikeRepository.existsByArticleIdAndMemberId(article.getId(), memberId);
                     }
                     return new ArticleResponse(article, liked);
                 })
@@ -106,7 +103,7 @@ public class ArticleService {
 
     @Transactional
     public void updateArticle(Long id, ArticleUpdate articleUpdate) {
-        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
                 .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
                         MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
@@ -134,7 +131,7 @@ public class ArticleService {
     }
 
     public void deleteArticle(Long id) {
-        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
                 .orElseThrow(() -> new MemberException(
                         MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
                         MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),

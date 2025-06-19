@@ -84,9 +84,9 @@ public class ArticleServiceTest {
                 .category("FOOTBALL")
                 .build();
 
-        // SecurityUtil.getCurrentMemberId() → 1L
+        // SecurityUtil.getRequiredMemberId() → 1L
         try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-            utilMock.when(SecurityUtil::getCurrentMemberId).thenReturn(1L);
+            utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
 
             when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
             when(articleRepository.save(any(Article.class)))
@@ -156,7 +156,7 @@ public class ArticleServiceTest {
                     .build();
 
             try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-                utilMock.when(SecurityUtil::getCurrentMemberId).thenReturn(1L);
+                utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
 
                 when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
@@ -181,7 +181,7 @@ public class ArticleServiceTest {
                     .title("수정 제목").body("수정 본문").build();
 
             try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-                utilMock.when(SecurityUtil::getCurrentMemberId).thenReturn(1L);
+                utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
 
                 when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
@@ -201,7 +201,7 @@ public class ArticleServiceTest {
         @DisplayName("작성자 본인이면 삭제 성공")
         void delete_success() {
             try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-                utilMock.when(SecurityUtil::getCurrentMemberId).thenReturn(1L);
+                utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
 
                 when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
@@ -222,7 +222,7 @@ public class ArticleServiceTest {
             stubArticle.setMember(other);
 
             try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-                utilMock.when(SecurityUtil::getCurrentMemberId).thenReturn(1L);
+                utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
 
                 when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
