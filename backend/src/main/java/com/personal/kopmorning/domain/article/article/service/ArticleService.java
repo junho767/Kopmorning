@@ -8,6 +8,8 @@ import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.article.article.responseCode.ArticleErrorCode;
+import com.personal.kopmorning.domain.article.like.entity.ArticleLike;
+import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
@@ -19,13 +21,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
-    private final ArticleRepository articleRepository;
     private final MemberRepository memberRepository;
+    private final ArticleRepository articleRepository;
+    private final ArticleLikeRepository articleLikeRepository;
 
     private final static Long INIT_COUNT = 0L;
 
@@ -50,12 +54,12 @@ public class ArticleService {
 
         articleRepository.save(article);
 
-        return new ArticleResponse(article);
+        return new ArticleResponse(article, false);
     }
 
     @Transactional
-    public ArticleResponse getArticleOne(Long id) {
-        Article article = articleRepository.findById(id)
+    public ArticleResponse getArticleOne(Long articleId) {
+        Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new ArticleException(
                                 ArticleErrorCode.INVALID_ARTICLE.getCode(),
                                 ArticleErrorCode.INVALID_ARTICLE.getMessage(),
@@ -63,16 +67,32 @@ public class ArticleService {
                         )
                 );
 
-        article.setViewCount(article.getViewCount() + 1);
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId())
+                .orElse(null);
 
-        return new ArticleResponse(article);
+        if(member == null) {
+            article.increaseLikeCount();
+            return new ArticleResponse(article, false);
+        }
+
+        boolean checkLike = articleLikeRepository.existsByArticleIdAndMemberId(articleId, member.getId());
+
+        return new ArticleResponse(article, checkLike);
     }
 
     public ArticleListResponse getArticleListByCategory(String category) {
         List<Article> articleList = articleRepository.findByCategory(Category.valueOf(category));
+        Member member = memberRepository.findById(SecurityUtil.getCurrentMemberId()).orElse(null);
 
+        // 사용자가 게시물에 좋아요 눌렀는 지 판단
         List<ArticleResponse> articles = articleList.stream()
-                .map(ArticleResponse::new)
+                .map(article -> {
+                    boolean liked = false;
+                    if (member != null) {
+                        liked = articleLikeRepository.existsByArticleIdAndMemberId(article.getId(), member.getId());
+                    }
+                    return new ArticleResponse(article, liked);
+                })
                 .toList();
 
         int total = articles.size();
