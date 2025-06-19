@@ -61,4 +61,8 @@ public class Article {
     public void decreaseLikeCount() {
         likeCount--;
     }
+
+    public void increaseViewCount() {
+        viewCount++;
+    }
 }

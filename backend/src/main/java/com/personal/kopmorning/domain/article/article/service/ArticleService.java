@@ -71,7 +71,7 @@ public class ArticleService {
                 .orElse(null);
 
         if(member == null) {
-            article.increaseLikeCount();
+            article.increaseViewCount();
             return new ArticleResponse(article, false);
         }
 
