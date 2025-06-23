@@ -51,7 +51,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build -Dspring.profiles.active=dev
+        run: ./gradlew build -Dspring.profiles.active=dev -i
         working-directory: backend
 
       - name: Build Docker image
