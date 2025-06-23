@@ -1,7 +1,7 @@
-package com.personal.kopmorning.domain.article.repository;
+package com.personal.kopmorning.domain.article.article.repository;
 
-import com.personal.kopmorning.domain.article.entity.Article;
-import com.personal.kopmorning.domain.article.entity.Category;
+import com.personal.kopmorning.domain.article.article.entity.Article;
+import com.personal.kopmorning.domain.article.article.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

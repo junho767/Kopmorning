@@ -1,6 +1,6 @@
 package com.personal.kopmorning.domain.member.entity;
 
-import com.personal.kopmorning.domain.article.entity.Article;
+import com.personal.kopmorning.domain.article.article.entity.Article;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,6 +1,6 @@
-package com.personal.kopmorning.domain.article.dto.response;
+package com.personal.kopmorning.domain.article.article.dto.response;
 
-import com.personal.kopmorning.domain.article.entity.Article;
+import com.personal.kopmorning.domain.article.article.entity.Article;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -8,24 +8,32 @@ import java.time.LocalDateTime;
 @Data
 public class ArticleResponse {
     private Long id;
-    private String title;
-    private String body;
     private Long likeCount;
     private Long viewCount;
     private Long member_id;
+
+    private String title;
+    private String body;
     private String category;
+
+    private boolean likedByMember;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public ArticleResponse(Article article) {
+    public ArticleResponse(Article article, boolean checkLike) {
         this.id = article.getId();
-        this.title = article.getTitle();
-        this.body = article.getBody();
         this.likeCount = article.getLikeCount();
         this.viewCount = article.getViewCount();
+        this.member_id = article.getMember().getId();
+
+        this.title = article.getTitle();
+        this.body = article.getBody();
+        this.category = article.getCategory().name();
+
+        this.likedByMember = checkLike;
+
         this.createdAt = article.getCreatedAt();
         this.updatedAt = article.getUpdatedAt();
-        this.category = article.getCategory().name();
-        this.member_id = article.getMember().getId();
     }
 }
