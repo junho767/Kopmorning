@@ -19,6 +19,9 @@ spring:
       port: ${REDIS.PORT}
       timeout: ${REDIS.TIMEOUT}
 
+  redisson:
+    address: ${REDISSON.ADDRESS}
+
 
 jwt:
   secret: ${JWT.SECRET}
