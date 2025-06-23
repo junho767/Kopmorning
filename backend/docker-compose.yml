@@ -1,0 +1,39 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: qnfwhtla0913
+      MYSQL_DATABASE: kopmorning
+    ports:
+      - "3306:3306"
+    networks:
+      - kop-network
+    restart: always
+
+  redis:
+    image: redis:7.0
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - kop-network
+    restart: always
+
+  backend:
+    image: junholee0913/kopmorning:latest
+    container_name: kopmorning
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - kop-network
+    restart: always
+
+networks:
+  kop-network:
+    driver: bridge
