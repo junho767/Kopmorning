@@ -37,7 +37,8 @@ public class LikeService {
     private static final String LOCK_ACQUIRE_FAIL_MESSAGE = "Lock 획득 실패: 잠시 후 다시 시도해주세요";
     private static final String LOCK_INTERRUPTED_MESSAGE = "Lock 획득 중 인터럽트가 발생했습니다";
 
-    private static final String LOCK_PREFIX = "lock:review:like:";
+    private static final String LOCK_PREFIX_ARTICLE = "lock:article:like:";
+    private static final String LOCK_PREFIX_COMMENT = "lock:comment:like:";
     private static final long LOCK_LEASE_TIME_SECONDS = 5;
     private static final long LOCK_WAIT_TIME_SECONDS = 10;
 
@@ -60,7 +61,7 @@ public class LikeService {
 
         ArticleLike articleLike = new ArticleLike(article, member);
 
-        String lockKey = LOCK_PREFIX + articleId;
+        String lockKey = LOCK_PREFIX_ARTICLE + articleId;
         RLock lock = redissonClient.getLock(lockKey);
         boolean isLocked = false;
 
@@ -107,7 +108,7 @@ public class LikeService {
                         HttpStatus.NOT_FOUND)
                 );
         CommentLike commentLike = new CommentLike(articleComment, member);
-        String lockKey = LOCK_PREFIX + commentId;
+        String lockKey = LOCK_PREFIX_COMMENT + commentId;
         RLock lock = redissonClient.getLock(lockKey);
         boolean isLocked = false;
 
