@@ -1,6 +1,6 @@
 package com.personal.kopmorning.domain.article.like.controller;
 
-import com.personal.kopmorning.domain.article.article.responseCode.ArticleSuccessCode;
+import com.personal.kopmorning.domain.article.responseCode.ArticleSuccessCode;
 import com.personal.kopmorning.domain.article.like.service.ArticleLikeService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;

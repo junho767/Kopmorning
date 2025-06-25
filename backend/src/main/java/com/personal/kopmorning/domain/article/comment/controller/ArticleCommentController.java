@@ -4,6 +4,7 @@ import com.personal.kopmorning.domain.article.comment.dto.request.ArticleComment
 import com.personal.kopmorning.domain.article.comment.dto.request.ArticleCommentUpdate;
 import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
 import com.personal.kopmorning.domain.article.comment.service.ArticleCommentService;
+import com.personal.kopmorning.domain.article.responseCode.ArticleSuccessCode;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,23 +26,35 @@ public class ArticleCommentController {
 
     @GetMapping("/{articleId}")
     public RsData<List<ArticleCommentResponse>> getCommentList(@PathVariable Long articleId) {
-        return new RsData<>("200", "조회 성공",  articleCommentService.getList(articleId));
+        return new RsData<>(
+                ArticleSuccessCode.GET_COMMENT.getCode(),
+                ArticleSuccessCode.GET_COMMENT.getMessage(),
+                articleCommentService.getList(articleId));
     }
 
     @PostMapping
     public RsData<?> createComment(@RequestBody ArticleCommentCreate articleCommentCreate) {
-        return new RsData<>("200", "댓글 작성 성공", articleCommentService.create(articleCommentCreate));
+        return new RsData<>(
+                ArticleSuccessCode.CREATE_COMMENT.getCode(),
+                ArticleSuccessCode.CREATE_COMMENT.getMessage(),
+                articleCommentService.create(articleCommentCreate));
     }
 
     @PatchMapping
     public RsData<?> updateComment(@RequestBody ArticleCommentUpdate articleCommentUpdate) {
         articleCommentService.update(articleCommentUpdate);
-        return new RsData<>("200", "댓글 수정 성공");
+        return new RsData<>(
+                ArticleSuccessCode.UPDATE_COMMENT.getCode(),
+                ArticleSuccessCode.UPDATE_COMMENT.getMessage()
+        );
     }
 
     @DeleteMapping("/{commentId}")
     public RsData<?> deleteComment(@PathVariable Long commentId) {
         articleCommentService.delete(commentId);
-        return new RsData<>("200", "댓글 삭제 성공");
+        return new RsData<>(
+                ArticleSuccessCode.DELETE_COMMENT.getCode(),
+                ArticleSuccessCode.DELETE_COMMENT.getMessage()
+        );
     }
 }

@@ -2,7 +2,7 @@ package com.personal.kopmorning.domain.article.comment.service;
 
 import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
-import com.personal.kopmorning.domain.article.article.responseCode.ArticleErrorCode;
+import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.article.comment.dto.request.ArticleCommentCreate;
 import com.personal.kopmorning.domain.article.comment.dto.request.ArticleCommentUpdate;
 import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
@@ -64,18 +64,17 @@ public class ArticleCommentService {
     public void update(ArticleCommentUpdate articleCommentUpdate) {
         ArticleComment articleComment = articleCommentRepository.findById(articleCommentUpdate.getArticleCommentId())
                 .orElseThrow(() -> new ArticleException(
-                        "404",
-                        "존재하지 않는 댓글임.",
+                        ArticleErrorCode.INVALID_COMMENT.getCode(),
+                        ArticleErrorCode.INVALID_COMMENT.getMessage(),
                         HttpStatus.NOT_FOUND)
                 );
         Member currentMember = memberService.getMemberBySecurityMember();
         Member member = articleComment.getMember();
 
-        // todo : 리펙토링 해야댐
         if(!currentMember.getId().equals(member.getId())) {
             throw new ArticleException(
-                    "404",
-                    "작성자가 아님",
+                    ArticleErrorCode.NOT_AUTHOR.getCode(),
+                    ArticleErrorCode.NOT_AUTHOR.getMessage(),
                     HttpStatus.NOT_FOUND
             );
         }
@@ -87,18 +86,17 @@ public class ArticleCommentService {
     public void delete(Long commentId) {
         ArticleComment articleComment = articleCommentRepository.findById(commentId)
                 .orElseThrow(() -> new ArticleException(
-                        "404",
-                        "존재하지 않는 댓글임.",
+                        ArticleErrorCode.INVALID_COMMENT.getCode(),
+                        ArticleErrorCode.INVALID_COMMENT.getMessage(),
                         HttpStatus.NOT_FOUND)
                 );
         Member currentMember = memberService.getMemberBySecurityMember();
         Member member = articleComment.getMember();
 
-        // todo : 리펙토링 해야댐
         if(!currentMember.equals(member)) {
             throw new ArticleException(
-                    "404",
-                    "작성자가 아님",
+                    ArticleErrorCode.NOT_AUTHOR.getCode(),
+                    ArticleErrorCode.NOT_AUTHOR.getMessage(),
                     HttpStatus.NOT_FOUND
             );
         }

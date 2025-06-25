@@ -2,7 +2,7 @@ package com.personal.kopmorning.domain.article.like.service;
 
 import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
-import com.personal.kopmorning.domain.article.article.responseCode.ArticleErrorCode;
+import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.article.like.entity.ArticleLike;
 import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
