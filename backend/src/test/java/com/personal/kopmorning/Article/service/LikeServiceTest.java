@@ -34,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -109,26 +110,33 @@ class LikeServiceTest {
             }
         }
 
-//        @Test
-//        @DisplayName("좋아요 취소 성공")
-//        void cancelLike_success() {
-//            stubArticle.increaseLikeCount(); // likeCount = 1
-//
-//            try (MockedStatic<SecurityUtil> util = mockStatic(SecurityUtil.class)) {
-//                util.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
-//
-//                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
-//                when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
-//                when(articleLikeRepository.existsByArticleIdAndMemberId(10L, 1L))
-//                        .thenReturn(true);
-//
-//                boolean added = articleLikeService.handleArticleLike(10L);
-//
-//                assertFalse(added);
-//                assertThat(stubArticle.getLikeCount()).isEqualTo(0L);
-//                verify(articleLikeRepository).deleteByArticleIdAndMemberId(10L, 1L);
-//                verify(articleLikeRepository, never()).save(any());
-//            }
-//        }
+        @Test
+        @DisplayName("좋아요 취소 성공")
+        void cancelLike_success() throws InterruptedException {
+            stubArticle.increaseLikeCount(); // 초기 좋아요 수 = 1
+
+            try (MockedStatic<SecurityUtil> util = mockStatic(SecurityUtil.class)) {
+                util.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
+
+                // given
+                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
+                when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
+                when(redissonClient.getLock(anyString())).thenReturn(lock);
+                when(lock.tryLock(anyLong(), anyLong(), any())).thenReturn(true);
+                when(lock.isHeldByCurrentThread()).thenReturn(true);
+                when(articleLikeRepository.existsByArticleIdAndMemberId(10L, 1L)).thenReturn(true);
+
+                // when
+                boolean added = articleLikeService.handleArticleLike(10L);
+
+                // then
+                assertFalse(added);
+                assertThat(stubArticle.getLikeCount()).isEqualTo(0L);
+                verify(articleLikeRepository).deleteByArticleIdAndMemberId(10L, 1L);
+                verify(articleLikeRepository, never()).save(any());
+                verify(lock).unlock();  // 락 해제 확인
+            }
+        }
+
     }
 }
