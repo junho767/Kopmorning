@@ -5,7 +5,7 @@ import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.article.like.entity.ArticleLike;
 import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
-import com.personal.kopmorning.domain.article.like.service.ArticleLikeService;
+import com.personal.kopmorning.domain.article.like.service.LikeService;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Member_Status;
 import com.personal.kopmorning.domain.member.entity.Role;
@@ -34,12 +34,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ArticleLikeServiceTest {
+class LikeServiceTest {
     @Mock
     private ArticleLikeRepository articleLikeRepository;
 
@@ -56,7 +55,7 @@ class ArticleLikeServiceTest {
     RLock lock;
 
     @InjectMocks
-    private ArticleLikeService articleLikeService;
+    private LikeService articleLikeService;
 
     private Member stubMember;
     private Article stubArticle;
@@ -81,7 +80,7 @@ class ArticleLikeServiceTest {
     }
 
     @Nested
-    @DisplayName("handleLike 동작")
+    @DisplayName("handleArticleLike 동작")
     class HandleLike {
 
         @Test
@@ -101,7 +100,7 @@ class ArticleLikeServiceTest {
                 when(articleLikeRepository.existsByArticleIdAndMemberId(10L, 1L))
                         .thenReturn(false);
 
-                boolean added = articleLikeService.handleLike(10L);
+                boolean added = articleLikeService.handleArticleLike(10L);
 
                 assertTrue(added);
                 assertEquals(1, stubArticle.getLikeCount());
@@ -123,7 +122,7 @@ class ArticleLikeServiceTest {
 //                when(articleLikeRepository.existsByArticleIdAndMemberId(10L, 1L))
 //                        .thenReturn(true);
 //
-//                boolean added = articleLikeService.handleLike(10L);
+//                boolean added = articleLikeService.handleArticleLike(10L);
 //
 //                assertFalse(added);
 //                assertThat(stubArticle.getLikeCount()).isEqualTo(0L);
