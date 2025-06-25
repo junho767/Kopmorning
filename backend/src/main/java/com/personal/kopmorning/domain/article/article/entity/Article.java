@@ -1,5 +1,6 @@
 package com.personal.kopmorning.domain.article.article.entity;
 
+import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
 import com.personal.kopmorning.domain.article.like.entity.ArticleLike;
 import com.personal.kopmorning.domain.member.entity.Member;
 import jakarta.persistence.CascadeType;
@@ -52,6 +53,9 @@ public class Article {
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArticleLike> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ArticleComment> comments = new ArrayList<>();
 
 
     public void increaseLikeCount() {

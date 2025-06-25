@@ -7,7 +7,7 @@ import com.personal.kopmorning.domain.article.article.dto.response.ArticleRespon
 import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
-import com.personal.kopmorning.domain.article.article.responseCode.ArticleErrorCode;
+import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
