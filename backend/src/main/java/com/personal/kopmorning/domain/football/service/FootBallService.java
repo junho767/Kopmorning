@@ -65,12 +65,13 @@ public class FootBallService {
                 if (teamResponse.getSquad() != null) {
                     for (PlayerResponse playerResponse : teamResponse.getSquad()) {
                         Player player = new Player(playerResponse);
+                        player.setTeamId(team.getId());
                         playerRepository.save(player);
                     }
                 }
 
                 // 각 호출 후 6초 대기
-                Thread.sleep(6000);
+                Thread.sleep(60000000);
             }
         } catch (Exception e) {
             log.error(e.getMessage());
