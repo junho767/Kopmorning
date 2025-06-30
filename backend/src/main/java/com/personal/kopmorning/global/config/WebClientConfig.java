@@ -8,13 +8,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
     @Value("${api.token.football}")
-    private String token;
+    private String footballApiToken;
 
     @Bean
     public WebClient fooballWebClient() {
         return WebClient.builder()
                 .baseUrl("https://api.football-data.org/v4")
-                .defaultHeader("X-Auth-Token", token)
+                .defaultHeader("X-Auth-Token", footballApiToken)
                 .build();
     }
 
@@ -22,7 +22,7 @@ public class WebClientConfig {
     public WebClient apiWebClient() {
         return WebClient.builder()
                 .baseUrl("https://api.football-data.org/v4")
-                .defaultHeader("X-Auth-Token", token)
+                .defaultHeader("X-Auth-Token", footballApiToken)
                 .build();
     }
 }

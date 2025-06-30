@@ -3,6 +3,8 @@ package com.personal.kopmorning.domain.football.dto.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TeamResponse {
@@ -15,6 +17,7 @@ public class TeamResponse {
     private String clubColors;
     private String venue;
     private Coach coach;
+    private List<PlayerResponse> squad;
 
     public record Coach(
             Long id,
