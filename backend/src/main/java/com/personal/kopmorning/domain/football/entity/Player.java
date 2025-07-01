@@ -22,7 +22,6 @@ public class Player {
 
     public Player(PlayerResponse response) {
         this.id = response.getId();
-        this.teamId = response.getTeamId();
         this.name = response.getName();
         this.dateOfBirth = response.getDateOfBirth();
         this.nationality = response.getNationality();

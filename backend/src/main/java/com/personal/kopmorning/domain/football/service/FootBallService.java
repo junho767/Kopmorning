@@ -71,12 +71,16 @@ public class FootBallService {
                 }
 
                 // 각 호출 후 6초 대기
-                Thread.sleep(60000000);
+                Thread.sleep(6000);
             }
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    public void saveStanding() {
+
     }
 
     // 비동기 호출
@@ -88,5 +92,20 @@ public class FootBallService {
                         .build())
                 .retrieve()
                 .bodyToMono(TeamsResponse.class);
+    }
+
+    // todo : 리펙토링 해야댐 - 선수 정보 저장 하는 방법 및 예외 처리
+    public PlayerResponse getPlayer(Long playerId) {
+        return new PlayerResponse(playerRepository.findById(playerId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 선수 입니다.")));
+    }
+
+    public Mono<PlayerResponse> getPlayerFromWeb(Long playerId) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/persons/" + playerId)
+                        .build())
+                .retrieve()
+                .bodyToMono(PlayerResponse.class);
     }
 }
