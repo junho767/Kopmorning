@@ -35,4 +35,8 @@ api:
   token:
     football: ${FOOTBALL.API_TOKEN}
 
+logging:
+  level:
+    org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG
+
 

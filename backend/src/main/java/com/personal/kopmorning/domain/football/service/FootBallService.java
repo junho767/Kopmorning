@@ -1,111 +1,99 @@
 package com.personal.kopmorning.domain.football.service;
 
-import com.personal.kopmorning.domain.football.dto.response.PlayerResponse;
-import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
-import com.personal.kopmorning.domain.football.dto.response.TeamsResponse;
+import com.personal.kopmorning.domain.football.dto.response.PlayerDTO;
+import com.personal.kopmorning.domain.football.dto.response.TeamDTO;
 import com.personal.kopmorning.domain.football.entity.Player;
+import com.personal.kopmorning.domain.football.entity.PlayerStat;
 import com.personal.kopmorning.domain.football.entity.Team;
 import com.personal.kopmorning.domain.football.repository.PlayerRepository;
+import com.personal.kopmorning.domain.football.repository.PlayerStatRepository;
 import com.personal.kopmorning.domain.football.repository.TeamRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class FootBallService {
-    private final PlayerRepository playerRepository;
-    private final TeamRepository teamRepository;
     private final WebClient webClient;
+    private final TeamRepository teamRepository;
+    private final PlayerRepository playerRepository;
+    private final PlayerStatRepository playerStatRepository;
 
-    public FootBallService(PlayerRepository playerRepository, TeamRepository teamRepository, @Qualifier("fooballWebClient") WebClient webClient) {
+    @Value("${api.token.football}")
+    private String apiToken;
+
+    public FootBallService(PlayerRepository playerRepository, TeamRepository teamRepository, @Qualifier("fooballWebClient") WebClient webClient, PlayerStatRepository playerStatRepository) {
         this.playerRepository = playerRepository;
         this.teamRepository = teamRepository;
         this.webClient = webClient;
+        this.playerStatRepository = playerStatRepository;
     }
 
     // webClient 비동기 호출 및 data 저장
     public void saveTeams() {
         try {
-            TeamsResponse teamsResponse = webClient.get()
+            List<Player> playerList = new ArrayList<>();
+            List<PlayerStat> playerStatList = new ArrayList<>();
+
+            List<TeamDTO> teamList = webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/competitions/PL/teams")
+                            .queryParam("action", "get_teams")
+                            .queryParam("league_id", "152")
+                            .queryParam("APIkey", apiToken)
                             .build())
                     .retrieve()
-                    .bodyToMono(TeamsResponse.class)
+                    .bodyToMono(new ParameterizedTypeReference<List<TeamDTO>>() {
+                    })
                     .block();
 
-            List<Team> teamEntities = Objects.requireNonNull(teamsResponse).getTeams().stream()
+            List<Team> teamEntities = Objects.requireNonNull(teamList).stream()
                     .map(Team::new)
-                    .toList();
+                    .collect(Collectors.toList());
+
+            for (TeamDTO team : teamList) {
+                for (PlayerDTO playerDTO : team.getPlayers()) {
+                    Player playerEntity = new Player(playerDTO);
+                    PlayerStat playerStat = new PlayerStat(playerDTO);
+
+                    playerStatList.add(playerStat);
+                    playerList.add(playerEntity);
+                }
+            }
 
             teamRepository.saveAll(teamEntities);
-            savePlayers(teamsResponse);
+            playerRepository.saveAll(playerList);
+            playerStatRepository.saveAll(playerStatList);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
 
-    public void savePlayers(TeamsResponse teamsResponse) {
-        try {
-            for (TeamResponse team : teamsResponse.getTeams()) {
-                TeamResponse teamResponse = webClient.get()
-                        .uri(uriBuilder -> uriBuilder
-                                .path("/teams/" + team.getId())
-                                .build())
-                        .retrieve()
-                        .bodyToMono(TeamResponse.class)
-                        .block();
-                if (teamResponse.getSquad() != null) {
-                    for (PlayerResponse playerResponse : teamResponse.getSquad()) {
-                        Player player = new Player(playerResponse);
-                        player.setTeamId(team.getId());
-                        playerRepository.save(player);
-                    }
-                }
-
-                // 각 호출 후 6초 대기
-                Thread.sleep(6000);
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void saveStanding() {
-
-    }
 
     // 비동기 호출
-    public Mono<TeamsResponse> getTeams(String competition, Long season) {
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/competitions/" + competition + "/teams")
-                        .queryParam("season", season)
-                        .build())
-                .retrieve()
-                .bodyToMono(TeamsResponse.class);
-    }
+//    public Mono<TeamsDTO> getTeams(String competition, Long season) {
+//        return webClient.get()
+//                .uri(uriBuilder -> uriBuilder
+//                        .path("/competitions/" + competition + "/teams")
+//                        .queryParam("season", season)
+//                        .build())
+//                .retrieve()
+//                .bodyToMono(TeamsDTO.class);
+//    }
 
-    // todo : 리펙토링 해야댐 - 선수 정보 저장 하는 방법 및 예외 처리
-    public PlayerResponse getPlayer(Long playerId) {
-        return new PlayerResponse(playerRepository.findById(playerId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 선수 입니다.")));
-    }
-
-    public Mono<PlayerResponse> getPlayerFromWeb(Long playerId) {
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/persons/" + playerId)
-                        .build())
-                .retrieve()
-                .bodyToMono(PlayerResponse.class);
-    }
+//    // todo : 리펙토링 해야댐 - 선수 정보 저장 하는 방법 및 예외 처리
+//    public PlayerResponse getPlayer(Long playerId) {
+//        return new PlayerResponse(playerRepository.findById(playerId)
+//                .orElseThrow(() -> new RuntimeException("존재하지 않는 선수 입니다.")));
+//    }
 }

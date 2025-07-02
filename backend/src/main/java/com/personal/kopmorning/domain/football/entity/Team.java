@@ -1,6 +1,6 @@
 package com.personal.kopmorning.domain.football.entity;
 
-import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
+import com.personal.kopmorning.domain.football.dto.response.TeamDTO;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -16,22 +16,18 @@ import lombok.NoArgsConstructor;
 public class Team {
     @Id
     private Long id;
-    private String name;
-    private String shortName;
-    private String tla;
-    private String website;
-    private String founded;
-    private String clubColors;
-    private String venue;
+    private String team_name;
+    private String team_founded;
+    private String team_country;
+    private String team_badge;
+    private String venue_name;
 
-    public Team(TeamResponse teamResponse) {
-        this.id = teamResponse.getId();
-        this.name = teamResponse.getName();
-        this.shortName = teamResponse.getShortName();
-        this.tla = teamResponse.getTla();
-        this.website = teamResponse.getWebsite();
-        this.founded = teamResponse.getFounded();
-        this.clubColors = teamResponse.getClubColors();
-        this.venue = teamResponse.getVenue();
+    public Team(TeamDTO teamDTO) {
+        this.id = Long.valueOf(teamDTO.getTeam_key());
+        this.team_name = teamDTO.getTeam_name();
+        this.team_founded = teamDTO.getTeam_founded();
+        this.team_country = teamDTO.getTeam_country();
+        this.team_badge = teamDTO.getTeam_badge();
+//        this.venue_name = teamDTO.getVenue().getFirst().venue_name();
     }
 }
