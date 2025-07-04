@@ -1,7 +1,11 @@
 package com.personal.kopmorning.domain.football.service;
 
-import com.personal.kopmorning.domain.football.dto.response.PlayerDTO;
-import com.personal.kopmorning.domain.football.dto.response.TeamDTO;
+import com.personal.kopmorning.domain.football.dto.PlayerDTO;
+import com.personal.kopmorning.domain.football.dto.TeamDTO;
+import com.personal.kopmorning.domain.football.dto.response.PlayerDetailResponse;
+import com.personal.kopmorning.domain.football.dto.response.PlayerResponse;
+import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
+import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
 import com.personal.kopmorning.domain.football.entity.Player;
 import com.personal.kopmorning.domain.football.entity.PlayerStat;
 import com.personal.kopmorning.domain.football.entity.Team;
@@ -14,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +42,7 @@ public class FootBallService {
         this.playerStatRepository = playerStatRepository;
     }
 
-    // webClient 비동기 호출 및 data 저장
-    public void saveTeams() {
+    public void saveFootBallData() {
         try {
             List<Player> playerList = new ArrayList<>();
             List<PlayerStat> playerStatList = new ArrayList<>();
@@ -63,6 +65,7 @@ public class FootBallService {
             for (TeamDTO team : teamList) {
                 for (PlayerDTO playerDTO : team.getPlayers()) {
                     Player playerEntity = new Player(playerDTO);
+                    playerEntity.setTeamId(Long.valueOf(team.getTeam_key()));
                     PlayerStat playerStat = new PlayerStat(playerDTO);
 
                     playerStatList.add(playerStat);
@@ -79,21 +82,31 @@ public class FootBallService {
         }
     }
 
+    public List<TeamResponse> getTeams() {
+        List<Team> teamList = teamRepository.findAll();
 
-    // 비동기 호출
-//    public Mono<TeamsDTO> getTeams(String competition, Long season) {
-//        return webClient.get()
-//                .uri(uriBuilder -> uriBuilder
-//                        .path("/competitions/" + competition + "/teams")
-//                        .queryParam("season", season)
-//                        .build())
-//                .retrieve()
-//                .bodyToMono(TeamsDTO.class);
-//    }
+        return teamList.stream()
+                .map(TeamResponse::new)
+                .toList();
+    }
 
-//    // todo : 리펙토링 해야댐 - 선수 정보 저장 하는 방법 및 예외 처리
-//    public PlayerResponse getPlayer(Long playerId) {
-//        return new PlayerResponse(playerRepository.findById(playerId)
-//                .orElseThrow(() -> new RuntimeException("존재하지 않는 선수 입니다.")));
-//    }
+    public TeamDetailResponse getTeamById(Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new RuntimeException("Team not found"));
+
+        List<Player> playerList = playerRepository.findByTeamId(teamId);
+        List<PlayerResponse> players = playerList.stream()
+                .map(PlayerResponse::new)
+                .toList();
+
+        return new TeamDetailResponse(team, players);
+    }
+
+    public PlayerDetailResponse getPlayer(Long playerId) {
+        Player player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new RuntimeException("Player not found"));
+        PlayerStat playerStat = playerStatRepository.findByPlayerId(playerId);
+
+        return new PlayerDetailResponse(player, playerStat);
+    }
 }

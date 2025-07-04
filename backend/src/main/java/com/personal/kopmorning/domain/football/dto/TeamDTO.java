@@ -1,4 +1,4 @@
-package com.personal.kopmorning.domain.football.dto.response;
+package com.personal.kopmorning.domain.football.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
@@ -20,12 +20,5 @@ public class TeamDTO {
             String coach_name,
             String coach_country,
             String coach_age
-    ) {}
-
-    public record Venue(
-            String venue_name,
-            String venue_address,
-            String venue_city,
-            String venue_capacity // 수용 인원
     ) {}
 }
