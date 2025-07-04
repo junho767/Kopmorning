@@ -1,16 +1,20 @@
 package com.personal.kopmorning.domain.football.service;
 
 import com.personal.kopmorning.domain.football.dto.PlayerDTO;
+import com.personal.kopmorning.domain.football.dto.StandingDTO;
 import com.personal.kopmorning.domain.football.dto.TeamDTO;
 import com.personal.kopmorning.domain.football.dto.response.PlayerDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.PlayerResponse;
+import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
 import com.personal.kopmorning.domain.football.entity.Player;
 import com.personal.kopmorning.domain.football.entity.PlayerStat;
+import com.personal.kopmorning.domain.football.entity.Standing;
 import com.personal.kopmorning.domain.football.entity.Team;
 import com.personal.kopmorning.domain.football.repository.PlayerRepository;
 import com.personal.kopmorning.domain.football.repository.PlayerStatRepository;
+import com.personal.kopmorning.domain.football.repository.StandingRepository;
 import com.personal.kopmorning.domain.football.repository.TeamRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,15 +34,17 @@ public class FootBallService {
     private final WebClient webClient;
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
+    private final StandingRepository standingRepository;
     private final PlayerStatRepository playerStatRepository;
 
     @Value("${api.token.football}")
     private String apiToken;
 
-    public FootBallService(PlayerRepository playerRepository, TeamRepository teamRepository, @Qualifier("fooballWebClient") WebClient webClient, PlayerStatRepository playerStatRepository) {
-        this.playerRepository = playerRepository;
-        this.teamRepository = teamRepository;
+    public FootBallService(PlayerRepository playerRepository, TeamRepository teamRepository, @Qualifier("fooballWebClient") WebClient webClient, StandingRepository standingRepository, PlayerStatRepository playerStatRepository) {
         this.webClient = webClient;
+        this.teamRepository = teamRepository;
+        this.playerRepository = playerRepository;
+        this.standingRepository = standingRepository;
         this.playerStatRepository = playerStatRepository;
     }
 
@@ -108,5 +114,36 @@ public class FootBallService {
         PlayerStat playerStat = playerStatRepository.findByPlayerId(playerId);
 
         return new PlayerDetailResponse(player, playerStat);
+    }
+
+    public void saveStanding() {
+        try {
+            List<StandingDTO> standingDTO = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .queryParam("action", "get_standings")
+                            .queryParam("league_id", 152)
+                            .queryParam("APIkey", apiToken)
+                            .build())
+                    .retrieve()
+                    .bodyToFlux(StandingDTO.class)
+                    .collectList()
+                    .block();
+
+            List<Standing> standing = standingDTO
+                    .stream()
+                    .map(Standing::new)
+                    .toList();
+
+            standingRepository.saveAll(standing);
+        } catch (Exception e) {
+            log.error("❗ standings 저장 중 오류 발생", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    // todo : 홈, 원정에 따른 필터링 방식에 대한 고려
+    public StandingResponse getStanding() {
+        List<Standing> standing = standingRepository.findAll();
+        return new StandingResponse(standing);
     }
 }
