@@ -1,6 +1,6 @@
 package com.personal.kopmorning.domain.football.entity;
 
-import com.personal.kopmorning.domain.football.dto.response.PlayerDTO;
+import com.personal.kopmorning.domain.football.dto.PlayerDTO;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

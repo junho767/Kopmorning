@@ -1,7 +1,7 @@
 package com.personal.kopmorning.domain.football.entity;
 
 
-import com.personal.kopmorning.domain.football.dto.response.PlayerDTO;
+import com.personal.kopmorning.domain.football.dto.PlayerDTO;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Player {
     @Id
     private Long id;
-    private Long team_id;
+    private Long teamId;
     private String player_name;
     private String player_complete_name;
     private String player_image;

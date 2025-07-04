@@ -1,4 +1,4 @@
-package com.personal.kopmorning.domain.football.dto.response;
+package com.personal.kopmorning.domain.football.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
