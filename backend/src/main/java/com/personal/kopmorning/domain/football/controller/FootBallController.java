@@ -4,6 +4,7 @@ import com.personal.kopmorning.domain.football.dto.response.PlayerDetailResponse
 import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
+import com.personal.kopmorning.domain.football.responseCode.FootBallSuccessCode;
 import com.personal.kopmorning.domain.football.service.FootBallService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +26,8 @@ public class FootBallController {
     public RsData<?> save() {
         footBallService.saveFootBallData();
         return new RsData<>(
-                "200",
-                "정보 최신화 성공"
+                FootBallSuccessCode.SAVE_INFO.getCode(),
+                FootBallSuccessCode.SAVE_INFO.getMessage()
         );
     }
 
@@ -34,16 +35,16 @@ public class FootBallController {
     public RsData<?> saveStanding() {
         footBallService.saveStanding();
         return new RsData<>(
-                "200",
-                "순위표 최신화 성공"
+                FootBallSuccessCode.SAVE_STANDING.getCode(),
+                FootBallSuccessCode.SAVE_STANDING.getMessage()
         );
     }
 
     @GetMapping("/team")
     public RsData<List<TeamResponse>> getTeams() {
         return new RsData<>(
-                "200",
-                "팀 목록 가져오기 성공",
+                FootBallSuccessCode.GET_TEAM_LIST.getCode(),
+                FootBallSuccessCode.GET_TEAM_LIST.getMessage(),
                 footBallService.getTeams()
         );
     }
@@ -51,8 +52,8 @@ public class FootBallController {
     @GetMapping("/team/{team_id}")
     public RsData<TeamDetailResponse> getTeam(@PathVariable Long team_id) {
         return new RsData<>(
-                "200",
-                "팀 조회 성공",
+                FootBallSuccessCode.GET_TEAM_ONE.getCode(),
+                FootBallSuccessCode.GET_TEAM_ONE.getMessage(),
                 footBallService.getTeamById(team_id)
         );
     }
@@ -60,8 +61,8 @@ public class FootBallController {
     @GetMapping("/player/{player_id}")
     public RsData<PlayerDetailResponse> getPlayers(@PathVariable Long player_id) {
         return new RsData<>(
-                "200",
-                "선수 상세 정보 조회 성공",
+                FootBallSuccessCode.GET_PLAYER_INFO.getCode(),
+                FootBallSuccessCode.GET_PLAYER_INFO.getMessage(),
                 footBallService.getPlayer(player_id)
         );
     }
@@ -69,8 +70,8 @@ public class FootBallController {
     @GetMapping("/standing")
     public RsData<StandingResponse> getStanding() {
         return new RsData<>(
-                "200",
-                "순위표 조회 성공",
+                FootBallSuccessCode.GET_STANDING.getCode(),
+                FootBallSuccessCode.GET_STANDING.getMessage(),
                 footBallService.getStanding()
         );
     }

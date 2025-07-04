@@ -16,6 +16,8 @@ import com.personal.kopmorning.domain.football.repository.PlayerRepository;
 import com.personal.kopmorning.domain.football.repository.PlayerStatRepository;
 import com.personal.kopmorning.domain.football.repository.StandingRepository;
 import com.personal.kopmorning.domain.football.repository.TeamRepository;
+import com.personal.kopmorning.domain.football.responseCode.FootBallErrorCode;
+import com.personal.kopmorning.global.exception.FootBall.FootBallException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +39,15 @@ public class FootBallService {
     private final StandingRepository standingRepository;
     private final PlayerStatRepository playerStatRepository;
 
+    private static final String QUERY_PARAM_ACTION = "action";
+    private static final String QUERY_PARAM_LEAGUE_ID = "league_id";
+    private static final String QUERY_PARAM_API_KEY = "APIkey";
+
+    private static final String ACTION_GET_TEAMS = "get_teams";
+    private static final String ACTION_GET_STANDINGS = "get_standings";
+
+    private static final int PREMIER_LEAGUE_ID = 152;
+
     @Value("${api.token.football}")
     private String apiToken;
 
@@ -55,9 +66,9 @@ public class FootBallService {
 
             List<TeamDTO> teamList = webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .queryParam("action", "get_teams")
-                            .queryParam("league_id", "152")
-                            .queryParam("APIkey", apiToken)
+                            .queryParam(QUERY_PARAM_ACTION, ACTION_GET_TEAMS)
+                            .queryParam(QUERY_PARAM_LEAGUE_ID, PREMIER_LEAGUE_ID)
+                            .queryParam(QUERY_PARAM_API_KEY, apiToken)
                             .build())
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<List<TeamDTO>>() {
@@ -83,8 +94,12 @@ public class FootBallService {
             playerRepository.saveAll(playerList);
             playerStatRepository.saveAll(playerStatList);
         } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
+            log.error("❗ standings 저장 중 오류 발생", e);
+            throw new FootBallException(
+                    FootBallErrorCode.PLAYER_API_ERROR.getCode(),
+                    FootBallErrorCode.PLAYER_API_ERROR.getMessage(),
+                    FootBallErrorCode.PLAYER_API_ERROR.getHttpStatus()
+            );
         }
     }
 
@@ -98,7 +113,12 @@ public class FootBallService {
 
     public TeamDetailResponse getTeamById(Long teamId) {
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Team not found"));
+                .orElseThrow(() -> new FootBallException(
+                                FootBallErrorCode.TEAM_NOT_FOUND.getCode(),
+                                FootBallErrorCode.TEAM_NOT_FOUND.getMessage(),
+                                FootBallErrorCode.TEAM_NOT_FOUND.getHttpStatus()
+                        )
+                );
 
         List<Player> playerList = playerRepository.findByTeamId(teamId);
         List<PlayerResponse> players = playerList.stream()
@@ -110,7 +130,12 @@ public class FootBallService {
 
     public PlayerDetailResponse getPlayer(Long playerId) {
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new RuntimeException("Player not found"));
+                .orElseThrow(() -> new FootBallException(
+                        FootBallErrorCode.PLAYER_NOT_FOUND.getCode(),
+                        FootBallErrorCode.PLAYER_NOT_FOUND.getMessage(),
+                        FootBallErrorCode.PLAYER_NOT_FOUND.getHttpStatus()
+                    )
+                );
         PlayerStat playerStat = playerStatRepository.findByPlayerId(playerId);
 
         return new PlayerDetailResponse(player, playerStat);
@@ -120,9 +145,9 @@ public class FootBallService {
         try {
             List<StandingDTO> standingDTO = webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .queryParam("action", "get_standings")
-                            .queryParam("league_id", 152)
-                            .queryParam("APIkey", apiToken)
+                            .queryParam(QUERY_PARAM_ACTION, ACTION_GET_STANDINGS)
+                            .queryParam(QUERY_PARAM_LEAGUE_ID, PREMIER_LEAGUE_ID)
+                            .queryParam(QUERY_PARAM_API_KEY, apiToken)
                             .build())
                     .retrieve()
                     .bodyToFlux(StandingDTO.class)
@@ -137,7 +162,11 @@ public class FootBallService {
             standingRepository.saveAll(standing);
         } catch (Exception e) {
             log.error("❗ standings 저장 중 오류 발생", e);
-            throw new RuntimeException(e);
+            throw new FootBallException(
+                    FootBallErrorCode.STANDING_API_ERROR.getCode(),
+                    FootBallErrorCode.STANDING_API_ERROR.getMessage(),
+                    FootBallErrorCode.STANDING_API_ERROR.getHttpStatus()
+            );
         }
     }
 
