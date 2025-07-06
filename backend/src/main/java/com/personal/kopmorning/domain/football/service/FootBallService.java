@@ -103,6 +103,35 @@ public class FootBallService {
         }
     }
 
+    public void saveStanding() {
+        try {
+            List<StandingDTO> standingDTO = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .queryParam(QUERY_PARAM_ACTION, ACTION_GET_STANDINGS)
+                            .queryParam(QUERY_PARAM_LEAGUE_ID, PREMIER_LEAGUE_ID)
+                            .queryParam(QUERY_PARAM_API_KEY, apiToken)
+                            .build())
+                    .retrieve()
+                    .bodyToFlux(StandingDTO.class)
+                    .collectList()
+                    .block();
+
+            List<Standing> standing = standingDTO
+                    .stream()
+                    .map(Standing::new)
+                    .toList();
+
+            standingRepository.saveAll(standing);
+        } catch (Exception e) {
+            log.error("❗ standings 저장 중 오류 발생", e);
+            throw new FootBallException(
+                    FootBallErrorCode.STANDING_API_ERROR.getCode(),
+                    FootBallErrorCode.STANDING_API_ERROR.getMessage(),
+                    FootBallErrorCode.STANDING_API_ERROR.getHttpStatus()
+            );
+        }
+    }
+
     public List<TeamResponse> getTeams() {
         List<Team> teamList = teamRepository.findAll();
 
@@ -139,35 +168,6 @@ public class FootBallService {
         PlayerStat playerStat = playerStatRepository.findByPlayerId(playerId);
 
         return new PlayerDetailResponse(player, playerStat);
-    }
-
-    public void saveStanding() {
-        try {
-            List<StandingDTO> standingDTO = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .queryParam(QUERY_PARAM_ACTION, ACTION_GET_STANDINGS)
-                            .queryParam(QUERY_PARAM_LEAGUE_ID, PREMIER_LEAGUE_ID)
-                            .queryParam(QUERY_PARAM_API_KEY, apiToken)
-                            .build())
-                    .retrieve()
-                    .bodyToFlux(StandingDTO.class)
-                    .collectList()
-                    .block();
-
-            List<Standing> standing = standingDTO
-                    .stream()
-                    .map(Standing::new)
-                    .toList();
-
-            standingRepository.saveAll(standing);
-        } catch (Exception e) {
-            log.error("❗ standings 저장 중 오류 발생", e);
-            throw new FootBallException(
-                    FootBallErrorCode.STANDING_API_ERROR.getCode(),
-                    FootBallErrorCode.STANDING_API_ERROR.getMessage(),
-                    FootBallErrorCode.STANDING_API_ERROR.getHttpStatus()
-            );
-        }
     }
 
     // todo : 홈, 원정에 따른 필터링 방식에 대한 고려
