@@ -1,5 +1,6 @@
 package com.personal.kopmorning.domain.football.controller;
 
+import com.personal.kopmorning.domain.football.dto.response.GameResponse;
 import com.personal.kopmorning.domain.football.dto.response.PlayerDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
@@ -34,6 +35,7 @@ public class FootBallController {
     @PostMapping("/save/standing")
     public RsData<?> saveStanding() {
         footBallService.saveStanding();
+        footBallService.saveFixtures();
         return new RsData<>(
                 FootBallSuccessCode.SAVE_STANDING.getCode(),
                 FootBallSuccessCode.SAVE_STANDING.getMessage()
@@ -73,6 +75,15 @@ public class FootBallController {
                 FootBallSuccessCode.GET_STANDING.getCode(),
                 FootBallSuccessCode.GET_STANDING.getMessage(),
                 footBallService.getStanding()
+        );
+    }
+
+    @GetMapping("/matches")
+    public RsData<List<GameResponse>> getMatches() {
+        return new RsData<>(
+                "200",
+                "성공",
+                footBallService.getGameList()
         );
     }
 }

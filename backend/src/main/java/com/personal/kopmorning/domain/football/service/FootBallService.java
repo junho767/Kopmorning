@@ -1,17 +1,21 @@
 package com.personal.kopmorning.domain.football.service;
 
+import com.personal.kopmorning.domain.football.dto.MatchDTO;
 import com.personal.kopmorning.domain.football.dto.PlayerDTO;
 import com.personal.kopmorning.domain.football.dto.StandingDTO;
 import com.personal.kopmorning.domain.football.dto.TeamDTO;
+import com.personal.kopmorning.domain.football.dto.response.GameResponse;
 import com.personal.kopmorning.domain.football.dto.response.PlayerDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.PlayerResponse;
 import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
+import com.personal.kopmorning.domain.football.entity.Game;
 import com.personal.kopmorning.domain.football.entity.Player;
 import com.personal.kopmorning.domain.football.entity.PlayerStat;
 import com.personal.kopmorning.domain.football.entity.Standing;
 import com.personal.kopmorning.domain.football.entity.Team;
+import com.personal.kopmorning.domain.football.repository.GameRepository;
 import com.personal.kopmorning.domain.football.repository.PlayerRepository;
 import com.personal.kopmorning.domain.football.repository.PlayerStatRepository;
 import com.personal.kopmorning.domain.football.repository.StandingRepository;
@@ -33,8 +37,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FootBallService {
-    private final WebClient webClient;
+    private final WebClient webClientV1;
+    private final WebClient webClientV2;
     private final TeamRepository teamRepository;
+    private final GameRepository gameRepository;
     private final PlayerRepository playerRepository;
     private final StandingRepository standingRepository;
     private final PlayerStatRepository playerStatRepository;
@@ -51,9 +57,19 @@ public class FootBallService {
     @Value("${api.token.football}")
     private String apiToken;
 
-    public FootBallService(PlayerRepository playerRepository, TeamRepository teamRepository, @Qualifier("fooballWebClient") WebClient webClient, StandingRepository standingRepository, PlayerStatRepository playerStatRepository) {
-        this.webClient = webClient;
+    public FootBallService(
+            PlayerRepository playerRepository,
+            TeamRepository teamRepository,
+            @Qualifier("footballWebClientV1") WebClient webClientV1,
+            @Qualifier("footballWebClientV2") WebClient webClientV2,
+            GameRepository gameRepository,
+            StandingRepository standingRepository,
+            PlayerStatRepository playerStatRepository
+    ) {
+        this.webClientV1 = webClientV1;
+        this.webClientV2 = webClientV2;
         this.teamRepository = teamRepository;
+        this.gameRepository = gameRepository;
         this.playerRepository = playerRepository;
         this.standingRepository = standingRepository;
         this.playerStatRepository = playerStatRepository;
@@ -64,7 +80,7 @@ public class FootBallService {
             List<Player> playerList = new ArrayList<>();
             List<PlayerStat> playerStatList = new ArrayList<>();
 
-            List<TeamDTO> teamList = webClient.get()
+            List<TeamDTO> teamList = webClientV1.get()
                     .uri(uriBuilder -> uriBuilder
                             .queryParam(QUERY_PARAM_ACTION, ACTION_GET_TEAMS)
                             .queryParam(QUERY_PARAM_LEAGUE_ID, PREMIER_LEAGUE_ID)
@@ -105,7 +121,7 @@ public class FootBallService {
 
     public void saveStanding() {
         try {
-            List<StandingDTO> standingDTO = webClient.get()
+            List<StandingDTO> standingDTO = webClientV1.get()
                     .uri(uriBuilder -> uriBuilder
                             .queryParam(QUERY_PARAM_ACTION, ACTION_GET_STANDINGS)
                             .queryParam(QUERY_PARAM_LEAGUE_ID, PREMIER_LEAGUE_ID)
@@ -124,6 +140,33 @@ public class FootBallService {
             standingRepository.saveAll(standing);
         } catch (Exception e) {
             log.error("❗ standings 저장 중 오류 발생", e);
+            throw new FootBallException(
+                    FootBallErrorCode.STANDING_API_ERROR.getCode(),
+                    FootBallErrorCode.STANDING_API_ERROR.getMessage(),
+                    FootBallErrorCode.STANDING_API_ERROR.getHttpStatus()
+            );
+        }
+    }
+
+    public void saveFixtures() {
+        try {
+            MatchDTO matchDTO = webClientV2.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("teams/64/matches")
+                            .build())
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<MatchDTO>() {
+                    })
+                    .block();
+
+            List<Game> gameList = matchDTO.getMatches().stream()
+                    .map(Game::new)
+                    .toList();
+
+            gameRepository.saveAll(gameList);
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
             throw new FootBallException(
                     FootBallErrorCode.STANDING_API_ERROR.getCode(),
                     FootBallErrorCode.STANDING_API_ERROR.getMessage(),
@@ -160,10 +203,10 @@ public class FootBallService {
     public PlayerDetailResponse getPlayer(Long playerId) {
         Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new FootBallException(
-                        FootBallErrorCode.PLAYER_NOT_FOUND.getCode(),
-                        FootBallErrorCode.PLAYER_NOT_FOUND.getMessage(),
-                        FootBallErrorCode.PLAYER_NOT_FOUND.getHttpStatus()
-                    )
+                                FootBallErrorCode.PLAYER_NOT_FOUND.getCode(),
+                                FootBallErrorCode.PLAYER_NOT_FOUND.getMessage(),
+                                FootBallErrorCode.PLAYER_NOT_FOUND.getHttpStatus()
+                        )
                 );
         PlayerStat playerStat = playerStatRepository.findByPlayerId(playerId);
 
@@ -174,5 +217,10 @@ public class FootBallService {
     public StandingResponse getStanding() {
         List<Standing> standing = standingRepository.findAll();
         return new StandingResponse(standing);
+    }
+
+    public List<GameResponse> getGameList() {
+        List<Game> gameList = gameRepository.findAll();
+        return gameList.stream().map(GameResponse::new).toList();
     }
 }
