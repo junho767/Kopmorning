@@ -7,19 +7,37 @@ import java.util.List;
 
 @Data
 public class TeamDetailResponse {
-    private Long team_key;
-    private String team_name;
-    private String team_country;
-    private String team_founded;
-    private String team_badge;
+    private Long id;
+    private Long founded;
+
+    private String name;
+    private String shortName;
+    private String tla;
+
+    private String crest;
+    private String address;
+    private String website;
+
+    private String clubColors;
+    private String venue;
+
     private List<PlayerResponse> players;
 
     public TeamDetailResponse(Team team, List<PlayerResponse> players) {
-        this.team_key = team.getId();
-        this.team_name = team.getTeam_name();
-        this.team_country = team.getTeam_country();
-        this.team_founded = team.getTeam_founded();
-        this.team_badge = team.getTeam_badge();
+        this.id = team.getId();
+        this.founded = team.getFounded();
+
+        this.name = team.getName();
+        this.shortName = team.getShortName();
+        this.tla = team.getTla();
+
+        this.crest = team.getCrest();
+        this.address = team.getAddress();
+        this.website = team.getWebsite();
+
+        this.clubColors = team.getClubColors();
+        this.venue = team.getVenue();
+
         this.players = players;
     }
 }

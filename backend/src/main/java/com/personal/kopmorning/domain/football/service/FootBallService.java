@@ -4,6 +4,9 @@ import com.personal.kopmorning.domain.football.dto.MatchDTO;
 import com.personal.kopmorning.domain.football.dto.StandingDTO;
 import com.personal.kopmorning.domain.football.dto.TeamDTO;
 import com.personal.kopmorning.domain.football.dto.response.GameResponse;
+import com.personal.kopmorning.domain.football.dto.response.PlayerResponse;
+import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
+import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
 import com.personal.kopmorning.domain.football.entity.Coach;
 import com.personal.kopmorning.domain.football.entity.Game;
@@ -55,6 +58,8 @@ public class FootBallService {
         this.standingRepository = standingRepository;
     }
 
+
+    // todo : 대회 정보, 팀 별 국가 데이터
     public void saveFootBallData() {
         try {
             List<Player> playerList = new ArrayList<>();
@@ -160,28 +165,27 @@ public class FootBallService {
                 .toList();
     }
 
-//    public TeamDetailResponse getTeamById(Long teamId) {
-//        Team team = teamRepository.findById(teamId)
-//                .orElseThrow(() -> new FootBallException(
-//                                FootBallErrorCode.TEAM_NOT_FOUND.getCode(),
-//                                FootBallErrorCode.TEAM_NOT_FOUND.getMessage(),
-//                                FootBallErrorCode.TEAM_NOT_FOUND.getHttpStatus()
-//                        )
-//                );
-//
-//        List<Player> playerList = playerRepository.findByTeamId(teamId);
-//        List<PlayerResponse> players = playerList.stream()
-//                .map(PlayerResponse::new)
-//                .toList();
-//
-//        return new TeamDetailResponse(team, players);
-//    }
-//
-//    // todo : 홈, 원정에 따른 필터링 방식에 대한 고려
-//    public StandingResponse getStanding() {
-//        List<Standing> standing = standingRepository.findAll();
-//        return new StandingResponse(standing);
-//    }
+    public TeamDetailResponse getTeamById(Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new FootBallException(
+                                FootBallErrorCode.TEAM_NOT_FOUND.getCode(),
+                                FootBallErrorCode.TEAM_NOT_FOUND.getMessage(),
+                                FootBallErrorCode.TEAM_NOT_FOUND.getHttpStatus()
+                        )
+                );
+
+        List<Player> playerList = playerRepository.findByTeamId(teamId);
+        List<PlayerResponse> players = playerList.stream()
+                .map(PlayerResponse::new)
+                .toList();
+
+        return new TeamDetailResponse(team, players);
+    }
+
+    public StandingResponse getStanding() {
+        List<Standing> standing = standingRepository.findAllByOrderByPositionDesc();
+        return new StandingResponse(standing);
+    }
 
     public List<GameResponse> getGameList() {
         List<Game> gameList = gameRepository.findAll();
