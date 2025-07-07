@@ -1,21 +1,25 @@
 package com.personal.kopmorning.domain.football.service;
 
 import com.personal.kopmorning.domain.football.dto.MatchDTO;
+import com.personal.kopmorning.domain.football.dto.RankingDTO;
 import com.personal.kopmorning.domain.football.dto.StandingDTO;
 import com.personal.kopmorning.domain.football.dto.TeamDTO;
 import com.personal.kopmorning.domain.football.dto.response.GameResponse;
 import com.personal.kopmorning.domain.football.dto.response.PlayerResponse;
+import com.personal.kopmorning.domain.football.dto.response.RankingResponse;
 import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
 import com.personal.kopmorning.domain.football.entity.Coach;
 import com.personal.kopmorning.domain.football.entity.Game;
 import com.personal.kopmorning.domain.football.entity.Player;
+import com.personal.kopmorning.domain.football.entity.Ranking;
 import com.personal.kopmorning.domain.football.entity.Standing;
 import com.personal.kopmorning.domain.football.entity.Team;
 import com.personal.kopmorning.domain.football.repository.CoachRepository;
 import com.personal.kopmorning.domain.football.repository.GameRepository;
 import com.personal.kopmorning.domain.football.repository.PlayerRepository;
+import com.personal.kopmorning.domain.football.repository.RankingRepository;
 import com.personal.kopmorning.domain.football.repository.StandingRepository;
 import com.personal.kopmorning.domain.football.repository.TeamRepository;
 import com.personal.kopmorning.domain.football.responseCode.FootBallErrorCode;
@@ -28,7 +32,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,6 +46,7 @@ public class FootBallService {
     private final GameRepository gameRepository;
     private final CoachRepository coachRepository;
     private final PlayerRepository playerRepository;
+    private final RankingRepository rankingRepository;
     private final StandingRepository standingRepository;
 
 
@@ -48,7 +56,7 @@ public class FootBallService {
             GameRepository gameRepository,
             CoachRepository coachRepository,
             StandingRepository standingRepository,
-            @Qualifier("footballWebClient") WebClient webClient
+            @Qualifier("footballWebClient") WebClient webClient, RankingRepository rankingRepository
     ) {
         this.webClient = webClient;
         this.teamRepository = teamRepository;
@@ -56,6 +64,7 @@ public class FootBallService {
         this.playerRepository = playerRepository;
         this.coachRepository = coachRepository;
         this.standingRepository = standingRepository;
+        this.rankingRepository = rankingRepository;
     }
 
 
@@ -137,8 +146,7 @@ public class FootBallService {
                             .path("teams/64/matches")
                             .build())
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<MatchDTO>() {
-                    })
+                    .bodyToMono(new ParameterizedTypeReference<MatchDTO>() {})
                     .block();
 
             List<Game> gameList = matchDTO.getMatches().stream()
@@ -150,9 +158,35 @@ public class FootBallService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new FootBallException(
-                    FootBallErrorCode.STANDING_API_ERROR.getCode(),
-                    FootBallErrorCode.STANDING_API_ERROR.getMessage(),
-                    FootBallErrorCode.STANDING_API_ERROR.getHttpStatus()
+                    FootBallErrorCode.FIXTURES_API_ERROR.getCode(),
+                    FootBallErrorCode.FIXTURES_API_ERROR.getMessage(),
+                    FootBallErrorCode.FIXTURES_API_ERROR.getHttpStatus()
+            );
+        }
+    }
+
+    public void saveTopScorer() {
+        try {
+            RankingDTO rankingDTO = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("competitions/PL/scorers")
+                            .build())
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<RankingDTO>() {})
+                    .block();
+
+            List<Ranking> ranking = rankingDTO.getScorers().stream()
+                    .map(Ranking::new)
+                    .toList();
+
+            rankingRepository.saveAll(ranking);
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new FootBallException(
+                    FootBallErrorCode.TOP_SCORER_API_ERROR.getCode(),
+                    FootBallErrorCode.TOP_SCORER_API_ERROR.getMessage(),
+                    FootBallErrorCode.TOP_SCORER_API_ERROR.getHttpStatus()
             );
         }
     }
@@ -190,5 +224,39 @@ public class FootBallService {
     public List<GameResponse> getGameList() {
         List<Game> gameList = gameRepository.findAll();
         return gameList.stream().map(GameResponse::new).toList();
+    }
+
+    public List<RankingResponse> getRanking(String standard) {
+        List<Ranking> ranking;
+
+        if (standard.equals("goals")) {
+            ranking = rankingRepository.findAllByOrderByGoalsDesc();
+        } else if (standard.equals("overall")) {
+            ranking = rankingRepository.findAllOrderByGoalPlusAssistNative();
+        } else {
+            throw new IllegalArgumentException("Invalid standard");
+        }
+
+        AtomicInteger rankCounter = new AtomicInteger(1);
+
+        return ranking.stream()
+                .map(r -> {
+                    Player player = playerRepository.findById(r.getPlayerId()).orElseThrow(() -> new FootBallException(
+                                    FootBallErrorCode.PLAYER_NOT_FOUND.getCode(),
+                                    FootBallErrorCode.PLAYER_NOT_FOUND.getMessage(),
+                                    FootBallErrorCode.PLAYER_NOT_FOUND.getHttpStatus()
+                            )
+                    );
+                    Team team = teamRepository.findById(r.getTeamId()).orElseThrow(() -> new FootBallException(
+                                    FootBallErrorCode.TEAM_NOT_FOUND.getCode(),
+                                    FootBallErrorCode.TEAM_NOT_FOUND.getMessage(),
+                                    FootBallErrorCode.TEAM_NOT_FOUND.getHttpStatus()
+                            )
+                    );
+                    RankingResponse response = new RankingResponse(r, player, team);
+                    response.setRank(rankCounter.getAndIncrement());
+                    return response;
+                })
+                .collect(Collectors.toList());
     }
 }

@@ -1,6 +1,7 @@
 package com.personal.kopmorning.domain.football.controller;
 
 import com.personal.kopmorning.domain.football.dto.response.GameResponse;
+import com.personal.kopmorning.domain.football.dto.response.RankingResponse;
 import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
@@ -27,6 +28,7 @@ public class FootBallController {
         footBallService.saveFootBallData();
         footBallService.saveStanding();
         footBallService.saveFixtures();
+        footBallService.saveTopScorer();
         return new RsData<>(
                 FootBallSuccessCode.SAVE_INFO.getCode(),
                 FootBallSuccessCode.SAVE_INFO.getMessage()
@@ -66,6 +68,15 @@ public class FootBallController {
                 "200",
                 "성공",
                 footBallService.getGameList()
+        );
+    }
+
+    @GetMapping("/ranking/{standard}")
+    public RsData<List<RankingResponse>> getRanking(@PathVariable String standard) {
+        return new RsData<>(
+                "200",
+                "성공",
+                footBallService.getRanking(standard)
         );
     }
 }

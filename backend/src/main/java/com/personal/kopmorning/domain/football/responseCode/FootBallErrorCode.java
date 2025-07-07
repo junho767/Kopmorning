@@ -11,7 +11,8 @@ public enum FootBallErrorCode {
     TEAM_API_ERROR("500", "팀 정보를 불러오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STANDING_API_ERROR("500", "순위 정보를 불러오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     PLAYER_API_ERROR("500", "선수 정보를 저장하는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    FIXTURES_API_ERROR("500", "경기 일정 저장하는 도중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),;
+    FIXTURES_API_ERROR("500", "경기 일정 저장하는 도중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    TOP_SCORER_API_ERROR("500", "상위 득점자 저장하는 도중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
