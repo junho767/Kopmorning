@@ -13,20 +13,7 @@ public class WebClientConfig {
     private String apiKey;
 
     @Bean
-    public WebClient footballWebClientV1() {
-        ExchangeStrategies strategies = ExchangeStrategies.builder()
-                .codecs(configurer -> configurer.defaultCodecs()
-                        .maxInMemorySize(16 * 1024 * 1024))
-                .build();
-
-        return WebClient.builder()
-                .baseUrl("https://apiv3.apifootball.com/")
-                .exchangeStrategies(strategies)
-                .build();
-    }
-
-    @Bean
-    public WebClient footballWebClientV2() {
+    public WebClient footballWebClient() {
         ExchangeStrategies strategies = ExchangeStrategies.builder()
                 .codecs(configurer -> configurer.defaultCodecs()
                         .maxInMemorySize(16 * 1024 * 1024))

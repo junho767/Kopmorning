@@ -16,16 +16,26 @@ import lombok.NoArgsConstructor;
 public class Team {
     @Id
     private Long id;
-    private String team_name;
-    private String team_founded;
-    private String team_country;
-    private String team_badge;
+    private String name;
+    private String shortName;
+    private String tla;
+    private Long founded;
+    private String address;
+    private String website;
+    private String clubColors;
+    private String venue;
+    private String crest;
 
-    public Team(TeamDTO teamDTO) {
-        this.id = Long.valueOf(teamDTO.getTeam_key());
-        this.team_name = teamDTO.getTeam_name();
-        this.team_founded = teamDTO.getTeam_founded();
-        this.team_country = teamDTO.getTeam_country();
-        this.team_badge = teamDTO.getTeam_badge();
+    public Team(TeamDTO.Team teamDTO) {
+        this.id = teamDTO.id();
+        this.name = teamDTO.name();
+        this.shortName = teamDTO.shortName();
+        this.tla = teamDTO.tla();
+        this.founded = teamDTO.founded();
+        this.address = teamDTO.address();
+        this.website = teamDTO.website();
+        this.clubColors = teamDTO.clubColors();
+        this.venue = teamDTO.venue();
+        this.crest = teamDTO.crest();
     }
 }

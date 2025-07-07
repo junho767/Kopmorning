@@ -1,9 +1,7 @@
 package com.personal.kopmorning.domain.football.controller;
 
 import com.personal.kopmorning.domain.football.dto.response.GameResponse;
-import com.personal.kopmorning.domain.football.dto.response.PlayerDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
-import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
 import com.personal.kopmorning.domain.football.responseCode.FootBallSuccessCode;
 import com.personal.kopmorning.domain.football.service.FootBallService;
@@ -26,19 +24,11 @@ public class FootBallController {
     @PostMapping("/save")
     public RsData<?> save() {
         footBallService.saveFootBallData();
-        return new RsData<>(
-                FootBallSuccessCode.SAVE_INFO.getCode(),
-                FootBallSuccessCode.SAVE_INFO.getMessage()
-        );
-    }
-
-    @PostMapping("/save/standing")
-    public RsData<?> saveStanding() {
         footBallService.saveStanding();
         footBallService.saveFixtures();
         return new RsData<>(
-                FootBallSuccessCode.SAVE_STANDING.getCode(),
-                FootBallSuccessCode.SAVE_STANDING.getMessage()
+                FootBallSuccessCode.SAVE_INFO.getCode(),
+                FootBallSuccessCode.SAVE_INFO.getMessage()
         );
     }
 
@@ -51,32 +41,23 @@ public class FootBallController {
         );
     }
 
-    @GetMapping("/team/{team_id}")
-    public RsData<TeamDetailResponse> getTeam(@PathVariable Long team_id) {
-        return new RsData<>(
-                FootBallSuccessCode.GET_TEAM_ONE.getCode(),
-                FootBallSuccessCode.GET_TEAM_ONE.getMessage(),
-                footBallService.getTeamById(team_id)
-        );
-    }
-
-    @GetMapping("/player/{player_id}")
-    public RsData<PlayerDetailResponse> getPlayers(@PathVariable Long player_id) {
-        return new RsData<>(
-                FootBallSuccessCode.GET_PLAYER_INFO.getCode(),
-                FootBallSuccessCode.GET_PLAYER_INFO.getMessage(),
-                footBallService.getPlayer(player_id)
-        );
-    }
-
-    @GetMapping("/standing")
-    public RsData<StandingResponse> getStanding() {
-        return new RsData<>(
-                FootBallSuccessCode.GET_STANDING.getCode(),
-                FootBallSuccessCode.GET_STANDING.getMessage(),
-                footBallService.getStanding()
-        );
-    }
+//    @GetMapping("/team/{team_id}")
+//    public RsData<TeamDetailResponse> getTeam(@PathVariable Long team_id) {
+//        return new RsData<>(
+//                FootBallSuccessCode.GET_TEAM_ONE.getCode(),
+//                FootBallSuccessCode.GET_TEAM_ONE.getMessage(),
+//                footBallService.getTeamById(team_id)
+//        );
+//    }
+//
+//    @GetMapping("/standing")
+//    public RsData<StandingResponse> getStanding() {
+//        return new RsData<>(
+//                FootBallSuccessCode.GET_STANDING.getCode(),
+//                FootBallSuccessCode.GET_STANDING.getMessage(),
+//                footBallService.getStanding()
+//        );
+//    }
 
     @GetMapping("/matches")
     public RsData<List<GameResponse>> getMatches() {
