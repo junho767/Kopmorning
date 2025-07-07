@@ -1,6 +1,7 @@
 package com.personal.kopmorning.domain.football.controller;
 
-import com.personal.kopmorning.domain.football.dto.response.PlayerDetailResponse;
+import com.personal.kopmorning.domain.football.dto.response.GameResponse;
+import com.personal.kopmorning.domain.football.dto.response.RankingResponse;
 import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
@@ -25,18 +26,12 @@ public class FootBallController {
     @PostMapping("/save")
     public RsData<?> save() {
         footBallService.saveFootBallData();
+        footBallService.saveStanding();
+        footBallService.saveFixtures();
+        footBallService.saveTopScorer();
         return new RsData<>(
                 FootBallSuccessCode.SAVE_INFO.getCode(),
                 FootBallSuccessCode.SAVE_INFO.getMessage()
-        );
-    }
-
-    @PostMapping("/save/standing")
-    public RsData<?> saveStanding() {
-        footBallService.saveStanding();
-        return new RsData<>(
-                FootBallSuccessCode.SAVE_STANDING.getCode(),
-                FootBallSuccessCode.SAVE_STANDING.getMessage()
         );
     }
 
@@ -58,21 +53,30 @@ public class FootBallController {
         );
     }
 
-    @GetMapping("/player/{player_id}")
-    public RsData<PlayerDetailResponse> getPlayers(@PathVariable Long player_id) {
-        return new RsData<>(
-                FootBallSuccessCode.GET_PLAYER_INFO.getCode(),
-                FootBallSuccessCode.GET_PLAYER_INFO.getMessage(),
-                footBallService.getPlayer(player_id)
-        );
-    }
-
     @GetMapping("/standing")
     public RsData<StandingResponse> getStanding() {
         return new RsData<>(
                 FootBallSuccessCode.GET_STANDING.getCode(),
                 FootBallSuccessCode.GET_STANDING.getMessage(),
                 footBallService.getStanding()
+        );
+    }
+
+    @GetMapping("/matches")
+    public RsData<List<GameResponse>> getMatches() {
+        return new RsData<>(
+                "200",
+                "성공",
+                footBallService.getGameList()
+        );
+    }
+
+    @GetMapping("/ranking/{standard}")
+    public RsData<List<RankingResponse>> getRanking(@PathVariable String standard) {
+        return new RsData<>(
+                "200",
+                "성공",
+                footBallService.getRanking(standard)
         );
     }
 }

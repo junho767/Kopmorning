@@ -1,19 +1,15 @@
 package com.personal.kopmorning.football.service;
 
-import com.personal.kopmorning.domain.football.dto.response.PlayerDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
 import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
 import com.personal.kopmorning.domain.football.entity.Player;
-import com.personal.kopmorning.domain.football.entity.PlayerStat;
 import com.personal.kopmorning.domain.football.entity.Standing;
 import com.personal.kopmorning.domain.football.entity.Team;
 import com.personal.kopmorning.domain.football.repository.PlayerRepository;
-import com.personal.kopmorning.domain.football.repository.PlayerStatRepository;
 import com.personal.kopmorning.domain.football.repository.StandingRepository;
 import com.personal.kopmorning.domain.football.repository.TeamRepository;
 import com.personal.kopmorning.domain.football.service.FootBallService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,8 +42,30 @@ public class FootBallAPIServiceTest {
     void getTeamsTest() {
         // given
         List<Team> mockTeams = List.of(
-                new Team(52L, "Tottenham", "1882", "England", "badge1.png"),
-                new Team(61L, "Man City", "1880", "England", "badge2.png")
+                new Team(
+                        1L,
+                        "Tottenham Hotspur",
+                        "Tottenham",
+                        "TOT",
+                        1882L,
+                        "748 High Road, London",
+                        "https://www.tottenhamhotspur.com",
+                        "White / Navy Blue",
+                        "Tottenham Hotspur Stadium",
+                        "https://crests.football-data.org/73.png"
+                ),
+                new Team(
+                        61L,
+                        "Manchester City",
+                        "Man City",
+                        "MCI",
+                        1880L,
+                        "Etihad Stadium, Manchester",
+                        "https://www.mancity.com",
+                        "Sky Blue / White",
+                        "Etihad Stadium",
+                        "https://crests.football-data.org/61.png"
+                )
         );
         when(teamRepository.findAll()).thenReturn(mockTeams);
 
@@ -56,8 +74,8 @@ public class FootBallAPIServiceTest {
 
         // then
         assertEquals(2, result.size());
-        assertEquals("Tottenham", result.getFirst().getTeam_name());
-        assertEquals("Man City", result.get(1).getTeam_name());
+        assertEquals("TOT", result.getFirst().getTla());
+        assertEquals("MCI", result.get(1).getTla());
     }
 
     @Test
@@ -65,10 +83,21 @@ public class FootBallAPIServiceTest {
     void getTeamById() {
         // given
         Long teamId = 52L;
-        Team team = new Team(teamId, "Tottenham", "1882", "England", "badge1.png");
+        Team team = new Team(
+                1L,
+                "Tottenham Hotspur",
+                "Tottenham",
+                "TOT",
+                1882L,
+                "748 High Road, London",
+                "https://www.tottenhamhotspur.com",
+                "White / Navy Blue",
+                "Tottenham Hotspur Stadium",
+                "https://crests.football-data.org/73.png"
+        );
         List<Player> players = List.of(
-                new Player(1001L, teamId, "Son", "Son", "img1", "KR", "7", "30", "Forward", "1992"),
-                new Player(1002L, teamId, "Maddison", "Maddison", "img2", "UK", "10", "26", "Mid", "1996")
+                new Player(1001L, teamId, "Son", "KR", "30", "Forward"),
+                new Player(1002L, teamId, "Maddison", "UK", "26", "Mid")
         );
 
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
@@ -78,7 +107,7 @@ public class FootBallAPIServiceTest {
         TeamDetailResponse result = footBallService.getTeamById(teamId);
 
         // then
-        assertEquals("Tottenham", result.getTeam_name());
+        assertEquals("Tottenham", result.getShortName());
         assertEquals(2, result.getPlayers().size());
         assertEquals("Son", result.getPlayers().getFirst().getPlayer_name());
         assertEquals("Maddison", result.getPlayers().get(1).getPlayer_name());
@@ -89,27 +118,27 @@ public class FootBallAPIServiceTest {
     void getStanding() {
         // given
         Standing standing1 = new Standing();
-        standing1.setTeam_name("Arsenal");
-        standing1.setOverall_league_position("1");
-        standing1.setOverall_league_PTS("85");
+        standing1.setTeamId(64L);
+        standing1.setPosition(1L);
+        standing1.setPoints(93L);
 
         Standing standing2 = new Standing();
-        standing2.setTeam_name("Man City");
-        standing2.setOverall_league_position("2");
-        standing2.setOverall_league_PTS("83");
+        standing2.setTeamId(65L);
+        standing2.setPosition(2L);
+        standing2.setPoints(92L);
 
         List<Standing> standings = List.of(standing1, standing2);
 
-        when(standingRepository.findAll()).thenReturn(standings);
+        when(standingRepository.findAllByOrderByPositionDesc()).thenReturn(standings);
 
         // when
         StandingResponse result = footBallService.getStanding();
 
         // then
         assertEquals(2, result.getStandings().size());
-        assertEquals("Arsenal", result.getStandings().get(0).getTeam_name());
-        assertEquals("Man City", result.getStandings().get(1).getTeam_name());
-        assertEquals("1", result.getStandings().get(0).getOverall_league_position());
-        assertEquals("2", result.getStandings().get(1).getOverall_league_position());
+        assertEquals(64L, result.getStandings().get(0).getTeamId());
+        assertEquals(65L, result.getStandings().get(1).getTeamId());
+        assertEquals(1L, result.getStandings().get(0).getPosition());
+        assertEquals(2L, result.getStandings().get(1).getPosition());
     }
 }

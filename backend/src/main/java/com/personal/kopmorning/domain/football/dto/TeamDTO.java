@@ -8,17 +8,43 @@ import java.util.List;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TeamDTO {
-    private String team_key;
-    private String team_name;
-    private String team_country;
-    private String team_founded;
-    private String team_badge;
-    private Coach coach;
-    private List<PlayerDTO> players;
+    private List<Team> teams;
+
+    public record Team(
+            Long id,
+            String name,
+            String shortName,
+            String tla,
+            String crest,
+            String address,
+            String website,
+            Long founded,
+            String clubColors,
+            String venue,
+            Coach coach,
+            List<Player> squad
+    ) {
+    }
 
     public record Coach(
-            String coach_name,
-            String coach_country,
-            String coach_age
+            Long id,
+            String name,
+            String dateOfBirth,
+            String nationality,
+            Contract contract
+    ) {
+    }
+
+    public record Contract(
+            String start,
+            String until
+    ) {}
+
+    public record Player(
+            Long id,
+            String name,
+            String position,
+            String dateOfBirth,
+            String nationality
     ) {}
 }
