@@ -65,8 +65,8 @@ public class FootBallController {
     @GetMapping("/matches")
     public RsData<List<GameResponse>> getMatches() {
         return new RsData<>(
-                "200",
-                "성공",
+                FootBallSuccessCode.GET_GAME_LIST.getCode(),
+                FootBallSuccessCode.GET_GAME_LIST.getMessage(),
                 footBallService.getGameList()
         );
     }
@@ -74,8 +74,8 @@ public class FootBallController {
     @GetMapping("/ranking/{standard}")
     public RsData<List<RankingResponse>> getRanking(@PathVariable String standard) {
         return new RsData<>(
-                "200",
-                "성공",
+                FootBallSuccessCode.GET_RANKING_LIST.getCode(),
+                FootBallSuccessCode.GET_RANKING_LIST.getMessage(),
                 footBallService.getRanking(standard)
         );
     }
