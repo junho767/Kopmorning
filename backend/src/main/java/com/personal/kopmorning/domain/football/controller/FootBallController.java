@@ -25,7 +25,7 @@ public class FootBallController {
 
     @PostMapping("/save")
     public RsData<?> save() {
-        footBallService.saveFootBallData();
+        footBallService.saveTeamAndPlayer();
         footBallService.saveStanding();
         footBallService.saveFixtures();
         footBallService.saveTopScorer();

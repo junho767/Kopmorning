@@ -41,4 +41,24 @@ logging:
   level:
     org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      kopMorning:
+        register-health-indicator: true
+        sliding-window-size: 10         # 최근 10개의 호출 기준
+        failure-rate-threshold: 50      # 실패율 50% 넘어가면 Open
+        wait-duration-in-open-state: 5s # Open 상태 유지 시간
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-type: COUNT_BASED
+  retry:
+    instances:
+      kopMorning:
+        max-attempts: 3     # 최대 시도 횟수 (최초 포함 3번)
+        wait-duration: 2s   # 재시도 간 대기 시간
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+
+
 
