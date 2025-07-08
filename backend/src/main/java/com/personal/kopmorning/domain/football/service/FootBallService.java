@@ -152,11 +152,8 @@ public class FootBallService {
         }
     }
 
-    public void fallbackOpenAPI(Throwable t) {
-        log.error("🛑 Fallback 호출 - saveStanding() 실패", t);
-        // 알림, 큐 저장 등 필요 조치
-    }
-
+    @Retry(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
+    @CircuitBreaker(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
     public void saveFixtures() {
         try {
             MatchDTO matchDTO = webClient.get()
@@ -209,6 +206,10 @@ public class FootBallService {
                     FootBallErrorCode.TOP_SCORER_API_ERROR.getHttpStatus()
             );
         }
+    }
+
+    public void fallbackOpenAPI(Throwable t) {
+        log.error("🛑 Fallback 호출 - saveStanding() 실패", t);
     }
 
     public List<TeamResponse> getTeams() {
