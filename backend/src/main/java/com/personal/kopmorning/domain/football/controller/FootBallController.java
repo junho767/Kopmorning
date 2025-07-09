@@ -9,6 +9,7 @@ import com.personal.kopmorning.domain.football.responseCode.FootBallSuccessCode;
 import com.personal.kopmorning.domain.football.service.FootBallService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/football")
 @RequiredArgsConstructor
@@ -25,10 +27,12 @@ public class FootBallController {
 
     @PostMapping("/save")
     public RsData<?> save() {
-        footBallService.saveFootBallData();
+        footBallService.saveTeamAndPlayer();
         footBallService.saveStanding();
         footBallService.saveFixtures();
         footBallService.saveTopScorer();
+
+        log.info("✅ Write-Around 방식: DB만 저장");
         return new RsData<>(
                 FootBallSuccessCode.SAVE_INFO.getCode(),
                 FootBallSuccessCode.SAVE_INFO.getMessage()
@@ -65,8 +69,8 @@ public class FootBallController {
     @GetMapping("/matches")
     public RsData<List<GameResponse>> getMatches() {
         return new RsData<>(
-                "200",
-                "성공",
+                FootBallSuccessCode.GET_GAME_LIST.getCode(),
+                FootBallSuccessCode.GET_GAME_LIST.getMessage(),
                 footBallService.getGameList()
         );
     }
@@ -74,8 +78,8 @@ public class FootBallController {
     @GetMapping("/ranking/{standard}")
     public RsData<List<RankingResponse>> getRanking(@PathVariable String standard) {
         return new RsData<>(
-                "200",
-                "성공",
+                FootBallSuccessCode.GET_RANKING_LIST.getCode(),
+                FootBallSuccessCode.GET_RANKING_LIST.getMessage(),
                 footBallService.getRanking(standard)
         );
     }

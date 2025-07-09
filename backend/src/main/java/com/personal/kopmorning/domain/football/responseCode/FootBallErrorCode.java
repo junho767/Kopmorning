@@ -8,6 +8,7 @@ public enum FootBallErrorCode {
 
     TEAM_NOT_FOUND("404", "해당 팀이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     PLAYER_NOT_FOUND("404", "해당 선수가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    RANKING_NOT_FOUND("404", "랭킹 불러오기 실패", HttpStatus.NOT_FOUND),
     TEAM_API_ERROR("500", "팀 정보를 불러오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     STANDING_API_ERROR("500", "순위 정보를 불러오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     PLAYER_API_ERROR("500", "선수 정보를 저장하는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

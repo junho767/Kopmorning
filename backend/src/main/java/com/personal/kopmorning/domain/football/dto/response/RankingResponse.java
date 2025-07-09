@@ -3,11 +3,13 @@ package com.personal.kopmorning.domain.football.dto.response;
 import com.personal.kopmorning.domain.football.entity.Player;
 import com.personal.kopmorning.domain.football.entity.Ranking;
 import com.personal.kopmorning.domain.football.entity.Team;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.Optional;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RankingResponse {
     private int rank;
     private Long goals;

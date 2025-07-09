@@ -24,18 +24,19 @@ import com.personal.kopmorning.domain.football.repository.StandingRepository;
 import com.personal.kopmorning.domain.football.repository.TeamRepository;
 import com.personal.kopmorning.domain.football.responseCode.FootBallErrorCode;
 import com.personal.kopmorning.global.exception.FootBall.FootBallException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,6 +49,14 @@ public class FootBallService {
     private final PlayerRepository playerRepository;
     private final RankingRepository rankingRepository;
     private final StandingRepository standingRepository;
+
+    private static final String GOALS_PARAM = "goals";
+    private static final String OVERALL_PARAM = "overall";
+
+    private static final String GAME_REQUEST_PATH = "teams/64/matches";
+    private static final String TEAMS_REQUEST_PATH = "competitions/PL/teams";
+    private static final String RANKING_REQUEST_PATH = "competitions/PL/scorers";
+    private static final String STANDING_REQUEST_PATH = "competitions/PL/standings";
 
 
     public FootBallService(
@@ -69,14 +78,16 @@ public class FootBallService {
 
 
     // todo : 대회 정보, 팀 별 국가 데이터
-    public void saveFootBallData() {
+    @Retry(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
+    @CircuitBreaker(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
+    public void saveTeamAndPlayer() {
         try {
             List<Player> playerList = new ArrayList<>();
             List<Coach> coachList = new ArrayList<>();
 
             TeamDTO teamDTO = webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .path("competitions/PL/teams")
+                            .path(TEAMS_REQUEST_PATH)
                             .build())
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<TeamDTO>() {
@@ -110,11 +121,14 @@ public class FootBallService {
         }
     }
 
+
+    @Retry(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
+    @CircuitBreaker(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
     public void saveStanding() {
         try {
             StandingDTO standingDTO = webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .path("competitions/PL/standings")
+                            .path(STANDING_REQUEST_PATH)
                             .build())
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<StandingDTO>() {
@@ -139,11 +153,13 @@ public class FootBallService {
         }
     }
 
+    @Retry(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
+    @CircuitBreaker(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
     public void saveFixtures() {
         try {
             MatchDTO matchDTO = webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .path("teams/64/matches")
+                            .path(GAME_REQUEST_PATH)
                             .build())
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<MatchDTO>() {})
@@ -165,11 +181,13 @@ public class FootBallService {
         }
     }
 
+    @Retry(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
+    @CircuitBreaker(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
     public void saveTopScorer() {
         try {
             RankingDTO rankingDTO = webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .path("competitions/PL/scorers")
+                            .path(RANKING_REQUEST_PATH)
                             .build())
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<RankingDTO>() {})
@@ -189,6 +207,10 @@ public class FootBallService {
                     FootBallErrorCode.TOP_SCORER_API_ERROR.getHttpStatus()
             );
         }
+    }
+
+    public void fallbackOpenAPI(Throwable t) {
+        log.error("🛑 Fallback 호출 - saveStanding() 실패", t);
     }
 
     public List<TeamResponse> getTeams() {
@@ -216,7 +238,9 @@ public class FootBallService {
         return new TeamDetailResponse(team, players);
     }
 
+    @Cacheable(value = "standingCache", key = "'standing'")
     public StandingResponse getStanding() {
+        log.info("⛔ 캐시에 없음 → DB 조회 → 캐시에 저장");
         List<Standing> standing = standingRepository.findAllByOrderByPositionDesc();
         return new StandingResponse(standing);
     }
@@ -226,15 +250,21 @@ public class FootBallService {
         return gameList.stream().map(GameResponse::new).toList();
     }
 
+    @Cacheable(value = "rankingCache", key = "'ranking:' + #standard")
     public List<RankingResponse> getRanking(String standard) {
+        log.info("⛔ 캐시에 없음 → DB 조회 → 캐시에 저장");
         List<Ranking> ranking;
 
-        if (standard.equals("goals")) {
+        if (standard.equals(GOALS_PARAM)) {
             ranking = rankingRepository.findAllByOrderByGoalsDesc();
-        } else if (standard.equals("overall")) {
+        } else if (standard.equals(OVERALL_PARAM)) {
             ranking = rankingRepository.findAllOrderByGoalPlusAssistNative();
         } else {
-            throw new IllegalArgumentException("Invalid standard");
+            throw new FootBallException(
+                    FootBallErrorCode.RANKING_NOT_FOUND.getCode(),
+                    FootBallErrorCode.RANKING_NOT_FOUND.getMessage(),
+                    FootBallErrorCode.RANKING_NOT_FOUND.getHttpStatus()
+            );
         }
 
         AtomicInteger rankCounter = new AtomicInteger(1);
