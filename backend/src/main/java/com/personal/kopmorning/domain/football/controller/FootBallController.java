@@ -9,6 +9,7 @@ import com.personal.kopmorning.domain.football.responseCode.FootBallSuccessCode;
 import com.personal.kopmorning.domain.football.service.FootBallService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/football")
 @RequiredArgsConstructor
@@ -29,6 +31,8 @@ public class FootBallController {
         footBallService.saveStanding();
         footBallService.saveFixtures();
         footBallService.saveTopScorer();
+
+        log.info("✅ Write-Around 방식: DB만 저장");
         return new RsData<>(
                 FootBallSuccessCode.SAVE_INFO.getCode(),
                 FootBallSuccessCode.SAVE_INFO.getMessage()

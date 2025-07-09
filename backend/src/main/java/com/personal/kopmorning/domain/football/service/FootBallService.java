@@ -28,6 +28,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -237,7 +238,9 @@ public class FootBallService {
         return new TeamDetailResponse(team, players);
     }
 
+    @Cacheable(value = "standingCache", key = "'standing'")
     public StandingResponse getStanding() {
+        log.info("⛔ 캐시에 없음 → DB 조회 → 캐시에 저장");
         List<Standing> standing = standingRepository.findAllByOrderByPositionDesc();
         return new StandingResponse(standing);
     }
@@ -247,7 +250,9 @@ public class FootBallService {
         return gameList.stream().map(GameResponse::new).toList();
     }
 
+    @Cacheable(value = "rankingCache", key = "'ranking:' + #standard")
     public List<RankingResponse> getRanking(String standard) {
+        log.info("⛔ 캐시에 없음 → DB 조회 → 캐시에 저장");
         List<Ranking> ranking;
 
         if (standard.equals(GOALS_PARAM)) {
