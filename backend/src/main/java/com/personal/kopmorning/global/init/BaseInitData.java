@@ -3,6 +3,9 @@ package com.personal.kopmorning.global.init;
 import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
+import com.personal.kopmorning.domain.football.entity.Ranking;
+import com.personal.kopmorning.domain.football.repository.PlayerRepository;
+import com.personal.kopmorning.domain.football.repository.RankingRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Member_Status;
 import com.personal.kopmorning.domain.member.entity.Role;
@@ -12,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,16 +23,18 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("local")
 public class BaseInitData implements ApplicationRunner {
 
     private final MemberRepository memberRepository;
+    private final RankingRepository rankingRepository;
     private final ArticleRepository articleRepository;
-    private final TokenService tokenService;
 
     @Override
     public void run(ApplicationArguments args) {
         memberInit();
         articleInit();
+        playerInit();
     }
 
     private void memberInit() {
@@ -134,5 +140,18 @@ public class BaseInitData implements ApplicationRunner {
                 .category(Category.FOOTBALL)
                 .member(members.get(4))
                 .build());
+    }
+
+    private void playerInit() {
+        List<Ranking> rankings = List.of(
+                new Ranking(null, 12L, 7L, 2L, 16347L, 64L),     // Dominik Szoboszlai
+                new Ranking(null, 10L, 15L, 1L, 19334L, 64L),    // Florian Wirtz
+                new Ranking(null, 9L, 5L, 0L, 22396L, 64L),      // Luis Díaz
+                new Ranking(null, 18L, 6L, 3L, 28612L, 64L),     // Darwin Núñez
+                new Ranking(null, 6L, 10L, 2L, 45681L, 64L),     // Alexis Mac Allister
+                new Ranking(null, 4L, 8L, 0L, 81793L, 64L)       // Ryan Gravenberch
+        );
+
+        rankingRepository.saveAll(rankings);
     }
 }
