@@ -1,5 +1,7 @@
 package com.personal.kopmorning.domain.admin.service;
 
+import com.personal.kopmorning.domain.admin.dto.request.RollUpdateRequest;
+import com.personal.kopmorning.domain.admin.dto.request.SuspendRequest;
 import com.personal.kopmorning.domain.admin.dto.response.SuspendResponse;
 import com.personal.kopmorning.domain.article.article.dto.response.ArticleListResponse;
 import com.personal.kopmorning.domain.article.article.dto.response.ArticleResponse;
@@ -8,11 +10,18 @@ import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
 import com.personal.kopmorning.domain.member.entity.Member;
+import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
+import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
+import com.personal.kopmorning.global.exception.member.MemberException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,6 +42,18 @@ public class AdminService {
                 .toList();
     }
 
+    // 회원 권환 변경
+    @Transactional
+    public void updateRoll(RollUpdateRequest requestDTO) {
+        Member member = memberRepository.findById(requestDTO.getMemberId())
+                .orElseThrow(() -> new MemberException(
+                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
+                ));
+        member.setRole(Role.valueOf(requestDTO.getRoll()));
+    }
+
     public ArticleListResponse getArticleList(String category) {
         List<Article> articles;
         if (category == null) {
@@ -46,5 +67,31 @@ public class AdminService {
                 .toList();
 
         return new ArticleListResponse(articleResponses, articles.size(), category);
+    }
+
+    // 회원 정지
+    public void updateMemberSuspend(SuspendRequest requestDTO) {
+        Member member = memberRepository.findById(requestDTO.getMemberId())
+                .orElseThrow(() -> new MemberException(
+                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
+                ));
+
+        String redisKey = "suspend:member:" + requestDTO.getMemberId();
+        LocalDateTime suspendedUntil = LocalDateTime.now().plusDays(requestDTO.getSuspendDays());
+
+        SuspendResponse suspendResponse = new SuspendResponse();
+        suspendResponse.setMemberId(requestDTO.getMemberId());
+        suspendResponse.setSuspendedUntil(suspendedUntil);
+        suspendResponse.setReason(requestDTO.getReason());
+
+        Duration ttl = Duration.between(LocalDateTime.now(), suspendedUntil);
+        if (!ttl.isNegative()) {
+            redisTemplate.opsForValue().set(redisKey, suspendResponse, ttl);
+            member.setStatus(Member_Status.SUSPEND);
+        } else {
+            throw new IllegalArgumentException("suspendDays 값이 잘못되었습니다.");
+        }
     }
 }
