@@ -7,6 +7,8 @@ import com.personal.kopmorning.domain.article.article.dto.response.ArticleListRe
 import com.personal.kopmorning.domain.article.article.service.ArticleService;
 import com.personal.kopmorning.domain.article.comment.service.ArticleCommentService;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
+import com.personal.kopmorning.domain.report.dto.response.ReportResponse;
+import com.personal.kopmorning.domain.report.service.ReportService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,6 +28,7 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final AdminService adminService;
+    private final ReportService reportService;
     private final ArticleService articleService;
     private final ArticleCommentService articleCommentService;
 
@@ -64,6 +67,15 @@ public class AdminController {
                 "200",
                 "admin",
                 adminService.getArticleList(category)
+        );
+    }
+
+    @GetMapping("/report/list")
+    public RsData<List<ReportResponse>> getReportList() {
+        return new RsData<>(
+                  "200",
+                "admin",
+                reportService.getList()
         );
     }
 
