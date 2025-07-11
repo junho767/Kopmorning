@@ -38,7 +38,7 @@ public class BaseInitData implements ApplicationRunner {
     }
 
     private void memberInit() {
-        if (memberRepository.count() > 0) return; // 이미 데이터가 있으면 초기화 스킵
+        if (memberRepository.count() > 1) return; // 이미 데이터가 있으면 초기화 스킵
 
         memberRepository.save(Member.builder()
                 .name("홍길동")

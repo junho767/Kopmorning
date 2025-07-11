@@ -29,7 +29,7 @@ import java.util.List;
 public class AdminService {
     private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
-    private final RedisTemplate<String, SuspendResponse> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // todo : 정렬, 필터 조건 추가하면 좋을 듯
     // 정렬 : 가입 시간, 게시물 좋아요, 신고
@@ -51,7 +51,9 @@ public class AdminService {
                         MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
                         MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
                 ));
-        member.setRole(Role.valueOf(requestDTO.getRoll()));
+        String rollStr = requestDTO.getRoll().toUpperCase();
+        Role role = Role.valueOf(rollStr); // 대문자 변환 후 Enum 변환
+        member.setRole(role);
     }
 
     public ArticleListResponse getArticleList(String category) {

@@ -7,8 +7,8 @@ import com.personal.kopmorning.domain.article.article.dto.response.ArticleRespon
 import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
-import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
+import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
@@ -152,6 +152,19 @@ public class ArticleService {
                     ArticleErrorCode.NOT_AUTHOR.getHttpStatus()
             );
         }
+
+        articleRepository.delete(article);
+    }
+
+    @Transactional
+    public void forceDeletePost(Long articleId) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new ArticleException(
+                                ArticleErrorCode.INVALID_ARTICLE.getCode(),
+                                ArticleErrorCode.INVALID_ARTICLE.getMessage(),
+                                ArticleErrorCode.INVALID_ARTICLE.getHttpStatus()
+                        )
+                );
 
         articleRepository.delete(article);
     }

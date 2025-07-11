@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class RollUpdateRequest {
     private Long memberId;
-    private String Roll;
+    private String roll;
 }

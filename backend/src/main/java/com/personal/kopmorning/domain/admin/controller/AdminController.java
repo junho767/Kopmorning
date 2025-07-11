@@ -9,7 +9,6 @@ import com.personal.kopmorning.domain.article.comment.service.ArticleCommentServ
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,7 +29,7 @@ public class AdminController {
     private final ArticleService articleService;
     private final ArticleCommentService articleCommentService;
 
-    @PatchMapping("/update/roll")
+    @PatchMapping("/roll")
     public RsData<?> updateMemberRoll(@RequestBody RollUpdateRequest requestDTO) {
         adminService.updateRoll(requestDTO);
         return new RsData<>(
@@ -40,7 +38,7 @@ public class AdminController {
         );
     }
 
-    @PatchMapping("/update/suspend")
+    @PatchMapping("/suspend")
     public RsData<?> updateMemberSuspend(@RequestBody SuspendRequest requestDTO) {
         adminService.updateMemberSuspend(requestDTO);
         return new RsData<>(
@@ -61,11 +59,20 @@ public class AdminController {
     }
 
     @GetMapping("/article/list/{category}")
-    public RsData<ArticleListResponse> getArticleList(@PathVariable String category) {
+    public RsData<ArticleListResponse> getArticleList(@PathVariable(required = false) String category) {
         return new RsData<>(
                 "200",
                 "admin",
                 adminService.getArticleList(category)
+        );
+    }
+
+    @DeleteMapping("/article/{articleId}")
+    public RsData<?> deletePost(@PathVariable Long articleId) {
+        articleService.forceDeletePost(articleId);
+        return new RsData<>(
+                "200",
+                "admin"
         );
     }
 }
