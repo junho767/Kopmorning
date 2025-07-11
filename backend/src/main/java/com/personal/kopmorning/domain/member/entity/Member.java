@@ -63,6 +63,15 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Article> articles = new ArrayList<>();
 
+    public Member(String username, String encode, Role role) {
+        this.email = username;
+        this.name = username;
+        this.nickname = username;
+        this.provider = username;
+        this.provider_id = encode;
+        this.role = role;
+    }
+
     public void withdraw() {
         this.status = Member_Status.DELETED;
         this.deleteAt = LocalDateTime.now();

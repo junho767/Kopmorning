@@ -54,7 +54,7 @@ public class CustomOAuth2UserDetailService extends DefaultOAuth2UserService {
                     .email(email)
                     .name(name)
                     .role(Role.USER)
-                    .status(Member_Status.NEW)
+                    .status(Member_Status.ACTIVE)
                     .provider(provider)
                     .provider_id(providerId)
                     .created_at(LocalDateTime.now())

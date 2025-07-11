@@ -1,0 +1,41 @@
+package com.personal.kopmorning.domain.admin.controller;
+
+import com.personal.kopmorning.domain.admin.service.AdminService;
+import com.personal.kopmorning.domain.article.article.dto.response.ArticleListResponse;
+import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
+import com.personal.kopmorning.global.entity.RsData;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/admin")
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminController {
+    private final AdminService adminService;
+
+    @GetMapping("/member/list")
+    public RsData<List<MemberResponse>> getMemberList(
+    ) {
+        return new RsData<>(
+                "200",
+                "admin",
+                adminService.getMemberList()
+        );
+    }
+
+    @GetMapping("/article/list/{category}")
+    public RsData<ArticleListResponse> getArticleList(@PathVariable String category) {
+        return new RsData<>(
+                "200",
+                "admin",
+                adminService.getArticleList(category)
+        );
+    }
+}

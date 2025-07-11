@@ -11,4 +11,10 @@ public class ArticleListResponse {
     private List<ArticleResponse> articles;
     private int total;
     private String category;
+
+    public ArticleListResponse(List<ArticleResponse> articles, int total, String category) {
+        this.articles = articles;
+        this.total = total;
+        this.category = category;
+    }
 }
