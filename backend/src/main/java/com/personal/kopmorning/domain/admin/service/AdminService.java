@@ -51,7 +51,7 @@ public class AdminService {
                         MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
                         MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
                 ));
-        String rollStr = requestDTO.getRoll().toUpperCase();
+        String rollStr = requestDTO.getRole().toUpperCase();
         Role role = Role.valueOf(rollStr); // 대문자 변환 후 Enum 변환
         member.setRole(role);
     }

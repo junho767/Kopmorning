@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -102,5 +103,18 @@ public class ArticleCommentService {
         }
 
         articleCommentRepository.delete(articleComment);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('admin')")
+    public void forceDeleteComment(Long commentId) {
+        ArticleComment comment = articleCommentRepository.findById(commentId)
+                .orElseThrow(() -> new ArticleException(
+                        ArticleErrorCode.INVALID_COMMENT.getCode(),
+                        ArticleErrorCode.INVALID_COMMENT.getMessage(),
+                        HttpStatus.NOT_FOUND)
+                );
+
+        articleCommentRepository.delete(comment);
     }
 }

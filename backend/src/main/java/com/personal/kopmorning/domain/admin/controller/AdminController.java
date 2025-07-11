@@ -68,11 +68,17 @@ public class AdminController {
     }
 
     @DeleteMapping("/article/{articleId}")
-    public RsData<?> deletePost(@PathVariable Long articleId) {
-        articleService.forceDeletePost(articleId);
+    public RsData<?> deleteArticle(@PathVariable Long articleId) {
+        articleService.forceDeleteArticle(articleId);
         return new RsData<>(
                 "200",
                 "admin"
         );
+    }
+
+    @DeleteMapping("/comment/{commentId}")
+    public RsData<?> deleteComment(@PathVariable Long commentId) {
+        articleCommentService.forceDeleteComment(commentId);
+        return new RsData<>("200", "admin");
     }
 }

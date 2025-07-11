@@ -157,7 +157,7 @@ public class ArticleService {
     }
 
     @Transactional
-    public void forceDeletePost(Long articleId) {
+    public void forceDeleteArticle(Long articleId) {
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new ArticleException(
                                 ArticleErrorCode.INVALID_ARTICLE.getCode(),
