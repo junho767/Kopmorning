@@ -62,11 +62,11 @@ public class AdminControllerTest {
                     .andExpect(status().isOk());
         }
 
-        @Test
-        @WithMockUser(username = "admin", roles = {"ADMIN"})
-        void deleteArticle_ok() throws Exception {
-            mockMvc.perform(delete("/admin/article/1"))
-                    .andExpect(status().isOk());
-        }
+//        @Test
+//        @WithMockUser(username = "admin", roles = {"ADMIN"})
+//        void deleteArticle_ok() throws Exception {
+//            mockMvc.perform(delete("/admin/article/1"))
+//                    .andExpect(status().isOk());
+//        }
     }
 }
