@@ -1,11 +1,9 @@
 package com.personal.kopmorning.domain.report.controller;
 
 import com.personal.kopmorning.domain.report.dto.request.ReportRequest;
-import com.personal.kopmorning.domain.report.entity.Report;
 import com.personal.kopmorning.domain.report.service.ReportService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
