@@ -3,7 +3,6 @@ package com.personal.kopmorning.report.service;
 import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
-import com.personal.kopmorning.domain.article.article.service.ArticleService;
 import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
 import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
@@ -217,21 +216,21 @@ public class ReportServiceTest {
     @DisplayName("신고 목록 조회 - 게시물")
     public void getReportList() {
         // given
-        Report report1 =  Report.builder()
+        Report report1 = Report.builder()
                 .id(1L)
                 .article(stubArticle)
                 .member(member1)
                 .reason("너무 이상해요")
                 .reportedAt(LocalDateTime.now())
                 .build();
-        Report report2 =  Report.builder()
+        Report report2 = Report.builder()
                 .id(2L)
                 .article(stubArticle)
                 .member(member2)
                 .reason("실허요 ㅠㅠ")
                 .reportedAt(LocalDateTime.now())
                 .build();
-        Report report3 =  Report.builder()
+        Report report3 = Report.builder()
                 .id(3L)
                 .article(stubArticle)
                 .member(member1)
@@ -256,21 +255,21 @@ public class ReportServiceTest {
     @DisplayName("신고 목록 조회 - 댓글")
     public void getReportList_comment() {
         // given
-        Report report1 =  Report.builder()
+        Report report1 = Report.builder()
                 .id(1L)
                 .articleComment(stubComment)  // 댓글로 신고
                 .member(member1)
                 .reason("스팸 같아요")
                 .reportedAt(LocalDateTime.now())
                 .build();
-        Report report2 =  Report.builder()
+        Report report2 = Report.builder()
                 .id(2L)
                 .articleComment(stubComment)
                 .member(member2)
                 .reason("광고 메시지입니다")
                 .reportedAt(LocalDateTime.now())
                 .build();
-        Report report3 =  Report.builder()
+        Report report3 = Report.builder()
                 .id(3L)
                 .articleComment(stubComment)
                 .member(member1)

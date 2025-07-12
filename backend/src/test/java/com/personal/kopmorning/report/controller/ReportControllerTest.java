@@ -11,7 +11,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -24,7 +23,8 @@ public class ReportControllerTest {
 
     @Test
     @DisplayName("관리자 권한 없으면 접근 차단")
-    @WithMockUser(username = "user", roles = {"USER"}) // 일반 사용자
+    @WithMockUser(username = "user", roles = {"USER"})
+        // 일반 사용자
     void getList_shouldDenyAccessForUser() throws Exception {
         mockMvc.perform(get("/admin/report/list")) // 실제 endpoint
                 .andExpect(status().isForbidden());
@@ -32,7 +32,8 @@ public class ReportControllerTest {
 
     @Test
     @DisplayName("관리자 권한으로 전체 신고 리스트 조회")
-    @WithMockUser(username = "admin", roles = {"ADMIN"}) // 관리자 권한
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+        // 관리자 권한
     void getList_shouldReturnReportList() throws Exception {
         mockMvc.perform(get("/admin/report/list"))
                 .andExpect(status().isOk());
