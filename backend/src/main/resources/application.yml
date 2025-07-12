@@ -62,5 +62,9 @@ resilience4j:
           - java.io.IOException
           - java.util.concurrent.TimeoutException
 
+admin:
+  username: ${ADMIN.USERNAME}
+  password: ${ADMIN.PASSWORD}
+
 
 
