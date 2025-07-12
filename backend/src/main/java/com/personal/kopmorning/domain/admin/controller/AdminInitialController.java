@@ -26,6 +26,7 @@ public class AdminInitialController implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         if (!memberRepository.existsByEmail(adminUsername)) {
+            System.out.println("test");
             Member admin = new Member(adminUsername, passwordEncoder.encode(adminPassword), Role.ADMIN);
             memberRepository.save(admin);
         }
