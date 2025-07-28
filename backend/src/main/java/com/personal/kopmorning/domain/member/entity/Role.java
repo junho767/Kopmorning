@@ -1,9 +1,9 @@
 package com.personal.kopmorning.domain.member.entity;
 
 public enum Role {
-    ADMIN("admin"),
-    USER("user"),
-    GUEST("guest");
+    ADMIN("ADMIN"),
+    USER("USER"),
+    GUEST("GUEST");
 
     Role(String role) {
     }
