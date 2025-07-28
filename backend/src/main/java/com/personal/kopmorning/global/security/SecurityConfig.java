@@ -40,12 +40,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/index.html",
-                                "/swagger-ui/**"
+                                "/swagger-ui/**",
+                                "/actuator/prometheus"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/article/**")
-                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/article/**").permitAll()
                         .requestMatchers("/api/football/**").permitAll()
-
+                        .requestMatchers("/admin/**").hasAuthority("admin")
                         // 그 외 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
