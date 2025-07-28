@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -51,22 +52,17 @@ public class AdminControllerTest {
                     .andExpect(status().isOk());
         }
 
+
         @Test
         @WithMockUser(username = "admin", roles = {"ADMIN"})
         void updateRole_ok() throws Exception {
             RollUpdateRequest dto = new RollUpdateRequest(1L, "ADMIN");
 
             mockMvc.perform(patch("/admin/roll")
+                            .with(csrf()) // 💥 CSRF 토큰 추가
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(dto)))
                     .andExpect(status().isOk());
         }
-
-//        @Test
-//        @WithMockUser(username = "admin", roles = {"ADMIN"})
-//        void deleteArticle_ok() throws Exception {
-//            mockMvc.perform(delete("/admin/article/1"))
-//                    .andExpect(status().isOk());
-//        }
     }
 }

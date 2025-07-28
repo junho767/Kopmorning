@@ -45,7 +45,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/article/**").permitAll()
                         .requestMatchers("/api/football/**").permitAll()
-                        .requestMatchers("/admin/**").hasAuthority("admin")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         // 그 외 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
