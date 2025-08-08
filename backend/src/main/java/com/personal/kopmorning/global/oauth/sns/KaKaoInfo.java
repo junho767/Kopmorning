@@ -13,7 +13,8 @@ public class KaKaoInfo implements OAuthInfo {
 
     @Override
     public String getProviderId() {
-        return (String) attributes.get("sub");
+        Object idObj = attributes.get("id");
+        return idObj != null ? String.valueOf(idObj) : null;
     }
 
     @Override
@@ -23,11 +24,19 @@ public class KaKaoInfo implements OAuthInfo {
 
     @Override
     public String getProviderEmail() {
-        return (String) attributes.get("email");
+        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+        if (kakaoAccount != null) {
+            return (String) kakaoAccount.get("email");
+        }
+        return null;
     }
 
     @Override
     public String getProviderName() {
-        return (String) attributes.get("name");
+        Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
+        if (properties != null) {
+            return (String) properties.get("nickname");
+        }
+        return null;
     }
 }
