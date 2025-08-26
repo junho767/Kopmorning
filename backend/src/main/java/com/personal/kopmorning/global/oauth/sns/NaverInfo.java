@@ -6,14 +6,16 @@ import java.util.Map;
 
 public class NaverInfo implements OAuthInfo {
     private final Map<String, Object> attributes;
+    private final Map<String, Object> response;
 
     public NaverInfo(Map<String, Object> attributes) {
         this.attributes = attributes;
+        this.response = (Map<String, Object>) attributes.get("response");
     }
 
     @Override
     public String getProviderId() {
-        return (String) attributes.get("sub");
+        return (String) response.get("id");
     }
 
     @Override
@@ -23,11 +25,11 @@ public class NaverInfo implements OAuthInfo {
 
     @Override
     public String getProviderEmail() {
-        return (String) attributes.get("email");
+        return (String) response.get("email");
     }
 
     @Override
     public String getProviderName() {
-        return (String) attributes.get("name");
+        return (String) response.get("name");
     }
 }

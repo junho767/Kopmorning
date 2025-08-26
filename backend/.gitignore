@@ -26,6 +26,9 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 ../.idea/
+docker-compose.override.yml
+prometheus.yml
+/k6/**
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
