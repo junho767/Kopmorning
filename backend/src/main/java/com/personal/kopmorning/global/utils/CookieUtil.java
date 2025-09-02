@@ -27,25 +27,25 @@ public class CookieUtil {
     @Value("${jwt.cookie-path}")
     private String cookiePath;
 
-    public void addAccessCookie(String token, HttpServletResponse response) {
-        Cookie cookie = new Cookie(ACCESS_TOKEN, token);
-        cookie.setMaxAge(accessTokenExpiration);
-        cookie.setPath(cookiePath);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-
-        response.addCookie(cookie);
-    }
-
-    public void addRefreshCookie(String token, HttpServletResponse response) {
-        Cookie cookie = new Cookie(REFRESH_TOKEN, token);
-        cookie.setMaxAge(refreshTokenExpiration);
-        cookie.setPath(cookiePath);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-
-        response.addCookie(cookie);
-    }
+//    public void addAccessCookie(String token, HttpServletResponse response) {
+//        Cookie cookie = new Cookie(ACCESS_TOKEN, token);
+//        cookie.setMaxAge(accessTokenExpiration);
+//        cookie.setPath(cookiePath);
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(false);
+//
+//        response.addCookie(cookie);
+//    }
+//
+//    public void addRefreshCookie(String token, HttpServletResponse response) {
+//        Cookie cookie = new Cookie(REFRESH_TOKEN, token);
+//        cookie.setMaxAge(refreshTokenExpiration);
+//        cookie.setPath(cookiePath);
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(false);
+//
+//        response.addCookie(cookie);
+//    }
 
     public void removeAccessTokenFromCookie(HttpServletResponse response) {
         Cookie cookie = new Cookie(ACCESS_TOKEN, null);
@@ -88,30 +88,28 @@ public class CookieUtil {
         }
         return null;
     }
-/**
- * todo 배포 시 사용할 refreshToken 쿠키 추가 방법
+
     public void addRefreshCookie(String token, HttpServletResponse response) {
         Cookie cookie = new Cookie(REFRESH_TOKEN, token);
         cookie.setMaxAge(refreshTokenExpiration);
         cookie.setPath(cookiePath);
         cookie.setDomain(cookieDomain);
         cookie.setAttribute(SAME_SITE, NONE);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+//        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);
         cookie.setSecure(false);
         response.addCookie(cookie);
     }
- * todo 배포 시 사용할 accessToken 쿠키 추가 방법
+
     public void addAccessCookie(String token, HttpServletResponse response) {
         Cookie cookie = new Cookie(ACCESS_TOKEN, token);
         cookie.setMaxAge(accessTokenExpiration);
         cookie.setPath(cookiePath);
         cookie.setDomain(cookieDomain);
         cookie.setAttribute(SAME_SITE, NONE);
-        cookie.setHttpOnly(true); // HTTPS 에만 전달 가능하게 함.
+//        cookie.setHttpOnly(true); // HTTPS 에만 전달 가능하게 함.
         cookie.setHttpOnly(false);
         cookie.setSecure(true);
         response.addCookie(cookie);
     }
-**/
 }
