@@ -5,7 +5,7 @@ import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.article.like.entity.ArticleLike;
 import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
-import com.personal.kopmorning.domain.article.like.service.ArticleLikeService;
+import com.personal.kopmorning.domain.article.like.service.LikeService;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Member_Status;
 import com.personal.kopmorning.domain.member.entity.Role;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ArticleLikeServiceTest {
+class LikeServiceTest {
     @Mock
     private ArticleLikeRepository articleLikeRepository;
 
@@ -56,7 +56,7 @@ class ArticleLikeServiceTest {
     RLock lock;
 
     @InjectMocks
-    private ArticleLikeService articleLikeService;
+    private LikeService articleLikeService;
 
     private Member stubMember;
     private Article stubArticle;
@@ -81,7 +81,7 @@ class ArticleLikeServiceTest {
     }
 
     @Nested
-    @DisplayName("handleLike 동작")
+    @DisplayName("handleArticleLike 동작")
     class HandleLike {
 
         @Test
@@ -101,7 +101,7 @@ class ArticleLikeServiceTest {
                 when(articleLikeRepository.existsByArticleIdAndMemberId(10L, 1L))
                         .thenReturn(false);
 
-                boolean added = articleLikeService.handleLike(10L);
+                boolean added = articleLikeService.handleArticleLike(10L);
 
                 assertTrue(added);
                 assertEquals(1, stubArticle.getLikeCount());
@@ -110,26 +110,33 @@ class ArticleLikeServiceTest {
             }
         }
 
-//        @Test
-//        @DisplayName("좋아요 취소 성공")
-//        void cancelLike_success() {
-//            stubArticle.increaseLikeCount(); // likeCount = 1
-//
-//            try (MockedStatic<SecurityUtil> util = mockStatic(SecurityUtil.class)) {
-//                util.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
-//
-//                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
-//                when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
-//                when(articleLikeRepository.existsByArticleIdAndMemberId(10L, 1L))
-//                        .thenReturn(true);
-//
-//                boolean added = articleLikeService.handleLike(10L);
-//
-//                assertFalse(added);
-//                assertThat(stubArticle.getLikeCount()).isEqualTo(0L);
-//                verify(articleLikeRepository).deleteByArticleIdAndMemberId(10L, 1L);
-//                verify(articleLikeRepository, never()).save(any());
-//            }
-//        }
+        @Test
+        @DisplayName("좋아요 취소 성공")
+        void cancelLike_success() throws InterruptedException {
+            stubArticle.increaseLikeCount(); // 초기 좋아요 수 = 1
+
+            try (MockedStatic<SecurityUtil> util = mockStatic(SecurityUtil.class)) {
+                util.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
+
+                // given
+                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
+                when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
+                when(redissonClient.getLock(anyString())).thenReturn(lock);
+                when(lock.tryLock(anyLong(), anyLong(), any())).thenReturn(true);
+                when(lock.isHeldByCurrentThread()).thenReturn(true);
+                when(articleLikeRepository.existsByArticleIdAndMemberId(10L, 1L)).thenReturn(true);
+
+                // when
+                boolean added = articleLikeService.handleArticleLike(10L);
+
+                // then
+                assertFalse(added);
+                assertThat(stubArticle.getLikeCount()).isEqualTo(0L);
+                verify(articleLikeRepository).deleteByArticleIdAndMemberId(10L, 1L);
+                verify(articleLikeRepository, never()).save(any());
+                verify(lock).unlock();  // 락 해제 확인
+            }
+        }
+
     }
 }

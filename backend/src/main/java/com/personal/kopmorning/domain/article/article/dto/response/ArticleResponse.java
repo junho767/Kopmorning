@@ -36,4 +36,18 @@ public class ArticleResponse {
         this.createdAt = article.getCreatedAt();
         this.updatedAt = article.getUpdatedAt();
     }
+
+    public ArticleResponse(Article article) {
+        this.id = article.getId();
+        this.likeCount = article.getLikeCount();
+        this.viewCount = article.getViewCount();
+        this.member_id = article.getMember().getId();
+
+        this.title = article.getTitle();
+        this.body = article.getBody();
+        this.category = article.getCategory().name();
+
+        this.createdAt = article.getCreatedAt();
+        this.updatedAt = article.getUpdatedAt();
+    }
 }

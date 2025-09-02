@@ -9,6 +9,7 @@ import com.personal.kopmorning.global.oauth.sns.KaKaoInfo;
 import com.personal.kopmorning.global.oauth.sns.NaverInfo;
 import com.personal.kopmorning.global.security.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserDetailService extends DefaultOAuth2UserService {
@@ -54,7 +56,7 @@ public class CustomOAuth2UserDetailService extends DefaultOAuth2UserService {
                     .email(email)
                     .name(name)
                     .role(Role.USER)
-                    .status(Member_Status.NEW)
+                    .status(Member_Status.ACTIVE)
                     .provider(provider)
                     .provider_id(providerId)
                     .created_at(LocalDateTime.now())

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final TokenService tokenService;
@@ -38,11 +40,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/index.html",
-                                "/swagger-ui/**"
+                                "/swagger-ui/**",
+                                "/actuator/prometheus"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/article/**")
-                        .permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/article/**").permitAll()
+                        .requestMatchers("/api/football/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         // 그 외 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
