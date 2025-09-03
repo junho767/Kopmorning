@@ -97,7 +97,7 @@ public class CookieUtil {
         cookie.setAttribute(SAME_SITE, NONE);
 //        cookie.setHttpOnly(true);
         cookie.setHttpOnly(false);
-        cookie.setSecure(false);
+        cookie.setSecure(true);
         response.addCookie(cookie);
     }
 
