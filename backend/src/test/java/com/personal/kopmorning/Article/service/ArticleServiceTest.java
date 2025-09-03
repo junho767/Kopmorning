@@ -66,7 +66,7 @@ public class ArticleServiceTest {
                 .title("제목")
                 .body("본문")
                 .member(stubMember)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0L)
@@ -81,7 +81,7 @@ public class ArticleServiceTest {
         ArticleCreate req = ArticleCreate.builder()
                 .title("새 글")
                 .body("새 본문")
-                .category("FOOTBALL")
+                .category("football")
                 .build();
 
         // SecurityUtil.getRequiredMemberId() → 1L
@@ -107,7 +107,7 @@ public class ArticleServiceTest {
             ArgumentCaptor<Article> captor = ArgumentCaptor.forClass(Article.class);
             verify(articleRepository, times(1)).save(captor.capture());
             assertThat(captor.getValue().getTitle()).isEqualTo("새 글");
-            assertThat(captor.getValue().getCategory()).isEqualTo(Category.FOOTBALL);
+            assertThat(captor.getValue().getCategory()).isEqualTo(Category.football);
         }
     }
 
@@ -129,17 +129,17 @@ public class ArticleServiceTest {
     @DisplayName("카테고리별 목록 조회")
     void getArticleList_success() {
         // given
-        when(articleRepository.findByCategory(Category.FOOTBALL))
+        when(articleRepository.findByCategory(Category.football))
                 .thenReturn(List.of(stubArticle));
 
         // when
-        ArticleListResponse resp = articleService.getArticleListByCategory("FOOTBALL");
+        ArticleListResponse resp = articleService.getArticleListByCategory("football");
 
         // then
         assertThat(resp.getTotal()).isEqualTo(1);
         assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
         verify(articleRepository, times(1))
-                .findByCategory(Category.FOOTBALL);
+                .findByCategory(Category.football);
     }
 
     @Nested

@@ -72,7 +72,7 @@ class LikeServiceTest {
         stubArticle = Article.builder()
                 .id(10L).title("제목").body("본문")
                 .member(stubMember)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0L)

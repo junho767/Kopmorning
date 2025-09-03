@@ -48,7 +48,7 @@ public class AdminControllerTest {
         @Test
         @WithMockUser(username = "admin", roles = {"ADMIN"})
         void articleList_ok() throws Exception {
-            mockMvc.perform(get("/admin/article/list/FOOTBALL"))
+            mockMvc.perform(get("/admin/article/list/football"))
                     .andExpect(status().isOk());
         }
 

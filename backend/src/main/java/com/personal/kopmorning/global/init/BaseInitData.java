@@ -4,13 +4,11 @@ import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.football.entity.Ranking;
-import com.personal.kopmorning.domain.football.repository.PlayerRepository;
 import com.personal.kopmorning.domain.football.repository.RankingRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Member_Status;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
-import com.personal.kopmorning.global.jwt.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -101,7 +99,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("맨시티와 아스널의 개막전 경기 리뷰입니다...")
                 .likeCount(5L)
                 .viewCount(0L)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .member(members.get(0))
                 .build());
 
@@ -110,7 +108,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("2025 NBA 드래프트에서 가장 주목받은 선수는?")
                 .likeCount(3L)
                 .viewCount(0L)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .member(members.get(1))
                 .build());
 
@@ -119,7 +117,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("손흥민 선수의 월드컵 이후 첫 인터뷰 요약입니다.")
                 .likeCount(7L)
                 .viewCount(0L)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .member(members.get(2))
                 .build());
 
@@ -128,7 +126,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("2025 EPL 올스타전에서 활약한 선수들!")
                 .likeCount(2L)
                 .viewCount(0L)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .member(members.get(3))
                 .build());
 
@@ -137,7 +135,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("PSG 가 다시 한번 해냈습니다.")
                 .likeCount(4L)
                 .viewCount(0L)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .member(members.get(4))
                 .build());
     }

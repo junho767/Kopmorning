@@ -30,6 +30,7 @@ public class ArticleService {
     private final ArticleLikeRepository articleLikeRepository;
 
     private final static Long INIT_COUNT = 0L;
+    private final static String CATEGORY_IS_NULL = "all";
 
     public ArticleResponse addArticle(ArticleCreate articleCreate) {
         Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
@@ -67,7 +68,7 @@ public class ArticleService {
 
         Long memberId = SecurityUtil.getNullableMemberId();
 
-        if(memberId == null) {
+        if (memberId == null) {
             article.increaseViewCount();
             return new ArticleResponse(article, false);
         }
@@ -78,7 +79,13 @@ public class ArticleService {
     }
 
     public ArticleListResponse getArticleListByCategory(String category) {
-        List<Article> articleList = articleRepository.findByCategory(Category.valueOf(category));
+        List<Article> articleList;
+        if (category.equals(CATEGORY_IS_NULL)) {
+            articleList = articleRepository.findAll();
+        } else {
+            articleList = articleRepository.findByCategory(Category.valueOf(category));
+        }
+
         Long memberId = SecurityUtil.getNullableMemberId();
 
         // 사용자가 게시물에 좋아요 눌렀는 지 판단
