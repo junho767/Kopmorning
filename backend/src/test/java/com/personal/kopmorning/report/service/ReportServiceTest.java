@@ -6,7 +6,7 @@ import com.personal.kopmorning.domain.article.article.repository.ArticleReposito
 import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
 import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.report.dto.request.ReportRequest;
@@ -70,7 +70,7 @@ public class ReportServiceTest {
                 .email("admin")
                 .nickname("admin")
                 .role(Role.ADMIN)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         member1 = Member.builder()
@@ -79,7 +79,7 @@ public class ReportServiceTest {
                 .email("hong@example.com")
                 .nickname("홍홍홍")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         member2 = Member.builder()
@@ -88,7 +88,7 @@ public class ReportServiceTest {
                 .email("test1@example.com")
                 .nickname("junho")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         stubArticle = Article.builder()

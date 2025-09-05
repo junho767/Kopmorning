@@ -11,7 +11,7 @@ import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
@@ -95,7 +95,7 @@ public class AdminService {
         Duration ttl = Duration.between(LocalDateTime.now(), suspendedUntil);
         if (!ttl.isNegative()) {
             redisTemplate.opsForValue().set(redisKey, suspendResponse, ttl);
-            member.setStatus(Member_Status.SUSPEND);
+            member.setStatus(MemberStatus.SUSPEND);
         } else {
             throw new ServiceException(
                     AdminErrorCode.SUSPEND_DAYS_IS_NULL.getCode(),

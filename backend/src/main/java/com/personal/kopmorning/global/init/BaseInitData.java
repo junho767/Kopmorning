@@ -6,7 +6,7 @@ import com.personal.kopmorning.domain.article.article.repository.ArticleReposito
 import com.personal.kopmorning.domain.football.entity.Ranking;
 import com.personal.kopmorning.domain.football.repository.RankingRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class BaseInitData implements ApplicationRunner {
                 .provider("kakao")
                 .provider_id("kakao_1001")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build());
 
         memberRepository.save(Member.builder()
@@ -55,7 +55,7 @@ public class BaseInitData implements ApplicationRunner {
                 .provider("google")
                 .provider_id("google_1002")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build());
 
         memberRepository.save(Member.builder()
@@ -65,7 +65,7 @@ public class BaseInitData implements ApplicationRunner {
                 .provider("naver")
                 .provider_id("naver_1003")
                 .role(Role.ADMIN)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build());
 
         memberRepository.save(Member.builder()
@@ -75,7 +75,7 @@ public class BaseInitData implements ApplicationRunner {
                 .provider("kakao")
                 .provider_id("kakao_1004")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build());
 
         memberRepository.save(Member.builder()
@@ -85,7 +85,7 @@ public class BaseInitData implements ApplicationRunner {
                 .provider("google")
                 .provider_id("google_1005")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build());
     }
 

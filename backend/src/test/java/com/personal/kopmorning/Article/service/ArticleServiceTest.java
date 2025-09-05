@@ -9,7 +9,7 @@ import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.article.article.service.ArticleService;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.global.utils.SecurityUtil;
@@ -58,7 +58,7 @@ public class ArticleServiceTest {
                 .email("hong@example.com")
                 .nickname("길동이")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         stubArticle = Article.builder()

@@ -1,7 +1,6 @@
 package com.personal.kopmorning.domain.member.entity;
 
 import com.personal.kopmorning.domain.article.article.entity.Article;
-import com.personal.kopmorning.domain.report.entity.Report;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,7 +50,7 @@ public class Member {
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    private Member_Status status;
+    private MemberStatus status;
 
     private LocalDateTime deleteAt;
 
@@ -74,12 +73,12 @@ public class Member {
     }
 
     public void withdraw() {
-        this.status = Member_Status.DELETED;
+        this.status = MemberStatus.DELETED;
         this.deleteAt = LocalDateTime.now();
     }
 
     public void isActive() {
-        this.status = Member_Status.ACTIVE;
+        this.status = MemberStatus.ACTIVE;
         this.deleteAt = null;
     }
 }

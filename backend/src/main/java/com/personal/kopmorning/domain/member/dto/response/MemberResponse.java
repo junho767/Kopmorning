@@ -11,7 +11,7 @@ public class MemberResponse {
     private String name;
     private String email;
     private String nickname;
-    private String role;
+    private String memberState;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -20,7 +20,7 @@ public class MemberResponse {
         this.name = member.getName();
         this.email = member.getEmail();
         this.nickname = member.getNickname();
-        this.role = member.getRole().name();
+        this.memberState = member.getStatus().getDescription();
         this.createdAt = member.getCreated_at();
         this.updatedAt = LocalDateTime.now();
     }

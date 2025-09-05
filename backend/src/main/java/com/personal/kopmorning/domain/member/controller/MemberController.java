@@ -48,10 +48,10 @@ public class MemberController {
         }
 
         if (accessToken == null) {
-            accessToken = cookieUtil.getAccessTokenFromCookie(request);
+            accessToken = CookieUtil.getAccessTokenFromCookie(request);
         }
 
-        String refreshToken = cookieUtil.getRefreshTokenFromCookie(request);
+        String refreshToken = CookieUtil.getRefreshTokenFromCookie(request);
 
         if (accessToken == null || refreshToken == null) {
             return new RsData<>(

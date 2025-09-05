@@ -10,7 +10,7 @@ import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentR
 import com.personal.kopmorning.domain.article.comment.service.ArticleCommentService;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Role;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.service.MemberService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -52,7 +51,7 @@ class CommentServiceTest {
                 .email("hong@example.com")
                 .nickname("길동이")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         stubArticle = Article.builder()
