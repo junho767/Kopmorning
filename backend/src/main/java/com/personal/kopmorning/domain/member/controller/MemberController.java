@@ -11,12 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -83,7 +78,7 @@ public class MemberController {
 
     // todo : 탈퇴한 유저라면 어떤 식으로 클라이언트에게 표현해야 하는 지 고민해야 할 필요가 있음.
     @PatchMapping("/delete/cancel")
-    public RsData<?> cancelDelete() {
+    public RsData<?> deleteCancel() {
         memberService.deleteCancel();
         return new RsData<>(
                 MemberSuccessCode.DELETE_CANCEL.getCode(),
@@ -91,9 +86,22 @@ public class MemberController {
         );
     }
 
-    @PatchMapping("/delete")
-    public RsData<?> deleteMember() {
+    @PatchMapping("/delete/request")
+    public RsData<?> deleteRequest() {
         memberService.deleteRequest();
+        return new RsData<>(
+                MemberSuccessCode.DELETE_REQUEST.getCode(),
+                MemberSuccessCode.DELETE_REQUEST.getMessage()
+        );
+    }
+
+    @DeleteMapping
+    public RsData<?> deleteImmediately(HttpServletResponse response) {
+        memberService.deleteImmediately();
+
+        cookieUtil.removeAccessTokenFromCookie(response);
+        cookieUtil.removeRefreshTokenFromCookie(response);
+
         return new RsData<>(
                 MemberSuccessCode.DELETE_REQUEST.getCode(),
                 MemberSuccessCode.DELETE_REQUEST.getMessage()

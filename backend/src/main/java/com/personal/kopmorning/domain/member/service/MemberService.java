@@ -73,4 +73,15 @@ public class MemberService {
                 ));
         member.isActive();
     }
+
+    // 즉시 회원탈퇴
+    public void deleteImmediately() {
+        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
+                .orElseThrow(() -> new MemberException(
+                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
+                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
+                ));
+        memberRepository.deleteById(member.getId());
+    }
 }

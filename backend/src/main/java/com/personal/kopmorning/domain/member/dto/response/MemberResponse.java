@@ -14,6 +14,7 @@ public class MemberResponse {
     private String memberState;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
     public MemberResponse(Member member) {
         this.id = member.getId();
@@ -23,5 +24,6 @@ public class MemberResponse {
         this.memberState = member.getStatus().getDescription();
         this.createdAt = member.getCreated_at();
         this.updatedAt = LocalDateTime.now();
+        this.deletedAt = member.getDeleteAt();
     }
 }

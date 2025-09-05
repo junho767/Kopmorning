@@ -14,6 +14,48 @@ export default function MemberPage() {
     router.push("/member/edit");
   }
 
+  async function handleWithdraw() {
+    if (!confirm("정말 회원탈퇴 하시겠습니까?")) return;
+    const res = await fetch("http://localhost:8080/api/member/delete/request", {
+      method: "PATCH",
+      credentials: "include",
+    });
+    if (res.ok) {
+      alert("회원탈퇴 신청이 완료되었습니다.");
+      window.location.reload();
+    } else {
+      alert("회원탈퇴이 실패했습니다. 잠시 후에 다시 요청하길 바랍니다.");
+    }
+  }
+
+  async function handleWithdrawCancel() {
+    if (!confirm("탈퇴 신청을 취소하시겠습니까?")) return;
+    const res = await fetch("http://localhost:8080/api/member/delete/cancel", {
+      method: "PATCH",
+      credentials: "include",
+    });
+    if (res.ok) {
+      alert("탈퇴 신청이 취소되었습니다.");
+      window.location.reload();
+    } else {
+      alert("탈퇴 취소에 실패했습니다. 잠시 후에 다시 시도해 주세요.");
+    }
+  }
+
+  async function handleWithdrawNow() {
+    if (!confirm("정말 즉시 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.")) return;
+    const res = await fetch("http://localhost:8080/api/member", {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (res.ok) {
+      alert("즉시 탈퇴가 완료되었습니다.");
+      router.push("/");
+    } else {
+      alert("즉시 탈퇴에 실패했습니다. 잠시 후에 다시 시도해 주세요.");
+    }
+  }
+
   return (
     <>
       <Header />
@@ -49,6 +91,62 @@ export default function MemberPage() {
             >
               정보 수정
             </button>
+            {user.memberState === "탈퇴 회원" ? (
+              <>
+                <button
+                  onClick={handleWithdrawCancel}
+                  style={{
+                    marginTop: 16,
+                    width: "100%",
+                    padding: "10px 0",
+                    background: "#fff",
+                    color: "#e53935",
+                    border: "1px solid #e53935",
+                    borderRadius: 8,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  탈퇴 취소
+                </button>
+                <button
+                  onClick={handleWithdrawNow}
+                  style={{
+                    marginTop: 8,
+                    width: "100%",
+                    padding: "10px 0",
+                    background: "#e53935",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  즉시 탈퇴
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleWithdraw}
+                style={{
+                  marginTop: 16,
+                  width: "100%",
+                  padding: "10px 0",
+                  background: "#e53935",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}
+              >
+                회원탈퇴
+              </button>
+            )}
           </div>
         )}
       </main>
