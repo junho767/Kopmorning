@@ -94,7 +94,7 @@ public class ArticleCommentService {
         Member currentMember = memberService.getMemberBySecurityMember();
         Member member = articleComment.getMember();
 
-        if(!currentMember.equals(member)) {
+        if(!currentMember.getId().equals(member.getId())) {
             throw new ArticleException(
                     ArticleErrorCode.NOT_AUTHOR.getCode(),
                     ArticleErrorCode.NOT_AUTHOR.getMessage(),
