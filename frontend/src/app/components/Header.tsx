@@ -73,9 +73,9 @@ export default function Header() {
           >
             <Link href="/article/all" style={{ color: "var(--color-text)", textDecoration: "none" }}>게시글</Link>
             <span style={{ opacity: .3 }}>|</span>
-            <Link href="#schedule" style={{ color: "var(--color-text)", textDecoration: "none" }}>일정</Link>
+            <Link href="/matches" style={{ color: "var(--color-text)", textDecoration: "none" }}>일정</Link>
             <span style={{ opacity: .3 }}>|</span>
-            <Link href="#ranking" style={{ color: "var(--color-text)", textDecoration: "none" }}>랭킹</Link>
+            <Link href="/ranking" style={{ color: "var(--color-text)", textDecoration: "none" }}>랭킹</Link>
           </nav>
         </div>
 

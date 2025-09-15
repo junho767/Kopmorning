@@ -49,6 +49,9 @@ export default function ArticleDetailPage() {
   const [commentBody, setCommentBody] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingBody, setEditingBody] = useState("");
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: "article" | "comment"; id: number } | null>(null);
+  const [reportReason, setReportReason] = useState("");
   const { isLoggedIn, user } = useAuth();
 
   useEffect(() => {
@@ -69,7 +72,6 @@ export default function ArticleDetailPage() {
         return;
       }
       const rs: RsData<ArticleResponse> = await res.json();
-      console.log("게시물 단건 조회 결과:", rs);
       setArticle(rs.data);
     }
     fetchArticle();
@@ -179,7 +181,45 @@ export default function ArticleDetailPage() {
     }
   }
 
-  // (삭제) 댓글 좋아요 기능 제거
+  // 신고 모달 제어
+  function openReportModal(target: { type: "article" | "comment"; id: number }) {
+    if (!isLoggedIn) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
+    setReportTarget(target);
+    setReportReason("");
+    setIsReportModalOpen(true);
+  }
+
+  function closeReportModal() {
+    setIsReportModalOpen(false);
+    setReportTarget(null);
+    setReportReason("");
+  }
+
+  // 신고 제출
+  async function handleSubmitReport(e: React.FormEvent) {
+    e.preventDefault();
+    if (!reportTarget || !reportReason.trim()) return;
+    const endpoint = reportTarget.type === "article" ? `${API_BASE}/api/report/article` : `${API_BASE}/api/report/comment`;
+    const payload = reportTarget.type === "article"
+      ? { id: reportTarget.id, reason: reportReason }
+      : { id: reportTarget.id, reason: reportReason };
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      alert("신고가 접수되었습니다.");
+      closeReportModal();
+    } else {
+      alert("신고 접수에 실패했습니다.");
+    }
+  }
 
   const writer = article?.memberNickname || article?.memberName;
 
@@ -230,6 +270,21 @@ export default function ArticleDetailPage() {
             >
               {article.likedByMember ? "❤️" : "🤍"} 좋아요
             </button>
+            <button
+              onClick={() => openReportModal({ type: "article", id: article.id })}
+              style={{
+                marginLeft: 8,
+                padding: "4px 8px",
+                background: "#fff",
+                color: "#d32f2f",
+                border: "1px solid #d32f2f",
+                borderRadius: 4,
+                fontSize: 12,
+                cursor: "pointer"
+              }}
+            >
+              신고
+            </button>
           </div>
           <ActionButtons />
           <div style={{ fontSize: 18, color: "var(--color-text)", marginBottom: 32, whiteSpace: "pre-line" }}>{article.body}</div>
@@ -276,6 +331,20 @@ export default function ArticleDetailPage() {
                   )}
                   <div style={{ fontSize: 12, color: "#888", marginBottom: 8, display: "flex", alignItems: "center", gap: 12 }}>
                     {new Date(c.createAt).toLocaleString()}
+                    <button
+                      onClick={() => openReportModal({ type: "comment", id: c.id })}
+                      style={{
+                        padding: "2px 6px",
+                        background: "#fff",
+                        color: "#d32f2f",
+                        border: "1px solid #d32f2f",
+                        borderRadius: 4,
+                        fontSize: 11,
+                        cursor: "pointer"
+                      }}
+                    >
+                      신고
+                    </button>
                   </div>
                   {isLoggedIn && user && user.id === c.memberId && editingCommentId !== c.id && (
                     <div style={{ display: "flex", gap: 8 }}>
@@ -320,6 +389,37 @@ export default function ArticleDetailPage() {
           )}
         </section>
       </main>
+      {isReportModalOpen && (
+        <div
+          onClick={closeReportModal}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", display: "grid", placeItems: "center", zIndex: 50 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            style={{ width: 400, maxWidth: "92vw", background: "#fff", borderRadius: 10, border: "1px solid #ddd", padding: 16 }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <strong style={{ color: "#d32f2f" }}>신고하기</strong>
+              <button onClick={closeReportModal} aria-label="닫기" style={{ background: "transparent", border: 0, fontSize: 18, cursor: "pointer" }}>×</button>
+            </div>
+            <form onSubmit={handleSubmitReport} style={{ display: "grid", gap: 8 }}>
+              <label htmlFor="reportReason" style={{ fontSize: 13, color: "#555" }}>사유</label>
+              <textarea
+                id="reportReason"
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                placeholder="신고 사유를 입력하세요"
+                style={{ width: "100%", minHeight: 100, padding: 8, border: "1px solid #ccc", borderRadius: 6, resize: "vertical" }}
+                maxLength={500}
+                required
+              />
+              <button type="submit" style={{ marginTop: 6, padding: "8px 12px", background: "#d32f2f", color: "#fff", border: 0, borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>제출</button>
+            </form>
+          </div>
+        </div>
+      )}
       <Footer />
     </div>
   );
