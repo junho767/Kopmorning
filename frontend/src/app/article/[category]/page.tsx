@@ -57,7 +57,6 @@ export default async function ArticleCategoryPage({ params }: PageProps) {
     throw new Error("Failed to fetch articles");
   }
   const rs: RsData<ArticleListResponse> = await res.json();
-  console.log(rs);
   const { articles } = rs.data;
 
   return (

@@ -36,6 +36,8 @@ type Comment = {
   author: string;
   createAt: string;
   memberId: number;
+  likeCount: number;
+  likedByMember: boolean;
 };
 
 export default function ArticleDetailPage() {
@@ -51,16 +53,27 @@ export default function ArticleDetailPage() {
 
   useEffect(() => {
     async function fetchArticle() {
-      const res = await fetch(`${API_BASE}/api/article/${id}`, { cache: "no-store" });
+      // 로그인 상태에 따라 credentials 옵션을 다르게 설정
+      const fetchOptions: RequestInit = {
+        cache: "no-store"
+      };
+      
+      // 로그인한 사용자만 credentials를 포함
+      if (isLoggedIn) {
+        fetchOptions.credentials = "include";
+      }
+      
+      const res = await fetch(`${API_BASE}/api/article/${id}`, fetchOptions);
       if (!res.ok) {
         setNotFoundFlag(true);
         return;
       }
       const rs: RsData<ArticleResponse> = await res.json();
+      console.log("게시물 단건 조회 결과:", rs);
       setArticle(rs.data);
     }
     fetchArticle();
-  }, [id]);
+  }, [id, isLoggedIn]);
 
   // 댓글 목록 불러오기
   useEffect(() => {
@@ -145,6 +158,29 @@ export default function ArticleDetailPage() {
     }
   }
 
+  // 게시물 좋아요
+  async function handleArticleLike() {
+    if (!isLoggedIn) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
+    const res = await fetch(`${API_BASE}/api/like/article/${id}`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (res.ok) {
+      const res = await fetch(`${API_BASE}/api/article/${id}`, { cache: "no-store" });
+      if (res.ok) {
+        const rs: RsData<ArticleResponse> = await res.json();
+        setArticle(rs.data);
+      }
+    } else {
+      alert("좋아요 처리에 실패했습니다.");
+    }
+  }
+
+  // (삭제) 댓글 좋아요 기능 제거
+
   const writer = article?.memberNickname || article?.memberName;
 
   function ActionButtons() {
@@ -179,6 +215,21 @@ export default function ArticleDetailPage() {
           <h1 style={{ fontSize: 28, margin: "0 0 16px", color: "var(--color-primary)" }}>{article.title}</h1>
           <div style={{ color: "var(--color-text-muted)", fontSize: 14, marginBottom: 16 }}>
             작성자: <span style={{ color: "var(--color-primary)", fontWeight: 600 }}>{writer}</span> | 작성일: {new Date(article.createdAt).toLocaleString()} | 조회수: {article.viewCount} | 좋아요: {article.likeCount}
+            <button
+              onClick={handleArticleLike}
+              style={{
+                marginLeft: 12,
+                padding: "4px 8px",
+                background: article.likedByMember ? "#e53935" : "#fff",
+                color: article.likedByMember ? "#fff" : "#e53935",
+                border: "1px solid #e53935",
+                borderRadius: 4,
+                fontSize: 12,
+                cursor: "pointer"
+              }}
+            >
+              {article.likedByMember ? "❤️" : "🤍"} 좋아요
+            </button>
           </div>
           <ActionButtons />
           <div style={{ fontSize: 18, color: "var(--color-text)", marginBottom: 32, whiteSpace: "pre-line" }}>{article.body}</div>
@@ -223,7 +274,9 @@ export default function ArticleDetailPage() {
                   ) : (
                     <div style={{ fontSize: 15, color: "#222", marginBottom: 4 }}>{c.body}</div>
                   )}
-                  <div style={{ fontSize: 12, color: "#888", marginBottom: 8 }}>{new Date(c.createAt).toLocaleString()}</div>
+                  <div style={{ fontSize: 12, color: "#888", marginBottom: 8, display: "flex", alignItems: "center", gap: 12 }}>
+                    {new Date(c.createAt).toLocaleString()}
+                  </div>
                   {isLoggedIn && user && user.id === c.memberId && editingCommentId !== c.id && (
                     <div style={{ display: "flex", gap: 8 }}>
                       <button
