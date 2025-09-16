@@ -106,7 +106,6 @@ public class ArticleCommentService {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('admin')")
     public void forceDeleteComment(Long commentId) {
         ArticleComment comment = articleCommentRepository.findById(commentId)
                 .orElseThrow(() -> new ArticleException(

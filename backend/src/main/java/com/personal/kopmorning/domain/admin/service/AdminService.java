@@ -9,6 +9,9 @@ import com.personal.kopmorning.domain.article.article.dto.response.ArticleRespon
 import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
+import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
+import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
+import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentRepository;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.MemberStatus;
@@ -19,21 +22,24 @@ import com.personal.kopmorning.global.exception.ServiceException;
 import com.personal.kopmorning.global.exception.member.MemberException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminService {
     private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ArticleCommentRepository articleCommentRepository;
 
+    private final static String CATEGORY_IS_NULL = "all";
     private static final String SUSPEND_PREFIX = "suspend:member:";
 
     // 정렬 : 가입 시간, 게시물 좋아요, 신고
@@ -61,21 +67,23 @@ public class AdminService {
     }
 
     public ArticleListResponse getArticleList(String category) {
-        List<Article> articles;
-        if (category == null) {
-            articles = articleRepository.findAll();
+        List<Article> articleList;
+
+        if (category.equals(CATEGORY_IS_NULL)) {
+            articleList = articleRepository.findAll();
         } else {
-            articles = articleRepository.findByCategory(Category.valueOf(category));
+            articleList = articleRepository.findByCategory(Category.valueOf(category));
         }
 
-        List<ArticleResponse> articleResponses = articles.stream()
+        List<ArticleResponse> articleResponses = articleList.stream()
                 .map(ArticleResponse::new)
                 .toList();
 
-        return new ArticleListResponse(articleResponses, articles.size(), category);
+        return new ArticleListResponse(articleResponses, articleList.size(), category);
     }
 
     // 회원 정지
+    @Transactional
     public void updateMemberSuspend(SuspendRequest requestDTO) {
         Member member = memberRepository.findById(requestDTO.getMemberId())
                 .orElseThrow(() -> new MemberException(
@@ -100,8 +108,16 @@ public class AdminService {
             throw new ServiceException(
                     AdminErrorCode.SUSPEND_DAYS_IS_NULL.getCode(),
                     AdminErrorCode.SUSPEND_DAYS_IS_NULL.getMessage(),
-                    HttpStatus.BAD_REQUEST
+                    AdminErrorCode.SUSPEND_DAYS_IS_NULL.getHttpStatus()
             );
         }
+    }
+
+    public List<ArticleCommentResponse> getCommentList() {
+        List<ArticleComment> articleComments = articleCommentRepository.findAll();
+
+        return articleComments.stream()
+                .map(ArticleCommentResponse::new)
+                .toList();
     }
 }

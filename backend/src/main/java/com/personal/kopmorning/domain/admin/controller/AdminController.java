@@ -6,6 +6,7 @@ import com.personal.kopmorning.domain.admin.responseCode.AdminSuccessCode;
 import com.personal.kopmorning.domain.admin.service.AdminService;
 import com.personal.kopmorning.domain.article.article.dto.response.ArticleListResponse;
 import com.personal.kopmorning.domain.article.article.service.ArticleService;
+import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
 import com.personal.kopmorning.domain.article.comment.service.ArticleCommentService;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
 import com.personal.kopmorning.domain.report.dto.response.ReportResponse;
@@ -66,6 +67,15 @@ public class AdminController {
                 AdminSuccessCode.GET_ARTICLE_LIST_BY_ADMIN.getCode(),
                 AdminSuccessCode.GET_ARTICLE_LIST_BY_ADMIN.getMessage(),
                 adminService.getArticleList(category)
+        );
+    }
+
+    @GetMapping("/comment/list")
+    public RsData<List<ArticleCommentResponse>> getCommentList() {
+        return new RsData<>(
+                AdminSuccessCode.GET_COMMENT_LIST.getCode(),
+                AdminSuccessCode.GET_COMMENT_LIST.getMessage(),
+                adminService.getCommentList()
         );
     }
 

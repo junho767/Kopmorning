@@ -64,20 +64,26 @@ public class TokenService {
     }
 
     public String createAccessToken(String email) {
+        Member member = memberRepository.findByEmail(email);
+        Role role = member != null ? member.getRole() : Role.USER;
+
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .claim(AUTHORITIES_KEY, Role.USER)
+                .claim(AUTHORITIES_KEY, role)
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String createRefreshToken(String email) {
+        Member member = memberRepository.findByEmail(email);
+        Role role = member != null ? member.getRole() : Role.USER;
+
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .claim(AUTHORITIES_KEY, Role.USER)
+                .claim(AUTHORITIES_KEY, role)
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();

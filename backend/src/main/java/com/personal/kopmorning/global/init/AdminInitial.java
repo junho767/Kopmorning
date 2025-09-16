@@ -1,4 +1,4 @@
-package com.personal.kopmorning.domain.admin.controller;
+package com.personal.kopmorning.global.init;
 
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Role;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AdminInitialController implements ApplicationRunner {
+public class AdminInitial implements ApplicationRunner {
     @Value("${admin.username}")
     private String adminUsername;
 

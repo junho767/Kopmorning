@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class MemberResponse {
     private Long id;
+    private String role;
     private String name;
     private String email;
     private String nickname;
@@ -18,6 +19,7 @@ public class MemberResponse {
 
     public MemberResponse(Member member) {
         this.id = member.getId();
+        this.role = member.getRole().toString();
         this.name = member.getName();
         this.email = member.getEmail();
         this.nickname = member.getNickname();

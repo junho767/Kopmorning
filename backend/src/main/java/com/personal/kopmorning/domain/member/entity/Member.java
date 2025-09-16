@@ -40,6 +40,9 @@ public class Member {
     @Column(unique = true)
     private String nickname;
 
+    @Column
+    private String password;
+
     @Column(nullable = false)
     private String provider;
 
@@ -63,13 +66,15 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Article> articles = new ArrayList<>();
 
-    public Member(String username, String encode, Role role) {
+    public Member(String username, String encodePassword, Role role) {
         this.email = username;
         this.name = username;
         this.nickname = username;
         this.provider = username;
-        this.provider_id = encode;
+        this.password = encodePassword;
+        this.provider_id = encodePassword;
         this.role = role;
+        this.status = MemberStatus.ADMIN;
     }
 
     public void withdraw() {
