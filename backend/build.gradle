@@ -69,6 +69,8 @@ dependencies {
 
 	// prometheus
 	implementation 'io.micrometer:micrometer-registry-prometheus'
+
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }
 
 tasks.named('test') {
