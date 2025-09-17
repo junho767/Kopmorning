@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import Link from "next/link";
@@ -33,6 +35,7 @@ type ArticleListResponse = {
   articles: ArticleResponse[];
   total: number;
   category: string;
+  nextCursor: number | null;
 };
 
 type RsData<T> = {
@@ -43,21 +46,77 @@ type RsData<T> = {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8080";
 
-export default async function ArticleCategoryPage({ params }: PageProps) {
-  const { category } = await params;
+export default function ArticleCategoryPage({ params }: PageProps) {
+  const [category, setCategory] = useState<string>("");
+  const [articles, setArticles] = useState<ArticleResponse[]>([]);
+  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const loadArticles = useCallback(async (cursor: number | null = null, append: boolean = false) => {
+    setLoading(true);
+    try {
+      const url = new URL(`${API_BASE}/api/article/list/${category}`);
+      if (cursor) {
+        url.searchParams.set('nextCursor', cursor.toString());
+      }
+      url.searchParams.set('size', '10');
+
+      const res = await fetch(url.toString(), { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error("Failed to fetch articles");
+      }
+      
+      const rs: RsData<ArticleListResponse> = await res.json();
+      const { articles: newArticles, nextCursor: newNextCursor } = rs.data;
+      
+      if (append) {
+        setArticles(prev => [...prev, ...newArticles]);
+      } else {
+        setArticles(newArticles);
+      }
+      
+      setNextCursor(newNextCursor);
+      setHasMore(newNextCursor !== null);
+    } catch (error) {
+      console.error("Error loading articles:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [category]);
+
+  useEffect(() => {
+    const initializeCategory = async () => {
+      const { category: resolvedCategory } = await params;
+      setCategory(resolvedCategory);
+    };
+    initializeCategory();
+  }, [params]);
+
+  useEffect(() => {
+    if (category) {
+      // 카테고리가 변경될 때마다 게시글 목록 초기화
+      setArticles([]);
+      setNextCursor(null);
+      setHasMore(true);
+      loadArticles();
+    }
+  }, [category, loadArticles]);
+
+  const loadMore = useCallback(() => {
+    if (nextCursor && hasMore && !loading) {
+      loadArticles(nextCursor, true);
+    }
+  }, [nextCursor, hasMore, loading, loadArticles]);
+
+  if (!category) {
+    return <div>Loading...</div>;
+  }
 
   const allowed = ["all", "free", "football"] as const;
   if (!allowed.some((c) => c === category)) {
     return notFound();
   }
-
-  // 서버에서 목록 조회
-  const res = await fetch(`${API_BASE}/api/article/list/${category}`, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error("Failed to fetch articles");
-  }
-  const rs: RsData<ArticleListResponse> = await res.json();
-  const { articles } = rs.data;
 
   return (
     <div>
@@ -108,6 +167,38 @@ export default async function ArticleCategoryPage({ params }: PageProps) {
               </Link>
             ))}
           </div>
+          
+          {/* 더보기 버튼 */}
+          {hasMore && (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
+              <button
+                onClick={loadMore}
+                disabled={loading}
+                style={{
+                  padding: "12px 24px",
+                  background: loading ? "var(--color-surface-variant)" : "var(--color-primary)",
+                  color: loading ? "var(--color-text-muted)" : "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  fontSize: 15,
+                  fontWeight: 600,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  transition: "background-color 0.2s ease",
+                }}
+              >
+                {loading ? "로딩 중..." : "더 보기"}
+              </button>
+            </div>
+          )}
+          
+          {/* 더 이상 불러올 게시글이 없을 때 */}
+          {!hasMore && articles.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
+              <p style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
+                모든 게시글을 불러왔습니다.
+              </p>
+            </div>
+          )}
         </div>
       </main>
       <Footer />

@@ -14,13 +14,7 @@ import com.personal.kopmorning.domain.report.service.ReportService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -62,11 +56,15 @@ public class AdminController {
     }
 
     @GetMapping("/article/list/{category}")
-    public RsData<ArticleListResponse> getArticleList(@PathVariable(required = false) String category) {
+    public RsData<ArticleListResponse> getArticleList(
+            @PathVariable(required = false) String category,
+            @RequestParam(required = false) Long nextCursor,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         return new RsData<>(
                 AdminSuccessCode.GET_ARTICLE_LIST_BY_ADMIN.getCode(),
                 AdminSuccessCode.GET_ARTICLE_LIST_BY_ADMIN.getMessage(),
-                adminService.getArticleList(category)
+                adminService.getArticleList(category, nextCursor, size)
         );
     }
 

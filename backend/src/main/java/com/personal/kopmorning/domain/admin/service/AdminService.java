@@ -23,6 +23,9 @@ import com.personal.kopmorning.global.exception.member.MemberException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -66,20 +69,34 @@ public class AdminService {
         member.setRole(role);
     }
 
-    public ArticleListResponse getArticleList(String category) {
+    public ArticleListResponse getArticleList(String category, Long cursor, int size) {
+        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id"));
         List<Article> articleList;
 
-        if (category.equals(CATEGORY_IS_NULL)) {
-            articleList = articleRepository.findAll();
+        // 카테고리 유무
+        if (category.equalsIgnoreCase(CATEGORY_IS_NULL)) {
+            // 커서의 유무
+            if (cursor == null) {
+                articleList = articleRepository.findAll(pageable).getContent();
+            } else {
+                articleList = articleRepository.findByIdLessThanOrderByIdDesc(cursor, pageable);
+            }
         } else {
-            articleList = articleRepository.findByCategory(Category.valueOf(category));
+            Category cat = Category.valueOf(category.toLowerCase());
+            if (cursor == null) {
+                articleList = articleRepository.findByCategory(cat, pageable).getContent();
+            } else {
+                articleList = articleRepository.findByCategoryAndIdLessThanOrderByIdDesc(cat, cursor, pageable);
+            }
         }
 
         List<ArticleResponse> articleResponses = articleList.stream()
                 .map(ArticleResponse::new)
                 .toList();
 
-        return new ArticleListResponse(articleResponses, articleList.size(), category);
+        Long nextCursor = articleResponses.isEmpty() ? null : articleResponses.getLast().getId();
+
+        return new ArticleListResponse(articleResponses, articleList.size(), category, nextCursor);
     }
 
     // 회원 정지

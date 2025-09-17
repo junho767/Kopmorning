@@ -17,6 +17,9 @@ import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -78,12 +81,23 @@ public class ArticleService {
         return new ArticleResponse(article, liked);
     }
 
-    public ArticleListResponse getArticleListByCategory(String category) {
+    public ArticleListResponse getArticleListByCategory(String category, Long cursor, int size) {
+        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id"));
         List<Article> articleList;
-        if (category.equals(CATEGORY_IS_NULL)) {
-            articleList = articleRepository.findAll();
+
+        if (category.equalsIgnoreCase(CATEGORY_IS_NULL)) {
+            if (cursor == null) {
+                articleList = articleRepository.findAll(pageable).getContent();
+            } else {
+                articleList = articleRepository.findByIdLessThanOrderByIdDesc(cursor, pageable);
+            }
         } else {
-            articleList = articleRepository.findByCategory(Category.valueOf(category));
+            Category cat = Category.valueOf(category.toLowerCase());
+            if (cursor == null) {
+                articleList = articleRepository.findByCategory(cat, pageable).getContent();
+            } else {
+                articleList = articleRepository.findByCategoryAndIdLessThanOrderByIdDesc(cat, cursor, pageable);
+            }
         }
 
         Long memberId = SecurityUtil.getNullableMemberId();
@@ -101,9 +115,12 @@ public class ArticleService {
 
         int total = articles.size();
 
+        Long nextCursor = articles.isEmpty() ? null : articles.getLast().getId();
+
         return ArticleListResponse.builder()
                 .articles(articles)
                 .total(total)
+                .nextCursor(nextCursor)
                 .category(category)
                 .build();
     }

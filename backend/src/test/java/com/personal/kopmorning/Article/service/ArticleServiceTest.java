@@ -23,6 +23,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +34,7 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -126,20 +130,43 @@ public class ArticleServiceTest {
     }
 
     @Test
-    @DisplayName("카테고리별 목록 조회")
-    void getArticleList_success() {
+    @DisplayName("카테고리별 목록 조회 - 첫 페이지 커서 기반")
+    void getArticleList_success_firstPage() {
         // given
-        when(articleRepository.findByCategory(Category.football))
+        int size = 10;
+        Page<Article> stubPage = new PageImpl<>(List.of(stubArticle));
+        when(articleRepository.findByCategory(eq(Category.football), any(Pageable.class)))
+                .thenReturn(stubPage);
+
+        // when
+        ArticleListResponse resp = articleService.getArticleListByCategory("FOOTBALL", null, size);
+
+        // then
+        assertThat(resp.getTotal()).isEqualTo(1);
+        assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
+        assertThat(resp.getNextCursor()).isEqualTo(stubArticle.getId()); // 다음 페이지 커서 검증
+        verify(articleRepository, times(1))
+                .findByCategory(eq(Category.football), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("카테고리별 목록 조회 - 다음 페이지 커서 기반")
+    void getArticleList_success_nextPage() {
+        // given
+        long cursor = 5L;
+        int size = 10;
+        when(articleRepository.findByCategoryAndIdLessThanOrderByIdDesc(
+                eq(Category.football), eq(cursor), any(Pageable.class)))
                 .thenReturn(List.of(stubArticle));
 
         // when
-        ArticleListResponse resp = articleService.getArticleListByCategory("football");
+        ArticleListResponse resp = articleService.getArticleListByCategory("football", cursor, size);
 
         // then
         assertThat(resp.getTotal()).isEqualTo(1);
         assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
         verify(articleRepository, times(1))
-                .findByCategory(Category.football);
+                .findByCategoryAndIdLessThanOrderByIdDesc(eq(Category.football), eq(cursor), any(Pageable.class));
     }
 
     @Nested

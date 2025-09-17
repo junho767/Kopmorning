@@ -138,6 +138,17 @@ public class BaseInitData implements ApplicationRunner {
                 .category(Category.football)
                 .member(members.get(4))
                 .build());
+
+        for (int i = 1; i <= 10; i++) {
+            articleRepository.save(Article.builder()
+                    .title("프리미어리그 경기 리뷰 " + i)
+                    .body("이번 주 프리미어리그 경기 " + i + "에 대한 리뷰입니다...")
+                    .likeCount((long) (Math.random() * 20)) // 좋아요 랜덤
+                    .viewCount((long) (Math.random() * 100)) // 조회수 랜덤
+                    .category(Category.football)
+                    .member(members.get(i % members.size())) // 멤버를 순환하면서 배정
+                    .build());
+        }
     }
 
     private void playerInit() {
