@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../components/AuthContext";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8080";
@@ -57,7 +57,6 @@ export default function AdminPage() {
   const { isLoggedIn, user } = useAuth();
   const [tab, setTab] = useState<"members" | "articles" | "reports">("members");
   const [members, setMembers] = useState<Member[]>([]);
-  const [query, setQuery] = useState("");
   const [articles, setArticles] = useState<ArticleItem[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<{ [id: number]: string }>({});
   const [reports, setReports] = useState<ReportItem[]>([]);
@@ -67,6 +66,10 @@ export default function AdminPage() {
   const [articleLoading, setArticleLoading] = useState(false);
   const [articleHasMore, setArticleHasMore] = useState(true);
   const [articleCategory, setArticleCategory] = useState<string>("all");
+  
+  // 게시물 검색 상태
+  const [articleSearchKeyword, setArticleSearchKeyword] = useState<string>("");
+  const [isArticleSearching, setIsArticleSearching] = useState(false);
   
   // 회원 관리 상태
   const [memberNextCursor, setMemberNextCursor] = useState<number | null>(null);
@@ -133,7 +136,7 @@ export default function AdminPage() {
     loadMembers();
   }, [isAdmin]);
 
-  const loadArticles = useCallback(async (cursor: number | null = null, append: boolean = false) => {
+  const loadArticles = useCallback(async (cursor: number | null = null, append: boolean = false, keyword?: string) => {
     setArticleLoading(true);
     try {
       const url = new URL(`${API_BASE}/admin/article/list/${articleCategory}`);
@@ -141,6 +144,11 @@ export default function AdminPage() {
         url.searchParams.set('nextCursor', cursor.toString());
       }
       url.searchParams.set('size', '10');
+      
+      // keyword가 있으면 쿼리 파라미터에 추가
+      if (keyword && keyword.trim()) {
+        url.searchParams.set('keyword', keyword.trim());
+      }
 
       const res = await fetch(url.toString(), { credentials: "include" });
       if (!res.ok) {
@@ -167,9 +175,41 @@ export default function AdminPage() {
 
   const loadMoreArticles = useCallback(() => {
     if (articleNextCursor && articleHasMore && !articleLoading) {
-      loadArticles(articleNextCursor, true);
+      loadArticles(articleNextCursor, true, isArticleSearching ? articleSearchKeyword : undefined);
     }
-  }, [articleNextCursor, articleHasMore, articleLoading, loadArticles]);
+  }, [articleNextCursor, articleHasMore, articleLoading, loadArticles, isArticleSearching, articleSearchKeyword]);
+
+  // 게시물 검색어 입력 핸들러
+  const handleArticleSearchInput = useCallback((keyword: string) => {
+    setArticleSearchKeyword(keyword);
+  }, []);
+
+  // 게시물 검색 실행 핸들러
+  const handleArticleSearch = useCallback(() => {
+    if (articleSearchKeyword.trim()) {
+      setIsArticleSearching(true);
+      setArticles([]);
+      setArticleNextCursor(null);
+      setArticleHasMore(true);
+      loadArticles(null, false, articleSearchKeyword);
+    } else {
+      setIsArticleSearching(false);
+      setArticles([]);
+      setArticleNextCursor(null);
+      setArticleHasMore(true);
+      loadArticles();
+    }
+  }, [articleSearchKeyword, loadArticles]);
+
+  // 게시물 검색 초기화 핸들러
+  const handleArticleSearchReset = useCallback(() => {
+    setArticleSearchKeyword("");
+    setIsArticleSearching(false);
+    setArticles([]);
+    setArticleNextCursor(null);
+    setArticleHasMore(true);
+    loadArticles();
+  }, [loadArticles]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -238,16 +278,6 @@ export default function AdminPage() {
     loadReports();
   }, [isAdmin]);
 
-  const filteredMembers = useMemo(() => {
-    if (!members || !Array.isArray(members)) return [];
-    if (!query.trim()) return members;
-    const q = query.toLowerCase();
-    return members.filter(m =>
-      m.name?.toLowerCase().includes(q) ||
-      m.email?.toLowerCase().includes(q) ||
-      m.nickname?.toLowerCase().includes(q)
-    );
-  }, [members, query]);
 
   if (!isAdmin) return null;
 
@@ -263,9 +293,6 @@ export default function AdminPage() {
 
         {tab === "members" && (
           <section>
-            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-              <input value={query} onChange={e => setQuery(e.target.value)} placeholder="이름/닉네임/이메일 검색" style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid #ddd" }} />
-            </div>
             <div style={{ overflowX: "auto", border: "1px solid #eee", borderRadius: 10 }}>
               <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}>
                 <thead>
@@ -280,7 +307,7 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredMembers.map(m => (
+                  {members.map(m => (
                     <tr key={m.id}>
                       <td style={{ padding: 10, borderBottom: "1px solid #f2f2f2" }}>{m.id}</td>
                       <td style={{ padding: 10, borderBottom: "1px solid #f2f2f2" }}>{m.name}</td>
@@ -379,6 +406,59 @@ export default function AdminPage() {
               </select>
             </div>
             
+            {/* 게시물 검색 입력창 */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center" }}>
+              <input
+                type="text"
+                value={articleSearchKeyword}
+                onChange={(e) => handleArticleSearchInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleArticleSearch()}
+                placeholder="게시물 제목으로 검색..."
+                style={{
+                  flex: 1,
+                  padding: "10px 16px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: 8,
+                  fontSize: 14,
+                  outline: "none",
+                  transition: "border-color 0.2s ease"
+                }}
+              />
+              <button
+                onClick={handleArticleSearch}
+                disabled={articleLoading}
+                style={{
+                  padding: "10px 20px",
+                  background: articleLoading ? "var(--color-surface-variant)" : "var(--color-primary)",
+                  color: articleLoading ? "var(--color-text-muted)" : "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: articleLoading ? "not-allowed" : "pointer",
+                  transition: "background-color 0.2s ease"
+                }}
+              >
+                {articleLoading ? "검색 중..." : "검색"}
+              </button>
+              {(articleSearchKeyword || isArticleSearching) && (
+                <button
+                  onClick={handleArticleSearchReset}
+                  style={{
+                    padding: "10px 16px",
+                    background: "var(--color-surface-variant)",
+                    color: "var(--color-text-muted)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 14,
+                    cursor: "pointer"
+                  }}
+                >
+                  초기화
+                </button>
+              )}
+            </div>
+            
             <div style={{ overflowX: "auto", border: "1px solid #eee", borderRadius: 10 }}>
               <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}>
                 <thead>
@@ -433,7 +513,7 @@ export default function AdminPage() {
                     transition: "background-color 0.2s ease",
                   }}
                 >
-                  {articleLoading ? "로딩 중..." : "더 보기"}
+                  {articleLoading ? "로딩 중..." : (isArticleSearching ? "검색 결과 더 보기" : "더 보기")}
                 </button>
               </div>
             )}
@@ -442,7 +522,16 @@ export default function AdminPage() {
             {!articleHasMore && articles.length > 0 && (
               <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
                 <p style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
-                  모든 게시글을 불러왔습니다.
+                  {isArticleSearching ? "모든 검색 결과를 불러왔습니다." : "모든 게시글을 불러왔습니다."}
+                </p>
+              </div>
+            )}
+            
+            {/* 검색 결과가 없을 때 */}
+            {isArticleSearching && articles.length === 0 && !articleLoading && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                <p style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
+                  &ldquo;{articleSearchKeyword}&rdquo;에 대한 검색 결과가 없습니다.
                 </p>
               </div>
             )}

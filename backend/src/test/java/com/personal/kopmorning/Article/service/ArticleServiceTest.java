@@ -139,7 +139,7 @@ public class ArticleServiceTest {
                 .thenReturn(stubPage);
 
         // when
-        ArticleListResponse resp = articleService.getArticleListByCategory("FOOTBALL", null, size);
+        ArticleListResponse resp = articleService.getArticleListByCategory("FOOTBALL", null, size, null);
 
         // then
         assertThat(resp.getTotal()).isEqualTo(1);
@@ -160,7 +160,7 @@ public class ArticleServiceTest {
                 .thenReturn(List.of(stubArticle));
 
         // when
-        ArticleListResponse resp = articleService.getArticleListByCategory("football", cursor, size);
+        ArticleListResponse resp = articleService.getArticleListByCategory("football", cursor, size, null);
 
         // then
         assertThat(resp.getTotal()).isEqualTo(1);

@@ -27,12 +27,13 @@ public class ArticleController {
     public RsData<?> getArticleListByCategory(
             @PathVariable String category,
             @RequestParam(required = false) Long nextCursor,
+            @RequestParam(required = false) String keyWord,
             @RequestParam(defaultValue = "10") int size
     ) {
         return new RsData<>(
                 ArticleSuccessCode.GET_LIST.getCode(),
                 ArticleSuccessCode.GET_LIST.getMessage(),
-                articleService.getArticleListByCategory(category, nextCursor, size)
+                articleService.getArticleListByCategory(category, nextCursor, size, keyWord)
         );
     }
 

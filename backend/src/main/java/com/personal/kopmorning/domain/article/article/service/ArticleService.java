@@ -81,24 +81,36 @@ public class ArticleService {
         return new ArticleResponse(article, liked);
     }
 
-    public ArticleListResponse getArticleListByCategory(String category, Long cursor, int size) {
+    public ArticleListResponse getArticleListByCategory(String category, Long cursor, int size, String keyword) {
         Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id"));
         List<Article> articleList;
 
-        if (category.equalsIgnoreCase(CATEGORY_IS_NULL)) {
+        boolean isAllCategory = category.equalsIgnoreCase(CATEGORY_IS_NULL);
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+
+        if (isAllCategory) {
             if (cursor == null) {
-                articleList = articleRepository.findAll(pageable).getContent();
+                articleList = hasKeyword
+                        ? articleRepository.findByTitleContainingIgnoreCaseOrderByIdDesc(keyword, pageable)
+                        : articleRepository.findAll(pageable).getContent();
             } else {
-                articleList = articleRepository.findByIdLessThanOrderByIdDesc(cursor, pageable);
+                articleList = hasKeyword
+                        ? articleRepository.findByIdLessThanAndTitleContainingIgnoreCaseOrderByIdDesc(cursor, keyword, pageable)
+                        : articleRepository.findByIdLessThanOrderByIdDesc(cursor, pageable);
             }
         } else {
             Category cat = Category.valueOf(category.toLowerCase());
             if (cursor == null) {
-                articleList = articleRepository.findByCategory(cat, pageable).getContent();
+                articleList = hasKeyword
+                        ? articleRepository.findByCategoryAndTitleContainingIgnoreCaseOrderByIdDesc(cat, keyword, pageable)
+                        : articleRepository.findByCategory(cat, pageable).getContent();
             } else {
-                articleList = articleRepository.findByCategoryAndIdLessThanOrderByIdDesc(cat, cursor, pageable);
+                articleList = hasKeyword
+                        ? articleRepository.findByCategoryAndIdLessThanAndTitleContainingIgnoreCaseOrderByIdDesc(cat, cursor, keyword, pageable)
+                        : articleRepository.findByCategoryAndIdLessThanOrderByIdDesc(cat, cursor, pageable);
             }
         }
+
 
         Long memberId = SecurityUtil.getNullableMemberId();
 

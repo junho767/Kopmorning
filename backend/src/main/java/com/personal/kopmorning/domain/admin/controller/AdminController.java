@@ -63,12 +63,13 @@ public class AdminController {
     public RsData<ArticleListResponse> getArticleList(
             @PathVariable(required = false) String category,
             @RequestParam(required = false) Long nextCursor,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "10") int size
     ) {
         return new RsData<>(
                 AdminSuccessCode.GET_ARTICLE_LIST_BY_ADMIN.getCode(),
                 AdminSuccessCode.GET_ARTICLE_LIST_BY_ADMIN.getMessage(),
-                adminService.getArticleList(category, nextCursor, size)
+                adminService.getArticleList(category, nextCursor, size, keyword)
         );
     }
 

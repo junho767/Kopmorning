@@ -20,4 +20,13 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     // 커서 페이지: 카테고리 필터
     List<Article> findByCategoryAndIdLessThanOrderByIdDesc(Category category, Long id, Pageable pageable);
+
+    // 검색어 포함
+    List<Article> findByTitleContainingIgnoreCaseOrderByIdDesc(String titleKeyword, Pageable pageable);
+
+    List<Article> findByIdLessThanAndTitleContainingIgnoreCaseOrderByIdDesc(Long cursor, String titleKeyword, Pageable pageable);
+
+    List<Article> findByCategoryAndTitleContainingIgnoreCaseOrderByIdDesc(Category category, String titleKeyword, Pageable pageable);
+
+    List<Article> findByCategoryAndIdLessThanAndTitleContainingIgnoreCaseOrderByIdDesc(Category category, Long cursor, String titleKeyword, Pageable pageable);
 }
