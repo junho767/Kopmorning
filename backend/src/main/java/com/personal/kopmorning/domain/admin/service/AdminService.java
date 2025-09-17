@@ -12,6 +12,7 @@ import com.personal.kopmorning.domain.article.article.repository.ArticleReposito
 import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
 import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
 import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentRepository;
+import com.personal.kopmorning.domain.member.dto.response.MemberListResponse;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.MemberStatus;
@@ -47,12 +48,25 @@ public class AdminService {
 
     // 정렬 : 가입 시간, 게시물 좋아요, 신고
     // 회원 목록 조회
-    public List<MemberResponse> getMemberList() {
+    public MemberListResponse getMemberList(Long nextCursor, int size) {
+        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id"));
         List<Member> memberList = memberRepository.findAll();
 
-        return memberList.stream()
+        int totalMembers = memberList.size();
+
+        if (nextCursor == null) {
+            memberList = memberRepository.findAllByOrderByIdDesc(pageable);
+        } else {
+            memberList = memberRepository.findByIdLessThanOrderByIdDesc(nextCursor, pageable);
+        }
+
+        List<MemberResponse> memberResponses = memberList.stream()
                 .map(MemberResponse::new)
                 .toList();
+
+        Long newCursor = memberResponses.isEmpty() ? null : memberResponses.getLast().getId();
+
+        return new MemberListResponse(totalMembers, newCursor, memberResponses);
     }
 
     // 회원 권환 변경

@@ -8,8 +8,9 @@ import com.personal.kopmorning.domain.article.article.dto.response.ArticleListRe
 import com.personal.kopmorning.domain.article.article.service.ArticleService;
 import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
 import com.personal.kopmorning.domain.article.comment.service.ArticleCommentService;
+import com.personal.kopmorning.domain.member.dto.response.MemberListResponse;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
-import com.personal.kopmorning.domain.report.dto.response.ReportResponse;
+import com.personal.kopmorning.domain.report.dto.response.ReportListResponse;
 import com.personal.kopmorning.domain.report.service.ReportService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
@@ -47,11 +48,14 @@ public class AdminController {
     }
 
     @GetMapping("/member/list")
-    public RsData<List<MemberResponse>> getMemberList() {
+    public RsData<MemberListResponse> getMemberList(
+            @RequestParam(required = false) Long nextCursor,
+            @RequestParam(defaultValue = "5") int size
+    ) {
         return new RsData<>(
                 AdminSuccessCode.GET_MEMBER_LIST_BY_ADMIN.getCode(),
                 AdminSuccessCode.GET_MEMBER_LIST_BY_ADMIN.getMessage(),
-                adminService.getMemberList()
+                adminService.getMemberList(nextCursor, size)
         );
     }
 
@@ -78,11 +82,14 @@ public class AdminController {
     }
 
     @GetMapping("/report/list")
-    public RsData<List<ReportResponse>> getReportList() {
+    public RsData<ReportListResponse> getReportList(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         return new RsData<>(
                 AdminSuccessCode.GET_REPORT_LIST.getCode(),
                 AdminSuccessCode.GET_REPORT_LIST.getMessage(),
-                reportService.getList()
+                reportService.getList(cursor, size)
         );
     }
 

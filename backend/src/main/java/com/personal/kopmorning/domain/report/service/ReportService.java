@@ -9,6 +9,7 @@ import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
 import com.personal.kopmorning.domain.report.dto.request.ReportRequest;
+import com.personal.kopmorning.domain.report.dto.response.ReportListResponse;
 import com.personal.kopmorning.domain.report.dto.response.ReportResponse;
 import com.personal.kopmorning.domain.report.entity.Report;
 import com.personal.kopmorning.domain.report.repository.ReportRepository;
@@ -16,6 +17,9 @@ import com.personal.kopmorning.global.exception.Article.ArticleException;
 import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -69,11 +73,24 @@ public class ReportService {
         reportRepository.save(report);
     }
 
-    public List<ReportResponse> getList() {
-        List<Report> reports = reportRepository.findAll();
+    public ReportListResponse getList(Long cursor, int size) {
+        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id"));
+        List<Report> reports;
 
-        return reports.stream()
+        if (cursor == null) {
+            reports = reportRepository.findAllByOrderByReportedAtDesc(pageable);
+        } else {
+            reports = reportRepository.findByIdLessThanOrderByReportedAtDesc(cursor, pageable);
+        }
+
+        int totalReports = reports.size();
+
+        List<ReportResponse> reportResponses = reports.stream()
                 .map(ReportResponse::new)
                 .toList();
+
+        Long nextCursor = reportResponses.isEmpty() ? null : reportResponses.getLast().getId();
+
+        return new ReportListResponse(reportResponses, totalReports, nextCursor);
     }
 }

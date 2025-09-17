@@ -17,6 +17,12 @@ type Member = {
   createdAt: string;
 };
 
+type MemberListResponse = {
+  memberResponses: Member[];
+  totalMembers: number;
+  nextCursor: number | null;
+};
+
 type ArticleItem = {
   id: number;
   title: string;
@@ -33,12 +39,18 @@ type ArticleListResponse = {
 };
 
 type ReportItem = {
-  reportId: number;
+  id: number;
   articleId: number | null;
   commentId: number | null;
   memberId: number;
   reason: string;
   reportDate: string;
+};
+
+type ReportListResponse = {
+  reportResponses: ReportItem[];
+  totalReports: number;
+  nextCursor: number | null;
 };
 
 export default function AdminPage() {
@@ -56,6 +68,16 @@ export default function AdminPage() {
   const [articleHasMore, setArticleHasMore] = useState(true);
   const [articleCategory, setArticleCategory] = useState<string>("all");
   
+  // 회원 관리 상태
+  const [memberNextCursor, setMemberNextCursor] = useState<number | null>(null);
+  const [memberLoading, setMemberLoading] = useState(false);
+  const [memberHasMore, setMemberHasMore] = useState(true);
+  
+  // 신고 관리 상태
+  const [reportNextCursor, setReportNextCursor] = useState<number | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportHasMore, setReportHasMore] = useState(true);
+  
   const isAdmin = !!user && (user.role?.toLowerCase().includes("admin"));
 
   useEffect(() => {
@@ -64,15 +86,51 @@ export default function AdminPage() {
     }
   }, [isLoggedIn, isAdmin, user]);
 
+  // 회원 목록 불러오기 (커서 기반)
+  const loadMembers = useCallback(async (cursor: number | null = null, append: boolean = false) => {
+    setMemberLoading(true);
+    try {
+      const url = new URL(`${API_BASE}/admin/member/list`);
+      if (cursor) {
+        url.searchParams.set('nextCursor', cursor.toString());
+      }
+      url.searchParams.set('size', '10');
+
+      const res = await fetch(url.toString(), { credentials: "include" });
+      if (!res.ok) {
+        throw new Error("Failed to fetch members");
+      }
+      const rs: RsData<MemberListResponse> = await res.json();
+      const { memberResponses: newMembers, nextCursor: newNextCursor } = rs.data;
+      
+      if (append) {
+        setMembers(prev => [...(prev || []), ...newMembers]);
+      } else {
+        setMembers(newMembers);
+      }
+      
+      setMemberNextCursor(newNextCursor);
+      setMemberHasMore(newNextCursor !== null);
+    } catch (error) {
+      console.error("Error loading members:", error);
+    } finally {
+      setMemberLoading(false);
+    }
+  }, []);
+
+  const loadMoreMembers = useCallback(() => {
+    if (memberNextCursor && memberHasMore && !memberLoading) {
+      loadMembers(memberNextCursor, true);
+    }
+  }, [memberNextCursor, memberHasMore, memberLoading, loadMembers]);
+
   useEffect(() => {
     if (!isAdmin) return;
-    (async () => {
-      const res = await fetch(`${API_BASE}/admin/member/list`, { credentials: "include" });
-      if (res.ok) {
-        const rs: RsData<Member[]> = await res.json();
-        setMembers(rs.data || []);
-      }
-    })();
+    // 회원 목록 초기화
+    setMembers([]);
+    setMemberNextCursor(null);
+    setMemberHasMore(true);
+    loadMembers();
   }, [isAdmin]);
 
   const loadArticles = useCallback(async (cursor: number | null = null, append: boolean = false) => {
@@ -93,7 +151,7 @@ export default function AdminPage() {
       const { articles: newArticles, nextCursor: newNextCursor } = rs.data;
       
       if (append) {
-        setArticles(prev => [...prev, ...newArticles]);
+        setArticles(prev => [...(prev || []), ...newArticles]);
       } else {
         setArticles(newArticles);
       }
@@ -132,18 +190,56 @@ export default function AdminPage() {
     }
   }, [articleCategory, tab, loadArticles]);
 
+  // 신고 목록 불러오기 (커서 기반)
+  const loadReports = useCallback(async (cursor: number | null = null, append: boolean = false) => {
+    setReportLoading(true);
+    try {
+      const url = new URL(`${API_BASE}/admin/report/list`);
+      if (cursor) {
+        url.searchParams.set('cursor', cursor.toString());
+      }
+      url.searchParams.set('size', '10');
+
+      const res = await fetch(url.toString(), { credentials: "include" });
+      if (!res.ok) {
+        throw new Error("Failed to fetch reports");
+      }
+      
+      const rs: RsData<ReportListResponse> = await res.json();
+      const { reportResponses: newReports, nextCursor: newNextCursor } = rs.data;
+      
+      if (append) {
+        setReports(prev => [...(prev || []), ...newReports]);
+      } else {
+        setReports(newReports);
+      }
+      
+      setReportNextCursor(newNextCursor);
+      setReportHasMore(newNextCursor !== null);
+    } catch (error) {
+      console.error("Error loading reports:", error);
+    } finally {
+      setReportLoading(false);
+    }
+  }, []);
+
+  const loadMoreReports = useCallback(() => {
+    if (reportNextCursor && reportHasMore && !reportLoading) {
+      loadReports(reportNextCursor, true);
+    }
+  }, [reportNextCursor, reportHasMore, reportLoading, loadReports]);
+
   useEffect(() => {
     if (!isAdmin) return;
-    (async () => {
-      const res = await fetch(`${API_BASE}/admin/report/list`, { credentials: "include" });
-      if (res.ok) {
-        const rs: RsData<ReportItem[]> = await res.json();
-        setReports(rs.data || []);
-      }
-    })();
+    // 신고 목록 초기화
+    setReports([]);
+    setReportNextCursor(null);
+    setReportHasMore(true);
+    loadReports();
   }, [isAdmin]);
 
   const filteredMembers = useMemo(() => {
+    if (!members || !Array.isArray(members)) return [];
     if (!query.trim()) return members;
     const q = query.toLowerCase();
     return members.filter(m =>
@@ -232,6 +328,38 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+            
+            {/* 더보기 버튼 */}
+            {memberHasMore && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                <button
+                  onClick={loadMoreMembers}
+                  disabled={memberLoading}
+                  style={{
+                    padding: "12px 24px",
+                    background: memberLoading ? "var(--color-surface-variant)" : "var(--color-primary)",
+                    color: memberLoading ? "var(--color-text-muted)" : "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: 15,
+                    fontWeight: 600,
+                    cursor: memberLoading ? "not-allowed" : "pointer",
+                    transition: "background-color 0.2s ease",
+                  }}
+                >
+                  {memberLoading ? "로딩 중..." : "회원 더 보기"}
+                </button>
+              </div>
+            )}
+            
+            {/* 더 이상 불러올 회원이 없을 때 */}
+            {!memberHasMore && members.length > 0 && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                <p style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
+                  모든 회원을 불러왔습니다.
+                </p>
+              </div>
+            )}
           </section>
         )}
 
@@ -336,8 +464,8 @@ export default function AdminPage() {
                 </thead>
                 <tbody>
                   {reports.map(r => (
-                    <tr key={r.reportId}>
-                      <td style={{ padding: 10, borderBottom: "1px solid #f2f2f2" }}>{r.reportId}</td>
+                    <tr key={r.id}>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f2f2f2" }}>{r.id}</td>
                       <td style={{ padding: 10, borderBottom: "1px solid #f2f2f2" }}>{r.articleId ? `게시글:${r.articleId}` : r.commentId ? `댓글:${r.commentId}` : "-"}</td>
                       <td style={{ padding: 10, borderBottom: "1px solid #f2f2f2" }}>{r.memberId}</td>
                       <td style={{ padding: 10, borderBottom: "1px solid #f2f2f2" }}>{r.reason}</td>
@@ -347,6 +475,38 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+            
+            {/* 더보기 버튼 */}
+            {reportHasMore && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                <button
+                  onClick={loadMoreReports}
+                  disabled={reportLoading}
+                  style={{
+                    padding: "12px 24px",
+                    background: reportLoading ? "var(--color-surface-variant)" : "var(--color-primary)",
+                    color: reportLoading ? "var(--color-text-muted)" : "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: 15,
+                    fontWeight: 600,
+                    cursor: reportLoading ? "not-allowed" : "pointer",
+                    transition: "background-color 0.2s ease",
+                  }}
+                >
+                  {reportLoading ? "로딩 중..." : "신고 더 보기"}
+                </button>
+              </div>
+            )}
+            
+            {/* 더 이상 불러올 신고가 없을 때 */}
+            {!reportHasMore && reports.length > 0 && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                <p style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
+                  모든 신고를 불러왔습니다.
+                </p>
+              </div>
+            )}
           </section>
         )}
       </div>

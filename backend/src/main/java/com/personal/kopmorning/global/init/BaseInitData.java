@@ -11,6 +11,8 @@ import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
+import com.personal.kopmorning.domain.report.entity.Report;
+import com.personal.kopmorning.domain.report.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -28,6 +30,7 @@ import java.util.List;
 public class BaseInitData implements ApplicationRunner {
 
     private final MemberRepository memberRepository;
+    private final ReportRepository reportRepository;
     private final RankingRepository rankingRepository;
     private final ArticleRepository articleRepository;
     private final ArticleCommentRepository articleCommentRepository;
@@ -37,6 +40,7 @@ public class BaseInitData implements ApplicationRunner {
         memberInit();
         articleInit();
         playerInit();
+        reportInit();
     }
 
     private void memberInit() {
@@ -91,6 +95,27 @@ public class BaseInitData implements ApplicationRunner {
                 .role(Role.USER)
                 .status(MemberStatus.ACTIVE)
                 .build());
+
+        memberRepository.save(Member.builder()
+                .name("서현우").email("seo6@example.com").nickname("현우짱")
+                .provider("kakao").provider_id("kakao_1006").role(Role.USER)
+                .status(MemberStatus.ACTIVE).build());
+        memberRepository.save(Member.builder()
+                .name("한지민").email("han7@example.com").nickname("지민스타")
+                .provider("google").provider_id("google_1007").role(Role.USER)
+                .status(MemberStatus.ACTIVE).build());
+        memberRepository.save(Member.builder()
+                .name("강민혁").email("kang8@example.com").nickname("민혁킹")
+                .provider("naver").provider_id("naver_1008").role(Role.USER)
+                .status(MemberStatus.ACTIVE).build());
+        memberRepository.save(Member.builder()
+                .name("윤서연").email("yoon9@example.com").nickname("서연이")
+                .provider("kakao").provider_id("kakao_1009").role(Role.USER)
+                .status(MemberStatus.ACTIVE).build());
+        memberRepository.save(Member.builder()
+                .name("조하늘").email("jo10@example.com").nickname("하늘짱")
+                .provider("google").provider_id("google_1010").role(Role.USER)
+                .status(MemberStatus.ACTIVE).build());
     }
 
     private void articleInit() {
@@ -185,5 +210,21 @@ public class BaseInitData implements ApplicationRunner {
         );
 
         rankingRepository.saveAll(rankings);
+    }
+
+    private void reportInit() {
+        if (reportRepository.count() > 0) return; // 이미 데이터 있으면 스킵
+
+        List<Member> members = memberRepository.findAll();
+        List<ArticleComment> comments = articleCommentRepository.findAll();
+
+        for (int i = 1; i <= 10; i++) {
+            reportRepository.save(Report.builder()
+                    .articleComment(comments.get(i % comments.size())) // 댓글 신고
+                    .member(members.get(i % members.size()))
+                    .reason("신고 사유 " + i)
+                    .reportedAt(LocalDateTime.now().minusDays(10 - i))
+                    .build());
+        }
     }
 }

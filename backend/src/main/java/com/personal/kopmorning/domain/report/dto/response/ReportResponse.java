@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ReportResponse {
-    private Long reportId;
+    private Long id;
     private Long articleId;
     private Long commentId;
     private Long memberId;
@@ -15,7 +15,7 @@ public class ReportResponse {
     private String reportDate;
 
     public ReportResponse(Report report) {
-        this.reportId = report.getId();
+        this.id = report.getId();
         this.articleId = report.getArticle() != null ? report.getArticle().getId() : null;
         this.commentId = report.getArticleComment() != null ? report.getArticleComment().getId() : null;
         this.memberId = report.getMember().getId();
