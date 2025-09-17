@@ -243,7 +243,7 @@ public class ReportServiceTest {
         List<Report> reports = Arrays.asList(report1, report2, report3);
 
         // 커서 없는 첫 페이지
-        when(reportRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id"))))
+        when(reportRepository.findAllByOrderByReportedAtDesc(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id"))))
                 .thenReturn(reports);
 
         // when
@@ -259,7 +259,7 @@ public class ReportServiceTest {
         assertEquals(1L, result.getNextCursor());
 
         verify(reportRepository, times(1))
-                .findAllByOrderByCreatedAtDesc(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id")));
+                .findAllByOrderByReportedAtDesc(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id")));
     }
 
 }

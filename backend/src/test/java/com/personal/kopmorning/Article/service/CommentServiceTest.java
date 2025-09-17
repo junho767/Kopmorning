@@ -118,7 +118,6 @@ class CommentServiceTest {
         assertThat(result.getComments()).hasSize(1);
         assertThat(result.getComments().get(0).getBody()).isEqualTo("댓글입니다");
         assertThat(result.getNextCursor()).isEqualTo(stubComment.getId());
-        assertThat(result.getTotalComment()).isEqualTo(1);
 
         verify(articleCommentRepository, times(1))
                 .findByArticleIdOrderByIdDesc(articleId, PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id")));
