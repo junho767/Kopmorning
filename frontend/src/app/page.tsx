@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ArticleCard from "./components/ArticleCard";
 
 export default function HomePage() {
+  useEffect(() => {
+    console.log(process.env.NEXT_PUBLIC_API_BASE);
+  }, []);
   const sampleArticles = [
     { id: 1, title: "오늘의 축구 소식 요약", summary: "EPL 주요 이슈와 경기 결과 정리", createdAt: "2025-09-02" },
     { id: 2, title: "K리그 주간 라운드 리뷰", summary: "주목할 만한 장면들과 스탯 분석", createdAt: "2025-09-01" },
