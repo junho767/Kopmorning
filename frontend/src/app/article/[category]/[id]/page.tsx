@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import { notFound, useRouter, useParams } from "next/navigation";
@@ -40,6 +40,12 @@ type Comment = {
   likedByMember: boolean;
 };
 
+type CommentsResponse = {
+  comments: Comment[];
+  nextCursor: number | null;
+  totalComment: number;
+};
+
 export default function ArticleDetailPage() {
   const params = useParams();
   const { id } = params as { id: string; category: string };
@@ -52,6 +58,13 @@ export default function ArticleDetailPage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState<{ type: "article" | "comment"; id: number } | null>(null);
   const [reportReason, setReportReason] = useState("");
+  const [totalComment, setTotalComment] = useState(0);
+  
+  // 댓글 페이징 상태
+  const [commentNextCursor, setCommentNextCursor] = useState<number | null>(null);
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentHasMore, setCommentHasMore] = useState(true);
+  
   const { isLoggedIn, user } = useAuth();
 
   useEffect(() => {
@@ -77,25 +90,59 @@ export default function ArticleDetailPage() {
     fetchArticle();
   }, [id, isLoggedIn]);
 
-  // 댓글 목록 불러오기
-  useEffect(() => {
-    async function fetchComments() {
-      const res = await fetch(`${API_BASE}/api/article/comment/${id}`);
-      if (res.ok) {
-        const rs: RsData<Comment[]> = await res.json();
-        setComments(rs.data);
+  // 댓글 목록 불러오기 (커서 기반)
+  const loadComments = useCallback(async (cursor: number | null = null, append: boolean = false) => {
+    setCommentLoading(true);
+    try {
+      const url = new URL(`${API_BASE}/api/article/comment/${id}`);
+      if (cursor) {
+        url.searchParams.set('cursor', cursor.toString());
       }
+      url.searchParams.set('size', '10');
+
+      const res = await fetch(url.toString());
+      if (!res.ok) {
+        throw new Error("Failed to fetch comments");
+      }
+      
+      const rs: RsData<CommentsResponse> = await res.json();
+      const { comments: newComments, nextCursor: newNextCursor, totalComment: totalComment } = rs.data;
+      
+      if (append) {
+        setComments(prev => [...prev, ...newComments]);
+      } else {
+        setComments(newComments);
+      }
+      setTotalComment(totalComment);
+      setCommentNextCursor(newNextCursor);
+      setCommentHasMore(newNextCursor !== null);
+    } catch (error) {
+      console.error("Error loading comments:", error);
+    } finally {
+      setCommentLoading(false);
     }
-    fetchComments();
   }, [id]);
 
-  // 댓글 목록 갱신
-  async function refreshComments() {
-    const res = await fetch(`${API_BASE}/api/article/comment/${id}`);
-    if (res.ok) {
-      const rs: RsData<Comment[]> = await res.json();
-      setComments(rs.data);
+  const loadMoreComments = useCallback(() => {
+    if (commentNextCursor && commentHasMore && !commentLoading) {
+      loadComments(commentNextCursor, true);
     }
+  }, [commentNextCursor, commentHasMore, commentLoading, loadComments]);
+
+  useEffect(() => {
+    // 댓글 목록 초기화
+    setComments([]);
+    setCommentNextCursor(null);
+    setCommentHasMore(true);
+    loadComments();
+  }, [id, loadComments]);
+
+  // 댓글 목록 갱신 (전체 새로고침)
+  async function refreshComments() {
+    setComments([]);
+    setCommentNextCursor(null);
+    setCommentHasMore(true);
+    loadComments();
   }
 
   // 댓글 작성
@@ -291,80 +338,128 @@ export default function ArticleDetailPage() {
         </div>
         {/* 댓글 영역 */}
         <section style={{ maxWidth: 800, margin: "32px auto 0", padding: 24, border: "1px solid #eee", borderRadius: 12, background: "#fafbfc" }}>
-          <h3 style={{ fontSize: 18, marginBottom: 16, color: "#e53935" }}>댓글</h3>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+            <h3 style={{ fontSize: 18, margin: 0, color: "#e53935" }}>댓글</h3>
+            {comments.length > 0 && (
+              <span style={{ 
+                fontSize: 14, 
+                color: "#666", 
+                background: "#f0f0f0", 
+                padding: "2px 8px", 
+                borderRadius: 12,
+                fontWeight: 500
+              }}>
+              {totalComment}개
+              </span>
+            )}
+          </div>
           {comments.length === 0 ? (
             <div style={{ color: "#888", marginBottom: 16 }}>아직 댓글이 없습니다.</div>
           ) : (
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 16 }}>
-              {comments.map((c) => (
-                <li key={c.id} style={{ padding: 12, border: "1px solid #eee", borderRadius: 8, background: "#fff" }}>
-                  <div style={{ fontWeight: 600, color: "#e53935", marginBottom: 4 }}>
-                    {c.author}
-                  </div>
-                  {editingCommentId === c.id ? (
-                    <div style={{ marginBottom: 8 }}>
-                      <input
-                        type="text"
-                        value={editingBody}
-                        onChange={e => setEditingBody(e.target.value)}
-                        style={{ width: "100%", padding: 8, fontSize: 15, borderRadius: 4, border: "1px solid #ccc", marginBottom: 8 }}
-                        maxLength={300}
-                        autoFocus
-                      />
+            <>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 16 }}>
+                {comments.map((c) => (
+                  <li key={c.id} style={{ padding: 12, border: "1px solid #eee", borderRadius: 8, background: "#fff" }}>
+                    <div style={{ fontWeight: 600, color: "#e53935", marginBottom: 4 }}>
+                      {c.author}
+                    </div>
+                    {editingCommentId === c.id ? (
+                      <div style={{ marginBottom: 8 }}>
+                        <input
+                          type="text"
+                          value={editingBody}
+                          onChange={e => setEditingBody(e.target.value)}
+                          style={{ width: "100%", padding: 8, fontSize: 15, borderRadius: 4, border: "1px solid #ccc", marginBottom: 8 }}
+                          maxLength={300}
+                          autoFocus
+                        />
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button
+                            onClick={handleCommentEdit}
+                            style={{ padding: "4px 8px", background: "#e53935", color: "#fff", border: "none", borderRadius: 4, fontSize: 12, cursor: "pointer" }}
+                          >
+                            수정
+                          </button>
+                          <button
+                            onClick={cancelCommentEdit}
+                            style={{ padding: "4px 8px", background: "#fff", color: "#666", border: "1px solid #ccc", borderRadius: 4, fontSize: 12, cursor: "pointer" }}
+                          >
+                            취소
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 15, color: "#222", marginBottom: 4 }}>{c.body}</div>
+                    )}
+                    <div style={{ fontSize: 12, color: "#888", marginBottom: 8, display: "flex", alignItems: "center", gap: 12 }}>
+                      {new Date(c.createAt).toLocaleString()}
+                      <button
+                        onClick={() => openReportModal({ type: "comment", id: c.id })}
+                        style={{
+                          padding: "2px 6px",
+                          background: "#fff",
+                          color: "#d32f2f",
+                          border: "1px solid #d32f2f",
+                          borderRadius: 4,
+                          fontSize: 11,
+                          cursor: "pointer"
+                        }}
+                      >
+                        신고
+                      </button>
+                    </div>
+                    {isLoggedIn && user && user.id === c.memberId && editingCommentId !== c.id && (
                       <div style={{ display: "flex", gap: 8 }}>
                         <button
-                          onClick={handleCommentEdit}
-                          style={{ padding: "4px 8px", background: "#e53935", color: "#fff", border: "none", borderRadius: 4, fontSize: 12, cursor: "pointer" }}
+                          onClick={() => startCommentEdit(c.id, c.body)}
+                          style={{ padding: "4px 8px", background: "#fff", color: "#e53935", border: "1px solid #e53935", borderRadius: 4, fontSize: 12, cursor: "pointer" }}
                         >
                           수정
                         </button>
                         <button
-                          onClick={cancelCommentEdit}
-                          style={{ padding: "4px 8px", background: "#fff", color: "#666", border: "1px solid #ccc", borderRadius: 4, fontSize: 12, cursor: "pointer" }}
+                          onClick={() => handleCommentDelete(c.id)}
+                          style={{ padding: "4px 8px", background: "#e53935", color: "#fff", border: "none", borderRadius: 4, fontSize: 12, cursor: "pointer" }}
                         >
-                          취소
+                          삭제
                         </button>
                       </div>
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: 15, color: "#222", marginBottom: 4 }}>{c.body}</div>
-                  )}
-                  <div style={{ fontSize: 12, color: "#888", marginBottom: 8, display: "flex", alignItems: "center", gap: 12 }}>
-                    {new Date(c.createAt).toLocaleString()}
-                    <button
-                      onClick={() => openReportModal({ type: "comment", id: c.id })}
-                      style={{
-                        padding: "2px 6px",
-                        background: "#fff",
-                        color: "#d32f2f",
-                        border: "1px solid #d32f2f",
-                        borderRadius: 4,
-                        fontSize: 11,
-                        cursor: "pointer"
-                      }}
-                    >
-                      신고
-                    </button>
-                  </div>
-                  {isLoggedIn && user && user.id === c.memberId && editingCommentId !== c.id && (
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button
-                        onClick={() => startCommentEdit(c.id, c.body)}
-                        style={{ padding: "4px 8px", background: "#fff", color: "#e53935", border: "1px solid #e53935", borderRadius: 4, fontSize: 12, cursor: "pointer" }}
-                      >
-                        수정
-                      </button>
-                      <button
-                        onClick={() => handleCommentDelete(c.id)}
-                        style={{ padding: "4px 8px", background: "#e53935", color: "#fff", border: "none", borderRadius: 4, fontSize: 12, cursor: "pointer" }}
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              
+              {/* 더보기 버튼 */}
+              {commentHasMore && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                  <button
+                    onClick={loadMoreComments}
+                    disabled={commentLoading}
+                    style={{
+                      padding: "8px 16px",
+                      background: commentLoading ? "var(--color-surface-variant)" : "var(--color-primary)",
+                      color: commentLoading ? "var(--color-text-muted)" : "#fff",
+                      border: "none",
+                      borderRadius: 6,
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: commentLoading ? "not-allowed" : "pointer",
+                      transition: "background-color 0.2s ease",
+                    }}
+                  >
+                    {commentLoading ? "로딩 중..." : "댓글 더 보기"}
+                  </button>
+                </div>
+              )}
+              
+              {/* 더 이상 불러올 댓글이 없을 때 */}
+              {!commentHasMore && comments.length > 0 && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+                  <p style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
+                    모든 댓글을 불러왔습니다.
+                  </p>
+                </div>
+              )}
+            </>
           )}
           {isLoggedIn ? (
             <form onSubmit={handleCommentSubmit} style={{ marginTop: 24, display: "flex", gap: 8 }}>

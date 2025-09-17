@@ -3,6 +3,8 @@ package com.personal.kopmorning.global.init;
 import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
+import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
+import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentRepository;
 import com.personal.kopmorning.domain.football.entity.Ranking;
 import com.personal.kopmorning.domain.football.repository.RankingRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
@@ -16,6 +18,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -27,6 +30,7 @@ public class BaseInitData implements ApplicationRunner {
     private final MemberRepository memberRepository;
     private final RankingRepository rankingRepository;
     private final ArticleRepository articleRepository;
+    private final ArticleCommentRepository articleCommentRepository;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -94,7 +98,7 @@ public class BaseInitData implements ApplicationRunner {
 
         List<Member> members = memberRepository.findAll();
 
-        articleRepository.save(Article.builder()
+        Article article1 = articleRepository.save(Article.builder()
                 .title("프리미어리그 개막전 리뷰")
                 .body("맨시티와 아스널의 개막전 경기 리뷰입니다...")
                 .likeCount(5L)
@@ -139,6 +143,8 @@ public class BaseInitData implements ApplicationRunner {
                 .member(members.get(4))
                 .build());
 
+        commentInit(article1);
+
         for (int i = 1; i <= 10; i++) {
             articleRepository.save(Article.builder()
                     .title("프리미어리그 경기 리뷰 " + i)
@@ -147,6 +153,23 @@ public class BaseInitData implements ApplicationRunner {
                     .viewCount((long) (Math.random() * 100)) // 조회수 랜덤
                     .category(Category.football)
                     .member(members.get(i % members.size())) // 멤버를 순환하면서 배정
+                    .build());
+        }
+    }
+
+    private void commentInit(Article article) {
+        if (articleCommentRepository.count() > 0) return; // 이미 데이터가 있으면 초기화 스킵
+
+        List<Member> members = memberRepository.findAll();
+
+        for (int i = 1; i <= 15; i++) {
+            articleCommentRepository.save(ArticleComment.builder()
+                    .article(article)
+                    .member(members.get(i % members.size())) // 멤버 순환
+                    .body("댓글 내용 " + i)
+                    .likeCount((long) (Math.random() * 10)) // 좋아요 랜덤
+                    .createdAt(LocalDateTime.now().minusDays(15 - i)) // 생성 시간 점점 과거로
+                    .updatedAt(LocalDateTime.now().minusDays(15 - i))
                     .build());
         }
     }
