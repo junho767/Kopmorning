@@ -8,20 +8,24 @@ import java.time.LocalDateTime;
 @Data
 public class MemberResponse {
     private Long id;
+    private String role;
     private String name;
     private String email;
     private String nickname;
-    private String role;
+    private String memberState;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
     public MemberResponse(Member member) {
         this.id = member.getId();
+        this.role = member.getRole().toString();
         this.name = member.getName();
         this.email = member.getEmail();
         this.nickname = member.getNickname();
-        this.role = member.getRole().name();
+        this.memberState = member.getStatus().getDescription();
         this.createdAt = member.getCreated_at();
         this.updatedAt = LocalDateTime.now();
+        this.deletedAt = member.getDeleteAt();
     }
 }

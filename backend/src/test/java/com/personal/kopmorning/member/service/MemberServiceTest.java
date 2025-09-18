@@ -2,7 +2,7 @@ package com.personal.kopmorning.member.service;
 
 import com.personal.kopmorning.domain.member.dto.request.MemberProfileUpdate;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.member.service.MemberService;
@@ -70,7 +70,7 @@ class MemberServiceTest {
         memberService.deleteRequest();
 
         // then
-        assertThat(member.getStatus()).isEqualTo(Member_Status.DELETED);
+        assertThat(member.getStatus()).isEqualTo(MemberStatus.DELETED);
         assertThat(member.getDeleteAt()).isNotNull();
     }
 
@@ -84,7 +84,7 @@ class MemberServiceTest {
         memberService.deleteCancel();
 
         // then
-        assertThat(member.getStatus()).isEqualTo(Member_Status.ACTIVE);
+        assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
         assertThat(member.getDeleteAt()).isNull();
     }
 }

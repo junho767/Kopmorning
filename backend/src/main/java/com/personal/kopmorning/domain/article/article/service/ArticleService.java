@@ -17,6 +17,9 @@ import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,6 +33,7 @@ public class ArticleService {
     private final ArticleLikeRepository articleLikeRepository;
 
     private final static Long INIT_COUNT = 0L;
+    private final static String CATEGORY_IS_NULL = "all";
 
     public ArticleResponse addArticle(ArticleCreate articleCreate) {
         Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
@@ -67,7 +71,7 @@ public class ArticleService {
 
         Long memberId = SecurityUtil.getNullableMemberId();
 
-        if(memberId == null) {
+        if (memberId == null) {
             article.increaseViewCount();
             return new ArticleResponse(article, false);
         }
@@ -77,8 +81,37 @@ public class ArticleService {
         return new ArticleResponse(article, liked);
     }
 
-    public ArticleListResponse getArticleListByCategory(String category) {
-        List<Article> articleList = articleRepository.findByCategory(Category.valueOf(category));
+    public ArticleListResponse getArticleListByCategory(String category, Long cursor, int size, String keyword) {
+        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id"));
+        List<Article> articleList;
+
+        boolean isAllCategory = category.equalsIgnoreCase(CATEGORY_IS_NULL);
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+
+        if (isAllCategory) {
+            if (cursor == null) {
+                articleList = hasKeyword
+                        ? articleRepository.findByTitleContainingIgnoreCaseOrderByIdDesc(keyword, pageable)
+                        : articleRepository.findAll(pageable).getContent();
+            } else {
+                articleList = hasKeyword
+                        ? articleRepository.findByIdLessThanAndTitleContainingIgnoreCaseOrderByIdDesc(cursor, keyword, pageable)
+                        : articleRepository.findByIdLessThanOrderByIdDesc(cursor, pageable);
+            }
+        } else {
+            Category cat = Category.valueOf(category.toLowerCase());
+            if (cursor == null) {
+                articleList = hasKeyword
+                        ? articleRepository.findByCategoryAndTitleContainingIgnoreCaseOrderByIdDesc(cat, keyword, pageable)
+                        : articleRepository.findByCategory(cat, pageable).getContent();
+            } else {
+                articleList = hasKeyword
+                        ? articleRepository.findByCategoryAndIdLessThanAndTitleContainingIgnoreCaseOrderByIdDesc(cat, cursor, keyword, pageable)
+                        : articleRepository.findByCategoryAndIdLessThanOrderByIdDesc(cat, cursor, pageable);
+            }
+        }
+
+
         Long memberId = SecurityUtil.getNullableMemberId();
 
         // 사용자가 게시물에 좋아요 눌렀는 지 판단
@@ -94,9 +127,12 @@ public class ArticleService {
 
         int total = articles.size();
 
+        Long nextCursor = articles.isEmpty() ? null : articles.getLast().getId();
+
         return ArticleListResponse.builder()
                 .articles(articles)
                 .total(total)
+                .nextCursor(nextCursor)
                 .category(category)
                 .build();
     }

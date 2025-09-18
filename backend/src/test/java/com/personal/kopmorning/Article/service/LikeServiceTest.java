@@ -7,7 +7,7 @@ import com.personal.kopmorning.domain.article.like.entity.ArticleLike;
 import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
 import com.personal.kopmorning.domain.article.like.service.LikeService;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.global.utils.SecurityUtil;
@@ -66,13 +66,13 @@ class LikeServiceTest {
         stubMember = Member.builder()
                 .id(1L).name("홍길동").email("hong@example.com")
                 .nickname("길동이").role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         stubArticle = Article.builder()
                 .id(10L).title("제목").body("본문")
                 .member(stubMember)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0L)

@@ -1,7 +1,7 @@
 package com.personal.kopmorning.global.oauth;
 
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.global.oauth.sns.GoogleInfo;
@@ -56,7 +56,7 @@ public class CustomOAuth2UserDetailService extends DefaultOAuth2UserService {
                     .email(email)
                     .name(name)
                     .role(Role.USER)
-                    .status(Member_Status.ACTIVE)
+                    .status(MemberStatus.ACTIVE)
                     .provider(provider)
                     .provider_id(providerId)
                     .created_at(LocalDateTime.now())

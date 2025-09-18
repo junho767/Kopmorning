@@ -6,20 +6,16 @@ import com.personal.kopmorning.domain.admin.responseCode.AdminSuccessCode;
 import com.personal.kopmorning.domain.admin.service.AdminService;
 import com.personal.kopmorning.domain.article.article.dto.response.ArticleListResponse;
 import com.personal.kopmorning.domain.article.article.service.ArticleService;
+import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
 import com.personal.kopmorning.domain.article.comment.service.ArticleCommentService;
+import com.personal.kopmorning.domain.member.dto.response.MemberListResponse;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
-import com.personal.kopmorning.domain.report.dto.response.ReportResponse;
+import com.personal.kopmorning.domain.report.dto.response.ReportListResponse;
 import com.personal.kopmorning.domain.report.service.ReportService;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -52,29 +48,49 @@ public class AdminController {
     }
 
     @GetMapping("/member/list")
-    public RsData<List<MemberResponse>> getMemberList() {
+    public RsData<MemberListResponse> getMemberList(
+            @RequestParam(required = false) Long nextCursor,
+            @RequestParam(defaultValue = "5") int size
+    ) {
         return new RsData<>(
                 AdminSuccessCode.GET_MEMBER_LIST_BY_ADMIN.getCode(),
                 AdminSuccessCode.GET_MEMBER_LIST_BY_ADMIN.getMessage(),
-                adminService.getMemberList()
+                adminService.getMemberList(nextCursor, size)
         );
     }
 
     @GetMapping("/article/list/{category}")
-    public RsData<ArticleListResponse> getArticleList(@PathVariable(required = false) String category) {
+    public RsData<ArticleListResponse> getArticleList(
+            @PathVariable(required = false) String category,
+            @RequestParam(required = false) Long nextCursor,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         return new RsData<>(
                 AdminSuccessCode.GET_ARTICLE_LIST_BY_ADMIN.getCode(),
                 AdminSuccessCode.GET_ARTICLE_LIST_BY_ADMIN.getMessage(),
-                adminService.getArticleList(category)
+                adminService.getArticleList(category, nextCursor, size, keyword)
+        );
+    }
+
+    @GetMapping("/comment/list")
+    public RsData<List<ArticleCommentResponse>> getCommentList() {
+        return new RsData<>(
+                AdminSuccessCode.GET_COMMENT_LIST.getCode(),
+                AdminSuccessCode.GET_COMMENT_LIST.getMessage(),
+                adminService.getCommentList()
         );
     }
 
     @GetMapping("/report/list")
-    public RsData<List<ReportResponse>> getReportList() {
+    public RsData<ReportListResponse> getReportList(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         return new RsData<>(
                 AdminSuccessCode.GET_REPORT_LIST.getCode(),
                 AdminSuccessCode.GET_REPORT_LIST.getMessage(),
-                reportService.getList()
+                reportService.getList(cursor, size)
         );
     }
 

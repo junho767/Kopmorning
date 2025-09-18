@@ -2,7 +2,6 @@ package com.personal.kopmorning.admin.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.personal.kopmorning.domain.admin.dto.request.RollUpdateRequest;
-import com.personal.kopmorning.domain.admin.dto.request.SuspendRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -48,10 +46,9 @@ public class AdminControllerTest {
         @Test
         @WithMockUser(username = "admin", roles = {"ADMIN"})
         void articleList_ok() throws Exception {
-            mockMvc.perform(get("/admin/article/list/FOOTBALL"))
+            mockMvc.perform(get("/admin/article/list/football"))
                     .andExpect(status().isOk());
         }
-
 
         @Test
         @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -59,7 +56,7 @@ public class AdminControllerTest {
             RollUpdateRequest dto = new RollUpdateRequest(1L, "ADMIN");
 
             mockMvc.perform(patch("/admin/roll")
-                            .with(csrf()) // 💥 CSRF 토큰 추가
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(dto)))
                     .andExpect(status().isOk());
