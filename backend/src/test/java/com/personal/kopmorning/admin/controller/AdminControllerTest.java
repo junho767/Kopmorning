@@ -1,4 +1,4 @@
-package com.personal.kopmorning.admin.controller;
+package com.personal.kopmorning.domain.admin.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.personal.kopmorning.domain.admin.dto.request.RollUpdateRequest;
@@ -53,7 +53,7 @@ public class AdminControllerTest {
         @Test
         @WithMockUser(username = "admin", roles = {"ADMIN"})
         void updateRole_ok() throws Exception {
-            RollUpdateRequest dto = new RollUpdateRequest(1L, "ADMIN");
+            RollUpdateRequest dto = new RollUpdateRequest(999L, "ADMIN");
 
             mockMvc.perform(patch("/admin/roll")
                             .with(csrf())
