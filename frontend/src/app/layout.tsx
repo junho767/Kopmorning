@@ -24,25 +24,34 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("accessToken");
-  const isLoggedIn = !!accessToken;
-
+  let isLoggedIn = false;
   let user = null;
-  if (isLoggedIn) {
-    try {
-      const res = await fetch("http://localhost:8080/api/member", {
-        headers: { Cookie: `accessToken=${accessToken?.value}` },
-        credentials: "include",
-        cache: "no-store",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        user = data.data;
+
+  try {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("accessToken");
+    isLoggedIn = !!accessToken;
+
+    if (isLoggedIn) {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+        const res = await fetch(`${baseUrl}/api/member`, {
+          headers: { Cookie: `accessToken=${accessToken?.value}` },
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          user = data.data;
+        }
+      } catch {
+        user = null;
       }
-    } catch {
-      user = null;
     }
+  } catch {
+    // cookies() 함수가 실패할 경우 기본값 사용
+    isLoggedIn = false;
+    user = null;
   }
 
   return (

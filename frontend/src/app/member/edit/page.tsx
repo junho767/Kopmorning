@@ -6,6 +6,8 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useRouter } from "next/navigation";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8080";
+
 export default function MemberEditPage() {
   const { isLoggedIn, user } = useAuth();
   const [nickname, setNickname] = useState(user?.nickname || "");
@@ -25,7 +27,7 @@ export default function MemberEditPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const res = await fetch("http://localhost:8080/api/member", {
+    const res = await fetch(`${API_BASE}/api/member`, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

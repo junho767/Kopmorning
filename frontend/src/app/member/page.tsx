@@ -5,6 +5,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useRouter } from "next/navigation";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8080";
+
 export default function MemberPage() {
   const { isLoggedIn, user } = useAuth();
   const router = useRouter();
@@ -16,7 +18,7 @@ export default function MemberPage() {
 
   async function handleWithdraw() {
     if (!confirm("정말 회원탈퇴 하시겠습니까?")) return;
-    const res = await fetch("http://localhost:8080/api/member/delete/request", {
+    const res = await fetch(`${API_BASE}/api/member/delete/request`, {
       method: "PATCH",
       credentials: "include",
     });
@@ -30,7 +32,7 @@ export default function MemberPage() {
 
   async function handleWithdrawCancel() {
     if (!confirm("탈퇴 신청을 취소하시겠습니까?")) return;
-    const res = await fetch("http://localhost:8080/api/member/delete/cancel", {
+    const res = await fetch(`${API_BASE}/api/member/delete/cancel`, {
       method: "PATCH",
       credentials: "include",
     });
@@ -44,7 +46,7 @@ export default function MemberPage() {
 
   async function handleWithdrawNow() {
     if (!confirm("정말 즉시 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.")) return;
-    const res = await fetch("http://localhost:8080/api/member", {
+    const res = await fetch(`${API_BASE}/api/member`, {
       method: "DELETE",
       credentials: "include",
     });

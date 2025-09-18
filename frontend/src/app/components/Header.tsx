@@ -4,6 +4,8 @@ import Link from "next/link";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8080";
+
 export default function Header() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -104,7 +106,7 @@ export default function Header() {
                 </Link>
                 <button
                   onClick={async () => {
-                    await fetch("http://localhost:8080/api/member/logout", {
+                    await fetch(`${API_BASE}/api/member/logout`, {
                       method: "POST",
                       credentials: "include",
                     });
@@ -178,7 +180,7 @@ export default function Header() {
             </div>
             <div style={{ display: "grid", gap: 10 }}>
               <button
-                onClick={() => (window.location.href = "http://localhost:8080/oauth2/authorization/naver")}
+                onClick={() => (window.location.href = `${API_BASE}/oauth2/authorization/naver`)}
                 style={{
                   padding: "10px 14px",
                   borderRadius: 10,
@@ -192,7 +194,7 @@ export default function Header() {
                 네이버 로그인
               </button>
               <button
-                onClick={() => (window.location.href = "http://localhost:8080/oauth2/authorization/kakao")}
+                onClick={() => (window.location.href = `${API_BASE}/oauth2/authorization/kakao`)}
                 style={{
                   padding: "10px 14px",
                   borderRadius: 10,
@@ -206,7 +208,7 @@ export default function Header() {
                 카카오 로그인
               </button>
               <button
-                onClick={() => (window.location.href = "http://localhost:8080/oauth2/authorization/google")}
+                onClick={() => (window.location.href = `${API_BASE}/oauth2/authorization/google`)}
                 style={{
                   padding: "10px 14px",
                   borderRadius: 10,
