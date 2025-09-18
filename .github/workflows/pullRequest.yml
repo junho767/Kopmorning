@@ -52,7 +52,7 @@ jobs:
 
       - name: Run Gradle Build
         working-directory: backend
-        run: ./gradlew build
+        run: ./gradlew build -i
 
       - name: Upload Test Results
         if: always()
