@@ -9,7 +9,7 @@ import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.article.article.service.ArticleService;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.global.utils.SecurityUtil;
@@ -23,6 +23,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +34,7 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -58,7 +62,7 @@ public class ArticleServiceTest {
                 .email("hong@example.com")
                 .nickname("길동이")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         stubArticle = Article.builder()
@@ -66,7 +70,7 @@ public class ArticleServiceTest {
                 .title("제목")
                 .body("본문")
                 .member(stubMember)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0L)
@@ -81,7 +85,7 @@ public class ArticleServiceTest {
         ArticleCreate req = ArticleCreate.builder()
                 .title("새 글")
                 .body("새 본문")
-                .category("FOOTBALL")
+                .category("football")
                 .build();
 
         // SecurityUtil.getRequiredMemberId() → 1L
@@ -107,7 +111,7 @@ public class ArticleServiceTest {
             ArgumentCaptor<Article> captor = ArgumentCaptor.forClass(Article.class);
             verify(articleRepository, times(1)).save(captor.capture());
             assertThat(captor.getValue().getTitle()).isEqualTo("새 글");
-            assertThat(captor.getValue().getCategory()).isEqualTo(Category.FOOTBALL);
+            assertThat(captor.getValue().getCategory()).isEqualTo(Category.football);
         }
     }
 
@@ -126,20 +130,43 @@ public class ArticleServiceTest {
     }
 
     @Test
-    @DisplayName("카테고리별 목록 조회")
-    void getArticleList_success() {
+    @DisplayName("카테고리별 목록 조회 - 첫 페이지 커서 기반")
+    void getArticleList_success_firstPage() {
         // given
-        when(articleRepository.findByCategory(Category.FOOTBALL))
+        int size = 10;
+        Page<Article> stubPage = new PageImpl<>(List.of(stubArticle));
+        when(articleRepository.findByCategory(eq(Category.football), any(Pageable.class)))
+                .thenReturn(stubPage);
+
+        // when
+        ArticleListResponse resp = articleService.getArticleListByCategory("FOOTBALL", null, size, null);
+
+        // then
+        assertThat(resp.getTotal()).isEqualTo(1);
+        assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
+        assertThat(resp.getNextCursor()).isEqualTo(stubArticle.getId()); // 다음 페이지 커서 검증
+        verify(articleRepository, times(1))
+                .findByCategory(eq(Category.football), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("카테고리별 목록 조회 - 다음 페이지 커서 기반")
+    void getArticleList_success_nextPage() {
+        // given
+        long cursor = 5L;
+        int size = 10;
+        when(articleRepository.findByCategoryAndIdLessThanOrderByIdDesc(
+                eq(Category.football), eq(cursor), any(Pageable.class)))
                 .thenReturn(List.of(stubArticle));
 
         // when
-        ArticleListResponse resp = articleService.getArticleListByCategory("FOOTBALL");
+        ArticleListResponse resp = articleService.getArticleListByCategory("football", cursor, size, null);
 
         // then
         assertThat(resp.getTotal()).isEqualTo(1);
         assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
         verify(articleRepository, times(1))
-                .findByCategory(Category.FOOTBALL);
+                .findByCategoryAndIdLessThanOrderByIdDesc(eq(Category.football), eq(cursor), any(Pageable.class));
     }
 
     @Nested

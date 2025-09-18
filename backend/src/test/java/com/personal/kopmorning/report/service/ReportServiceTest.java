@@ -6,10 +6,11 @@ import com.personal.kopmorning.domain.article.article.repository.ArticleReposito
 import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
 import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.report.dto.request.ReportRequest;
+import com.personal.kopmorning.domain.report.dto.response.ReportListResponse;
 import com.personal.kopmorning.domain.report.dto.response.ReportResponse;
 import com.personal.kopmorning.domain.report.entity.Report;
 import com.personal.kopmorning.domain.report.repository.ReportRepository;
@@ -25,6 +26,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -70,7 +73,7 @@ public class ReportServiceTest {
                 .email("admin")
                 .nickname("admin")
                 .role(Role.ADMIN)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         member1 = Member.builder()
@@ -79,7 +82,7 @@ public class ReportServiceTest {
                 .email("hong@example.com")
                 .nickname("홍홍홍")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         member2 = Member.builder()
@@ -88,7 +91,7 @@ public class ReportServiceTest {
                 .email("test1@example.com")
                 .nickname("junho")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         stubArticle = Article.builder()
@@ -96,7 +99,7 @@ public class ReportServiceTest {
                 .title("존x 화나네")
                 .body("(대충 욕설)")
                 .member(member1)
-                .category(Category.FOOTBALL)
+                .category(Category.football)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0L)
@@ -213,53 +216,14 @@ public class ReportServiceTest {
     }
 
     @Test
-    @DisplayName("신고 목록 조회 - 게시물")
-    public void getReportList() {
-        // given
-        Report report1 = Report.builder()
-                .id(1L)
-                .article(stubArticle)
-                .member(member1)
-                .reason("너무 이상해요")
-                .reportedAt(LocalDateTime.now())
-                .build();
-        Report report2 = Report.builder()
-                .id(2L)
-                .article(stubArticle)
-                .member(member2)
-                .reason("실허요 ㅠㅠ")
-                .reportedAt(LocalDateTime.now())
-                .build();
-        Report report3 = Report.builder()
-                .id(3L)
-                .article(stubArticle)
-                .member(member1)
-                .reason("너무 이상해요 !!!")
-                .reportedAt(LocalDateTime.now())
-                .build();
-        List<Report> reports = Arrays.asList(report1, report2, report3);
-
-        when(reportRepository.findAll()).thenReturn(reports);
-
-        // when
-        List<ReportResponse> result = reportService.getList();
-
-        // then
-        assertEquals(3, result.size());
-        assertEquals("너무 이상해요", result.get(0).getReason());
-        assertEquals("실허요 ㅠㅠ", result.get(1).getReason());
-        assertEquals("너무 이상해요 !!!", result.get(2).getReason());
-    }
-
-    @Test
-    @DisplayName("신고 목록 조회 - 댓글")
+    @DisplayName("신고 목록 조회 - 커서 기반")
     public void getReportList_comment() {
         // given
         Report report1 = Report.builder()
-                .id(1L)
+                .id(3L)
                 .articleComment(stubComment)  // 댓글로 신고
                 .member(member1)
-                .reason("스팸 같아요")
+                .reason("욕설 포함")
                 .reportedAt(LocalDateTime.now())
                 .build();
         Report report2 = Report.builder()
@@ -270,24 +234,33 @@ public class ReportServiceTest {
                 .reportedAt(LocalDateTime.now())
                 .build();
         Report report3 = Report.builder()
-                .id(3L)
+                .id(1L)
                 .articleComment(stubComment)
                 .member(member1)
-                .reason("욕설 포함")
+                .reason("스팸 같아요")
                 .reportedAt(LocalDateTime.now())
                 .build();
         List<Report> reports = Arrays.asList(report1, report2, report3);
 
-        when(reportRepository.findAll()).thenReturn(reports);
+        // 커서 없는 첫 페이지
+        when(reportRepository.findAllByOrderByReportedAtDesc(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id"))))
+                .thenReturn(reports);
 
         // when
-        List<ReportResponse> result = reportService.getList();
+        ReportListResponse result = reportService.getList(null, 10);
 
         // then
-        assertEquals(3, result.size());
-        assertEquals("스팸 같아요", result.get(0).getReason());
-        assertEquals("광고 메시지입니다", result.get(1).getReason());
-        assertEquals("욕설 포함", result.get(2).getReason());
+        assertEquals(3, result.getReportResponses().size());
+        assertEquals("욕설 포함", result.getReportResponses().get(0).getReason());
+        assertEquals("광고 메시지입니다", result.getReportResponses().get(1).getReason());
+        assertEquals("스팸 같아요", result.getReportResponses().get(2).getReason());
+
+        // nextCursor 확인
+        assertEquals(1L, result.getNextCursor());
+
+        verify(reportRepository, times(1))
+                .findAllByOrderByReportedAtDesc(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id")));
     }
+
 }
 

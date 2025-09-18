@@ -5,12 +5,13 @@ import com.personal.kopmorning.domain.article.article.repository.ArticleReposito
 import com.personal.kopmorning.domain.article.comment.dto.request.ArticleCommentCreate;
 import com.personal.kopmorning.domain.article.comment.dto.request.ArticleCommentUpdate;
 import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
+import com.personal.kopmorning.domain.article.comment.dto.response.CommentsResponse;
 import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
 import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentRepository;
 import com.personal.kopmorning.domain.article.comment.service.ArticleCommentService;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Role;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.service.MemberService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -18,10 +19,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,7 +54,7 @@ class CommentServiceTest {
                 .email("hong@example.com")
                 .nickname("길동이")
                 .role(Role.USER)
-                .status(Member_Status.ACTIVE)
+                .status(MemberStatus.ACTIVE)
                 .build();
 
         stubArticle = Article.builder()
@@ -103,15 +105,24 @@ class CommentServiceTest {
     @DisplayName("댓글 목록 조회")
     void getComments_success() {
         // given
-        when(articleCommentRepository.findByArticleId(stubArticle.getId())).thenReturn(List.of(stubComment));
+        Long articleId = stubArticle.getId();
+        int size = 10;
+
+        when(articleCommentRepository.findByArticleIdOrderByIdDesc(articleId, PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id"))))
+                .thenReturn(List.of(stubComment));
 
         // when
-        List<ArticleCommentResponse> result = articleCommentService.getList(stubArticle.getId());
+        CommentsResponse result = articleCommentService.getList(articleId, null, size);
 
         // then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getBody()).isEqualTo("댓글입니다");
+        assertThat(result.getComments()).hasSize(1);
+        assertThat(result.getComments().get(0).getBody()).isEqualTo("댓글입니다");
+        assertThat(result.getNextCursor()).isEqualTo(stubComment.getId());
+
+        verify(articleCommentRepository, times(1))
+                .findByArticleIdOrderByIdDesc(articleId, PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id")));
     }
+
 
     @Test
     @DisplayName("댓글 수정 성공")

@@ -15,6 +15,8 @@ public class ArticleResponse {
     private String title;
     private String body;
     private String category;
+    private String memberName;
+    private String memberNickname;
 
     private boolean likedByMember;
 
@@ -30,6 +32,8 @@ public class ArticleResponse {
         this.title = article.getTitle();
         this.body = article.getBody();
         this.category = article.getCategory().name();
+        this.memberName = article.getMember().getName();
+        this.memberNickname = article.getMember().getNickname();
 
         this.likedByMember = checkLike;
 

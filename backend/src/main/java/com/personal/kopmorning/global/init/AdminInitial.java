@@ -1,4 +1,4 @@
-package com.personal.kopmorning.domain.admin.controller;
+package com.personal.kopmorning.global.init;
 
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.Role;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AdminInitialController implements ApplicationRunner {
+public class AdminInitial implements ApplicationRunner {
     @Value("${admin.username}")
     private String adminUsername;
 
@@ -26,7 +26,6 @@ public class AdminInitialController implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         if (!memberRepository.existsByEmail(adminUsername)) {
-            System.out.println("test");
             Member admin = new Member(adminUsername, passwordEncoder.encode(adminPassword), Role.ADMIN);
             memberRepository.save(admin);
         }

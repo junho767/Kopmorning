@@ -1,7 +1,7 @@
 package com.personal.kopmorning.global.scheduler;
 
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.entity.Member_Status;
+import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,7 +20,7 @@ public class MemberScheduler {
     public void MemberDeleteScheduler() {
         LocalDateTime nowToMinusSeven = LocalDateTime.now().minusDays(7);
 
-        List<Member> expiredMember = memberRepository.findAllByStatusAndDeleteAtBefore(Member_Status.DELETED, nowToMinusSeven);
+        List<Member> expiredMember = memberRepository.findAllByStatusAndDeleteAtBefore(MemberStatus.DELETED, nowToMinusSeven);
 
         memberRepository.deleteAll(expiredMember);
     }

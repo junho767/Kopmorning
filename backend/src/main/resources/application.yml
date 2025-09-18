@@ -64,6 +64,9 @@ jwt:
   cookie-domain: ${JWT.COOKIE_DOMAIN}
   cookie-path: ${JWT.COOKIE_PATH}
 
+redirect:
+  url: ${REDIRECT.URL}
+
 api:
   token:
     football: ${FOOTBALL.API_TOKEN}

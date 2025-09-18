@@ -24,13 +24,11 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
     private final TokenService tokenService;
-    private static final String AUTHORIZATION = "Authorization";
-    private static final String BEARER_TYPE = "Bearer";
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String accessToken = resolveToken(httpRequest);
+        String accessToken = CookieUtil.getAccessTokenFromCookie(httpRequest);
 
         try {
             if (accessToken != null) {
@@ -38,31 +36,21 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
                 Authentication authentication = tokenService.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-
-            chain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
-            throw new TokenException(
-                    MemberErrorCode.TOKEN_EXPIRE.getCode(),
-                    MemberErrorCode.TOKEN_EXPIRE.getMessage(),
-                    MemberErrorCode.TOKEN_EXPIRE.getHttpStatus()
-            );
-        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | IOException |
-                 ServletException e) {
-            log.error("❗에러 발생❗ :  {}", e.getMessage());
-            throw new TokenException(
-                    MemberErrorCode.TOKEN_INVALID.getCode(),
-                    MemberErrorCode.TOKEN_INVALID.getMessage(),
-                    MemberErrorCode.TOKEN_INVALID.getHttpStatus()
-            );
+            // 만료 토큰: 인증 컨텍스트를 비우고 계속 진행 (퍼블릭 엔드포인트 접근 허용)
+            SecurityContextHolder.clearContext();
+            log.debug("Access token expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
+            // 무효 토큰: 인증 컨텍스트를 비우고 계속 진행
+            SecurityContextHolder.clearContext();
+            log.debug("Invalid token: {}", e.getMessage());
         }
-    }
 
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TYPE)) {
-            return bearerToken.substring(7);
+        try {
+            chain.doFilter(request, response);
+        } catch (IOException | ServletException e) {
+            log.error("Chain error: {}", e.getMessage());
         }
-        return null;
     }
 }
 

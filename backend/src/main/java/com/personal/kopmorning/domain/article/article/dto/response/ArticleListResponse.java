@@ -6,15 +6,17 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@Builder
 public class ArticleListResponse {
     private List<ArticleResponse> articles;
     private int total;
+    private Long nextCursor;
     private String category;
 
-    public ArticleListResponse(List<ArticleResponse> articles, int total, String category) {
+    @Builder
+    public ArticleListResponse(List<ArticleResponse> articles, int total, String category, Long nextCursor) {
         this.articles = articles;
         this.total = total;
+        this.nextCursor = nextCursor;
         this.category = category;
     }
 }

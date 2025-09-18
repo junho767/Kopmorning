@@ -1,7 +1,6 @@
 package com.personal.kopmorning.domain.member.entity;
 
 import com.personal.kopmorning.domain.article.article.entity.Article;
-import com.personal.kopmorning.domain.report.entity.Report;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,6 +40,9 @@ public class Member {
     @Column(unique = true)
     private String nickname;
 
+    @Column
+    private String password;
+
     @Column(nullable = false)
     private String provider;
 
@@ -51,7 +53,7 @@ public class Member {
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    private Member_Status status;
+    private MemberStatus status;
 
     private LocalDateTime deleteAt;
 
@@ -64,22 +66,24 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Article> articles = new ArrayList<>();
 
-    public Member(String username, String encode, Role role) {
+    public Member(String username, String encodePassword, Role role) {
         this.email = username;
         this.name = username;
         this.nickname = username;
         this.provider = username;
-        this.provider_id = encode;
+        this.password = encodePassword;
+        this.provider_id = encodePassword;
         this.role = role;
+        this.status = MemberStatus.ADMIN;
     }
 
     public void withdraw() {
-        this.status = Member_Status.DELETED;
+        this.status = MemberStatus.DELETED;
         this.deleteAt = LocalDateTime.now();
     }
 
     public void isActive() {
-        this.status = Member_Status.ACTIVE;
+        this.status = MemberStatus.ACTIVE;
         this.deleteAt = null;
     }
 }
