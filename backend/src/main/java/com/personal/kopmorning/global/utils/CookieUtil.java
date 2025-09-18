@@ -74,10 +74,9 @@ public class CookieUtil {
         cookie.setMaxAge(refreshTokenExpiration);
         cookie.setPath(cookiePath);
         cookie.setDomain(cookieDomain);
-        cookie.setAttribute(SAME_SITE, NONE);
-//        cookie.setHttpOnly(true);
-        cookie.setHttpOnly(false);
-        cookie.setSecure(true);
+        cookie.setSecure(true);                  // HTTPS 전용
+        cookie.setHttpOnly(true);                // JS에서 접근 불가, XSS 방어
+        cookie.setAttribute("SameSite", "None"); // 다른 도메인에서도 전송 가능 (CORS 대응)
         response.addCookie(cookie);
     }
 
@@ -86,10 +85,9 @@ public class CookieUtil {
         cookie.setMaxAge(accessTokenExpiration);
         cookie.setPath(cookiePath);
         cookie.setDomain(cookieDomain);
-        cookie.setAttribute(SAME_SITE, NONE);
-//        cookie.setHttpOnly(true); // HTTPS 에만 전달 가능하게 함.
-        cookie.setHttpOnly(false);
         cookie.setSecure(true);
+        cookie.setHttpOnly(true);
+        cookie.setAttribute("SameSite", "None");
         response.addCookie(cookie);
     }
 }
