@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthContext";
 
@@ -15,6 +16,8 @@ export default function Header() {
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
   useEffect(() => {
+    console.log(isLoggedIn);
+    console.log(user?.email);
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeModal();
     };
@@ -49,14 +52,20 @@ export default function Header() {
           <Link
             href="/"
             style={{
-              fontSize: 18,
-              fontWeight: 700,
-              letterSpacing: -0.2,
-              color: "var(--color-primary)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
               textDecoration: "none",
             }}
           >
-            <span style={{ marginRight: 8 }}>⚽</span>Kopmorning
+            <Image 
+              src="/kopmorninglogo.png" 
+              alt="Kopmorning" 
+              width={120}
+              height={40}
+              style={{ height: 40, width: "auto" }}
+              priority
+            />
           </Link>
         </div>
 
@@ -173,7 +182,13 @@ export default function Header() {
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 20 }}>⚽</span>
+                <Image 
+                  src="/kopmorninglogo.png" 
+                  alt="Kopmorning" 
+                  width={90}
+                  height={30}
+                  style={{ height: 30, width: "auto" }}
+                />
                 <strong style={{ color: "var(--color-primary)" }}>Kopmorning</strong>
               </div>
               <button onClick={closeModal} aria-label="닫기" style={{ background: "transparent", border: 0, cursor: "pointer", fontSize: 18 }}>×</button>

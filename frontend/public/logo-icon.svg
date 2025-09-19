@@ -1,0 +1,53 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient definitions -->
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff4444;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#cc0000;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#990000;stop-opacity:1" />
+    </linearGradient>
+    <filter id="neonGlow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="strongGlow">
+      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Shield emblem -->
+  <path d="M20 15 L40 10 L60 15 L65 35 L60 55 L40 60 L20 55 L15 35 Z" fill="url(#shieldGradient)" filter="url(#neonGlow)"/>
+  <path d="M20 15 L40 10 L60 15 L65 35 L60 55 L40 60 L20 55 L15 35 Z" fill="none" stroke="#ff0000" stroke-width="2" filter="url(#strongGlow)"/>
+  
+  <!-- Soccer ball at top of shield -->
+  <circle cx="40" cy="20" r="6" fill="white" filter="url(#neonGlow)"/>
+  <path d="M40 16 L44 20 L40 24 L36 20 Z" fill="#333" opacity="0.8"/>
+  <path d="M40 24 L44 28 L40 32 L36 28 Z" fill="#333" opacity="0.8"/>
+  <path d="M36 20 L40 24 L36 28 L32 24 Z" fill="#333" opacity="0.6"/>
+  <path d="M44 20 L48 24 L44 28 L40 24 Z" fill="#333" opacity="0.6"/>
+  
+  <!-- Morning sun rays from ball -->
+  <g opacity="0.9" filter="url(#neonGlow)">
+    <line x1="40" y1="14" x2="40" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="46" y1="18" x2="50" y2="14" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="46" y1="22" x2="50" y2="26" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="40" y1="26" x2="40" y2="32" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="34" y1="22" x2="30" y2="26" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="34" y1="18" x2="30" y2="14" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Text in shield -->
+  <text x="40" y="45" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle" filter="url(#neonGlow)">
+    KOP
+  </text>
+  <text x="40" y="55" font-family="Arial, sans-serif" font-size="6" font-weight="600" fill="#cccccc" text-anchor="middle" filter="url(#neonGlow)">
+    MORNING
+  </text>
+</svg>

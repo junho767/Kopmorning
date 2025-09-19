@@ -1,14 +1,20 @@
 "use client";
 
 import React, { useEffect } from "react";
+import Image from "next/image";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ArticleCard from "./components/ArticleCard";
+import { useAuth } from "./components/AuthContext";
 
 export default function HomePage() {
+  const { isLoggedIn, user } = useAuth();
+
   useEffect(() => {
     console.log(process.env.NEXT_PUBLIC_API_BASE);
-  }, []);
+    console.log("로그인 상태:", isLoggedIn);
+    console.log("사용자 정보:", user);
+  }, [isLoggedIn, user]);
   const sampleArticles = [
     { id: 1, title: "오늘의 축구 소식 요약", summary: "EPL 주요 이슈와 경기 결과 정리", createdAt: "2025-09-02" },
     { id: 2, title: "K리그 주간 라운드 리뷰", summary: "주목할 만한 장면들과 스탯 분석", createdAt: "2025-09-01" },
@@ -54,7 +60,14 @@ export default function HomePage() {
             }}
           >
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 52, lineHeight: 1 }}>⚽</div>
+              <Image 
+                src="/kopmorninglogo.png" 
+                alt="Kopmorning Logo" 
+                width={200}
+                height={100}
+                style={{ height: 100, width: "auto", marginBottom: 8 }}
+                priority
+              />
               <div style={{ fontSize: 12, opacity: 0.8 }}>Matchday vibes</div>
             </div>
           </div>
