@@ -99,7 +99,7 @@ public class ArticleService {
                         : articleRepository.findByIdLessThanOrderByIdDesc(cursor, pageable);
             }
         } else {
-            Category cat = Category.valueOf(category.toLowerCase());
+            Category cat = Category.valueOf(category.toUpperCase());
             if (cursor == null) {
                 articleList = hasKeyword
                         ? articleRepository.findByCategoryAndTitleContainingIgnoreCaseOrderByIdDesc(cat, keyword, pageable)

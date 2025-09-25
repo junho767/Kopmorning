@@ -152,10 +152,23 @@ export default function AdminPage() {
 
       const res = await fetch(url.toString(), { credentials: "include" });
       if (!res.ok) {
-        throw new Error("Failed to fetch articles");
+        throw new Error(`Failed to fetch articles: ${res.status} ${res.statusText}`);
       }
       
-      const rs: RsData<ArticleListResponse> = await res.json();
+      // 응답이 비어있는지 확인
+      const text = await res.text();
+      if (!text.trim()) {
+        throw new Error("Empty response from server");
+      }
+      
+      let rs: RsData<ArticleListResponse>;
+      try {
+        rs = JSON.parse(text);
+      } catch (parseError) {
+        console.error("JSON Parse Error:", parseError);
+        console.error("Response text:", text);
+        throw new Error("Invalid JSON response from server");
+      }
       const { articles: newArticles, nextCursor: newNextCursor } = rs.data;
       
       if (append) {

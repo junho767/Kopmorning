@@ -128,7 +128,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("맨시티와 아스널의 개막전 경기 리뷰입니다...")
                 .likeCount(5L)
                 .viewCount(0L)
-                .category(Category.football)
+                .category(Category.FOOTBALL)
                 .member(members.get(0))
                 .build());
 
@@ -137,7 +137,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("2025 NBA 드래프트에서 가장 주목받은 선수는?")
                 .likeCount(3L)
                 .viewCount(0L)
-                .category(Category.football)
+                .category(Category.FOOTBALL)
                 .member(members.get(1))
                 .build());
 
@@ -146,7 +146,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("손흥민 선수의 월드컵 이후 첫 인터뷰 요약입니다.")
                 .likeCount(7L)
                 .viewCount(0L)
-                .category(Category.football)
+                .category(Category.FOOTBALL)
                 .member(members.get(2))
                 .build());
 
@@ -155,7 +155,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("2025 EPL 올스타전에서 활약한 선수들!")
                 .likeCount(2L)
                 .viewCount(0L)
-                .category(Category.football)
+                .category(Category.FOOTBALL)
                 .member(members.get(3))
                 .build());
 
@@ -164,7 +164,7 @@ public class BaseInitData implements ApplicationRunner {
                 .body("PSG 가 다시 한번 해냈습니다.")
                 .likeCount(4L)
                 .viewCount(0L)
-                .category(Category.football)
+                .category(Category.FOOTBALL)
                 .member(members.get(4))
                 .build());
 
@@ -176,7 +176,7 @@ public class BaseInitData implements ApplicationRunner {
                     .body("이번 주 프리미어리그 경기 " + i + "에 대한 리뷰입니다...")
                     .likeCount((long) (Math.random() * 20)) // 좋아요 랜덤
                     .viewCount((long) (Math.random() * 100)) // 조회수 랜덤
-                    .category(Category.football)
+                    .category(Category.FOOTBALL)
                     .member(members.get(i % members.size())) // 멤버를 순환하면서 배정
                     .build());
         }

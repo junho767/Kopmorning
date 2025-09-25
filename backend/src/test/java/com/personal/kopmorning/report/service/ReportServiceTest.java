@@ -99,7 +99,7 @@ public class ReportServiceTest {
                 .title("존x 화나네")
                 .body("(대충 욕설)")
                 .member(member1)
-                .category(Category.football)
+                .category(Category.FOOTBALL)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0L)
