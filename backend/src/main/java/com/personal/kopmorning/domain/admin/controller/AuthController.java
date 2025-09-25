@@ -41,7 +41,7 @@ public class AuthController {
     @PostMapping(value = "/login")
     public RsData<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         Member member = memberRepository.findByEmail(request.getEmail());
-        log.info("멤버 정보: {}", member.toString());
+
         if (member == null || request.getPassword() == null || member.getPassword() == null || !passwordEncoder.matches(request.getPassword(), member.getPassword())) {
             throw new MemberException(
                     AdminErrorCode.LOGIN_FAIL.getCode(),
