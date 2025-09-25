@@ -16,9 +16,6 @@ export default function Header() {
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
   useEffect(() => {
-    console.log(process.env.NEXT_PUBLIC_API_BASE);
-    console.log("로그인 상태:", isLoggedIn);
-    console.log("사용자 정보:", user);
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeModal();
     };

@@ -59,7 +59,7 @@ export default function ArticleCategoryPage({ params }: PageProps) {
   const loadArticles = useCallback(async (cursor: number | null = null, append: boolean = false, keyword?: string) => {
     setLoading(true);
     try {
-      const url = new URL(`${API_BASE}/api/article/list/${category}`);
+      const url = new URL(`${API_BASE}/api/article/list/${category === 'all' ? 'all' : category.toUpperCase()}`);
       if (cursor) {
         url.searchParams.set('nextCursor', cursor.toString());
       }

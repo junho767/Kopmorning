@@ -139,7 +139,7 @@ export default function AdminPage() {
   const loadArticles = useCallback(async (cursor: number | null = null, append: boolean = false, keyword?: string) => {
     setArticleLoading(true);
     try {
-      const url = new URL(`${API_BASE}/admin/article/list/${articleCategory}`);
+      const url = new URL(`${API_BASE}/admin/article/list/${articleCategory === 'all' ? 'all' : articleCategory.toUpperCase()}`);
       if (cursor) {
         url.searchParams.set('nextCursor', cursor.toString());
       }
