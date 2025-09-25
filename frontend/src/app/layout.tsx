@@ -30,8 +30,9 @@ export default async function RootLayout({
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken");
+    console.log("토큰이 있을까요? "+accessToken?.value);
     isLoggedIn = !!accessToken;
-
+    console.log("로그인 상태2: "+isLoggedIn);
     if (isLoggedIn) {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
