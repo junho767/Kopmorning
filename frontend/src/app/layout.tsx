@@ -44,12 +44,14 @@ export default async function RootLayout({
           const data = await res.json();
           user = data.data;
         }
-      } catch {
+      } catch (error) {
+        console.log("내부 fetch 오류:", error); // 내부 try-catch 에러 출력
         user = null;
       }
     }
-  } catch {
+  } catch (error) {
     // cookies() 함수가 실패할 경우 기본값 사용
+    console.log("cookies() 호출 오류:", error); // 여기에서 오류 로그
     isLoggedIn = false;
     user = null;
   }
