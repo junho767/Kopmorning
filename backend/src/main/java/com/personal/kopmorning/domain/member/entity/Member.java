@@ -70,11 +70,11 @@ public class Member {
         this.email = username;
         this.name = username;
         this.nickname = username;
-        this.provider = username;
+        this.provider = "local";
         this.password = encodePassword;
-        this.provider_id = encodePassword;
+        this.provider_id = "local_" + username;
         this.role = role;
-        this.status = MemberStatus.ADMIN;
+        this.status = MemberStatus.ACTIVE;
     }
 
     public void withdraw() {
