@@ -55,7 +55,7 @@ type ReportListResponse = {
 
 export default function AdminPage() {
   const { isLoggedIn, user, isLoading } = useAuth();
-  const [tab, setTab] = useState<"members" | "articles" | "reports">("members");
+  const [tab, setTab] = useState<"members" | "articles" | "reports" | "football">("members");
   const [members, setMembers] = useState<Member[]>([]);
   const [articles, setArticles] = useState<ArticleItem[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<{ [id: number]: string }>({});
@@ -81,7 +81,19 @@ export default function AdminPage() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportHasMore, setReportHasMore] = useState(true);
   
+  // 축구 데이터 관리 상태
+  const [footballLoading, setFootballLoading] = useState(false);
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
+  
   const isAdmin = !!user && (user.role?.toLowerCase().includes("admin"));
+
+  // 마지막 저장 시간 불러오기
+  useEffect(() => {
+    const savedTime = localStorage.getItem('footballDataLastSaved');
+    if (savedTime) {
+      setLastSavedTime(savedTime);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isLoading && (!isLoggedIn || !isAdmin)) {
@@ -291,6 +303,46 @@ export default function AdminPage() {
     loadReports();
   }, [isAdmin, loadReports]);
 
+  // 축구 데이터 저장 함수
+  const saveFootballData = useCallback(async () => {
+    setFootballLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/football/save`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // 현재 시간을 로컬 스토리지에 저장
+        const now = new Date();
+        const timeString = now.toLocaleString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        
+        localStorage.setItem('footballDataLastSaved', timeString);
+        setLastSavedTime(timeString);
+        
+        alert(`축구 데이터 저장 완료: ${data.message}`);
+      } else {
+        throw new Error("축구 데이터 저장 실패");
+      }
+    } catch (error) {
+      console.error("Error saving football data:", error);
+      alert("축구 데이터 저장 중 오류가 발생했습니다.");
+    } finally {
+      setFootballLoading(false);
+    }
+  }, []);
+
 
   if (isLoading) {
     return (
@@ -313,6 +365,7 @@ export default function AdminPage() {
           <button onClick={() => setTab("members")} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", background: tab === "members" ? "#e53935" : "#fff", color: tab === "members" ? "#fff" : "#333", fontWeight: 700 }}>회원관리</button>
           <button onClick={() => setTab("articles")} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", background: tab === "articles" ? "#e53935" : "#fff", color: tab === "articles" ? "#fff" : "#333", fontWeight: 700 }}>게시물관리</button>
           <button onClick={() => setTab("reports")} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", background: tab === "reports" ? "#e53935" : "#fff", color: tab === "reports" ? "#fff" : "#333", fontWeight: 700 }}>신고관리</button>
+          <button onClick={() => setTab("football")} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", background: tab === "football" ? "#e53935" : "#fff", color: tab === "football" ? "#fff" : "#333", fontWeight: 700 }}>축구데이터</button>
         </nav>
 
         {tab === "members" && (
@@ -620,6 +673,100 @@ export default function AdminPage() {
                 </p>
               </div>
             )}
+          </section>
+        )}
+
+        {tab === "football" && (
+          <section>
+            <div style={{ 
+              background: "#fff", 
+              border: "1px solid #eee", 
+              borderRadius: 10, 
+              padding: 24,
+              textAlign: "center"
+            }}>
+              <h2 style={{ 
+                margin: "0 0 16px", 
+                color: "var(--color-primary)",
+                fontSize: 20,
+                fontWeight: 600
+              }}>
+                축구 데이터 관리
+              </h2>
+              
+              <p style={{ 
+                color: "var(--color-text-muted)", 
+                marginBottom: 16,
+                fontSize: 14,
+                lineHeight: 1.5
+              }}>
+                외부 API에서 최신 축구 데이터를 가져와 데이터베이스에 저장합니다.<br/>
+                팀 정보, 선수 정보, 순위표, 경기 일정, 득점왕 정보가 포함됩니다.
+              </p>
+
+              {lastSavedTime && (
+                <div style={{ 
+                  marginBottom: 24,
+                  padding: 12,
+                  background: "#f8f9fa",
+                  borderRadius: 6,
+                  border: "1px solid #e9ecef"
+                }}>
+                  <p style={{ 
+                    margin: 0, 
+                    color: "var(--color-text)", 
+                    fontSize: 13,
+                    fontWeight: 500
+                  }}>
+                    📅 마지막 저장: {lastSavedTime}
+                  </p>
+                </div>
+              )}
+
+              <div style={{ 
+                display: "flex", 
+                gap: 12, 
+                justifyContent: "center",
+                flexWrap: "wrap"
+              }}>
+                <button
+                  onClick={saveFootballData}
+                  disabled={footballLoading}
+                  style={{
+                    padding: "12px 24px",
+                    background: footballLoading ? "var(--color-surface-variant)" : "#4f46e5",
+                    color: footballLoading ? "var(--color-text-muted)" : "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    fontSize: 15,
+                    fontWeight: 600,
+                    cursor: footballLoading ? "not-allowed" : "pointer",
+                    transition: "background-color 0.2s ease",
+                    minWidth: 160
+                  }}
+                >
+                  {footballLoading ? "데이터 저장 중..." : "축구 데이터 저장"}
+                </button>
+              </div>
+
+              {footballLoading && (
+                <div style={{ 
+                  marginTop: 16, 
+                  padding: 12, 
+                  background: "#f8f9fa", 
+                  borderRadius: 6,
+                  border: "1px solid #e9ecef"
+                }}>
+                  <p style={{ 
+                    margin: 0, 
+                    color: "var(--color-text-muted)", 
+                    fontSize: 13 
+                  }}>
+                    ⏳ 팀 정보, 선수 정보, 순위표, 경기 일정, 득점왕 정보를 저장하고 있습니다...
+                  </p>
+                </div>
+              )}
+            </div>
           </section>
         )}
       </div>
