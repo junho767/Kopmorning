@@ -84,9 +84,9 @@ export default function AdminPage() {
   const isAdmin = !!user && (user.role?.toLowerCase().includes("admin"));
 
   useEffect(() => {
-    console.log("isLoggedIn", isLoggedIn);
-    console.log("isAdmin", isAdmin);
-    console.log("user", user);
+    alert("로그인 "+isLoggedIn);
+    alert("관리자 "+isAdmin);
+    alert("유저 "+user);
     if (!isLoggedIn || !isAdmin) {
       window.location.href = "/admin/login";
     }
