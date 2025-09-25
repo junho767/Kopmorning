@@ -54,7 +54,7 @@ type ReportListResponse = {
 };
 
 export default function AdminPage() {
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, isLoading } = useAuth();
   const [tab, setTab] = useState<"members" | "articles" | "reports">("members");
   const [members, setMembers] = useState<Member[]>([]);
   const [articles, setArticles] = useState<ArticleItem[]>([]);
@@ -84,11 +84,10 @@ export default function AdminPage() {
   const isAdmin = !!user && (user.role?.toLowerCase().includes("admin"));
 
   useEffect(() => {
-    alert("로그인 결과 "+ isLoggedIn + " " + isAdmin);  
-    if (!isLoggedIn || !isAdmin) {
+    if (!isLoading && (!isLoggedIn || !isAdmin)) {
       window.location.href = "/admin/login";
     }
-  }, [isLoggedIn, isAdmin]);
+  }, [isLoggedIn, isAdmin, user, isLoading]);
 
   // 회원 목록 불러오기 (커서 기반)
   const loadMembers = useCallback(async (cursor: number | null = null, append: boolean = false) => {
@@ -292,6 +291,17 @@ export default function AdminPage() {
     loadReports();
   }, [isAdmin, loadReports]);
 
+
+  if (isLoading) {
+    return (
+      <main style={{ width: "100%", minHeight: "100svh", margin: 0, padding: "24px 20px", boxSizing: "border-box", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <h2 style={{ color: "var(--color-primary)" }}>로딩 중...</h2>
+          <p style={{ color: "var(--color-text-muted)" }}>인증 상태를 확인하고 있습니다.</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!isAdmin) return null;
 

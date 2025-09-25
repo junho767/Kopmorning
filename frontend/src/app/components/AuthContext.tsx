@@ -16,13 +16,15 @@ export interface User {
 interface AuthContextType {
   isLoggedIn: boolean;
   user: User | null;
+  isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType>({ isLoggedIn: false, user: null });
+const AuthContext = createContext<AuthContextType>({ isLoggedIn: false, user: null, isLoading: true });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -49,13 +51,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("인증 확인 오류:", error);
         setIsLoggedIn(false);
         setUser(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     checkAuth();
   }, []);
 
-  return <AuthContext.Provider value={{ isLoggedIn, user }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ isLoggedIn, user, isLoading }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
