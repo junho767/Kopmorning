@@ -84,6 +84,9 @@ export default function AdminPage() {
   const isAdmin = !!user && (user.role?.toLowerCase().includes("admin"));
 
   useEffect(() => {
+    console.log("isLoggedIn", isLoggedIn);
+    console.log("isAdmin", isAdmin);
+    console.log("user", user);
     if (!isLoggedIn || !isAdmin) {
       window.location.href = "/admin/login";
     }

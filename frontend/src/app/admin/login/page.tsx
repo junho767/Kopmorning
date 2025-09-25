@@ -61,7 +61,6 @@ export default function AdminLoginPage() {
               {loading ? "로그인 중..." : "로그인"}
             </button>
         </form>
-        <div style={{ marginTop: 10, fontSize: 11, color: "#9ca3af" }}>쿠키에 토큰이 저장되며, 성공 시 관리자 페이지로 이동합니다.</div>
       </div>
     </div>
   );
