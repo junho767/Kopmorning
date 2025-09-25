@@ -84,13 +84,11 @@ export default function AdminPage() {
   const isAdmin = !!user && (user.role?.toLowerCase().includes("admin"));
 
   useEffect(() => {
-    alert("로그인 "+isLoggedIn);
-    alert("관리자 "+isAdmin);
-    alert("유저 "+user);
+    alert("로그인 결과 "+ isLoggedIn + " " + isAdmin);  
     if (!isLoggedIn || !isAdmin) {
       window.location.href = "/admin/login";
     }
-  }, [isLoggedIn, isAdmin, user]);
+  }, [isLoggedIn, isAdmin]);
 
   // 회원 목록 불러오기 (커서 기반)
   const loadMembers = useCallback(async (cursor: number | null = null, append: boolean = false) => {

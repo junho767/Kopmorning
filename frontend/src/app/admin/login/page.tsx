@@ -11,8 +11,7 @@ export default function AdminLoginPage() {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8080";
 
   useEffect(() => {
-    alert("로그인 "+isLoggedIn);    
-    alert("유저 "+user);
+    alert("로그인 결과과"+ isLoggedIn +" "+ user?.role);  
     if (isLoggedIn && user && user.role?.toLowerCase().includes("admin")) {
       window.location.href = "/admin";
     }
