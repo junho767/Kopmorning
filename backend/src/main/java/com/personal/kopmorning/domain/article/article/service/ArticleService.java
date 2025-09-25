@@ -49,7 +49,7 @@ public class ArticleService {
                 .member(member)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .category(Category.valueOf(articleCreate.getCategory()))
+                .category(Category.valueOf(articleCreate.getCategory().toUpperCase()))
                 .likeCount(INIT_COUNT)
                 .viewCount(INIT_COUNT)
                 .build();

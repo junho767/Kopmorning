@@ -24,7 +24,7 @@ export default function ArticleWritePage() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ title, body, category }),
+        body: JSON.stringify({ title, body, category: category.toUpperCase() }),
       });
       console.log(res);
       console.log(body);
