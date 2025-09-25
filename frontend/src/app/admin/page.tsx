@@ -134,7 +134,7 @@ export default function AdminPage() {
     setMemberNextCursor(null);
     setMemberHasMore(true);
     loadMembers();
-  }, [isAdmin]);
+  }, [isAdmin, loadMembers]);
 
   const loadArticles = useCallback(async (cursor: number | null = null, append: boolean = false, keyword?: string) => {
     setArticleLoading(true);
@@ -289,7 +289,7 @@ export default function AdminPage() {
     setReportNextCursor(null);
     setReportHasMore(true);
     loadReports();
-  }, [isAdmin]);
+  }, [isAdmin, loadReports]);
 
 
   if (!isAdmin) return null;

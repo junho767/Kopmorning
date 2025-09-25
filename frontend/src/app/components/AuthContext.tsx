@@ -23,7 +23,6 @@ const AuthContext = createContext<AuthContextType>({ isLoggedIn: false, user: nu
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // 클라이언트 사이드에서 인증 상태 확인
@@ -61,8 +60,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("인증 확인 오류:", error);
         setIsLoggedIn(false);
         setUser(null);
-      } finally {
-        setLoading(false);
       }
     };
 
