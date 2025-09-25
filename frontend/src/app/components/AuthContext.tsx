@@ -28,11 +28,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 클라이언트 사이드에서 인증 상태 확인
     const checkAuth = async () => {
       try {
-        // 쿠키에서 토큰 확인
-        const token = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('accessToken='))
-          ?.split('=')[1];
+        // 쿠키 정보 디버깅
+        console.log("전체 쿠키:", document.cookie);
+        console.log("쿠키 배열:", document.cookie.split('; '));
+        
+        // 쿠키에서 토큰 확인 (더 안전한 방식)
+        const getCookie = (name: string) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop()?.split(';').shift();
+          return undefined;
+        };
+        
+        const token = getCookie('accessToken');
+
+        console.log("찾은 토큰:", token);
 
         if (token) {
           console.log("토큰 발견:", token);
@@ -41,7 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // 사용자 정보 가져오기
           const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
           const res = await fetch(`${baseUrl}/api/member`, {
-            headers: { Cookie: `accessToken=${token}` },
+            headers: {
+              "Content-Type": "application/json",
+            },
             credentials: "include",
             cache: "no-store",
           });
