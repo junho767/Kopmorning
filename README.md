@@ -20,8 +20,9 @@
 
 ### 📌 커뮤니티 게시판 기능
 - 게시글 CRUD
-- 댓글 및 대댓글
-- 좋아요 기능 (Redis 기반 동시성 이슈 해결)
+- 댓글 CRUD
+- 게시글, 댓글에 대한 신고 기능
+- 게시글, 댓글에 대한 좋아요 기능 (Redis 기반 동시성 이슈 해결)
 
 ### 🌐 해외 축구 정보 연동 (Open API)
 - 팀 별 순위표
@@ -30,14 +31,13 @@
 - 팀 관련 최신 뉴스
 
 ### 🔐 로그인 / 인증 시스템
-- Form 로그인
 - OAuth2: Google, Kakao, Naver 연동
 - JWT 기반 인증 처리 (Redis 기반 토큰 관리)
 
-### 🛠 관리자 기능 & 실시간 고객센터 (Q&A)
-- WebSocket 기반 실시간 채팅 고객센터
+### 🛠 관리자 기능
 - 관리자 전용 페이지
-
+- 회원 관리 및 게시물 관리
+- 실시간 모니터링 시스템
 ---
 
 ## 🌱 GitHub 협업 및 커밋 전략
@@ -52,26 +52,32 @@
 
 ---
 
-## 🧱 기술 스택
+# 🧱 기술 스택
 
-### 💻 Language
+## 💻 Language
 ![Java](https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=openjdk&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 
-### ⚙ Framework & Library
+## 🎨 Frontend
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white)
+
+## ⚙ Framework & Library
 ![SpringBoot](https://img.shields.io/badge/SpringBoot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
 ![SpringSecurity](https://img.shields.io/badge/SpringSecurity-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
 ![SpringDataJPA](https://img.shields.io/badge/SpringDataJPA-6DB33F?style=for-the-badge&logo=hibernate&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 ![Springdoc OpenAPI](https://img.shields.io/badge/Springdoc%20OpenAPI-68B5F4?style=for-the-badge&logo=swagger&logoColor=white)
 ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=white)
-![SSE](https://img.shields.io/badge/Server--Sent%20Events-lightgrey?style=for-the-badge)
-![WebSocket](https://img.shields.io/badge/WebSocket-010101?style=for-the-badge&logo=websocket&logoColor=white)
 
-### 🗄 Database
+## 🗄 Database
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 
-### 🛠 Development Tools
+## 🛠 Development Tools
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000?style=for-the-badge&logo=intellijidea&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
@@ -79,14 +85,15 @@
 ![AWS ECS](https://img.shields.io/badge/AWS%20ECS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
 
-### 📊 Monitoring & Logging Tools
-- 미정
+## 📊 Monitoring & Logging Tools
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)
+![K6](https://img.shields.io/badge/K6-7D4799?style=for-the-badge&logo=k6&logoColor=white)
 
-### 🤝 Collaboration Tools
+## 🤝 Collaboration Tools
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white)
-![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
 
 ### 📜 시스템 아키텍처
+
 ### 🎯 ERD
-!링크(https://www.erdcloud.com/d/yRL2NFx7C4zd3SnLv)
