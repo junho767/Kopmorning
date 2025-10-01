@@ -75,8 +75,7 @@ public class CookieUtil {
         cookie.setPath(cookiePath);
         cookie.setDomain(cookieDomain);
         cookie.setAttribute(SAME_SITE, NONE);
-//        cookie.setHttpOnly(true);
-        cookie.setHttpOnly(false);
+        cookie.setHttpOnly(true);
         cookie.setSecure(true);
         response.addCookie(cookie);
     }
@@ -87,8 +86,7 @@ public class CookieUtil {
         cookie.setPath(cookiePath);
         cookie.setDomain(cookieDomain);
         cookie.setAttribute(SAME_SITE, NONE);
-//        cookie.setHttpOnly(true); // HTTPS 에만 전달 가능하게 함.
-        cookie.setHttpOnly(false);
+        cookie.setHttpOnly(true);
         cookie.setSecure(true);
         response.addCookie(cookie);
     }
