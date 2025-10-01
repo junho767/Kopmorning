@@ -42,9 +42,10 @@ public class MemberService {
         return SecurityUtil.getCurrentMember();
     }
 
-    public void logout(String refreshToken) {
-        long expirationTime = tokenService.getExpirationTimeFromToken(refreshToken);
-        tokenService.addToBlacklist(refreshToken, expirationTime);
+    public void logout(String accessToken, String refreshToken) {
+        long accessTokenExpirationTime = tokenService.getRemainingTime(accessToken);
+        long refreshTokenExpirationTime = tokenService.getRemainingTime(refreshToken);
+        tokenService.addToBlacklist(accessToken, refreshToken, accessTokenExpirationTime, refreshTokenExpirationTime);
     }
 
     // 회원탈퇴 신청

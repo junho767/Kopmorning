@@ -37,7 +37,8 @@ public class TokenService {
 
     private static final String BEARER_TYPE = "Bearer";
     private static final String AUTHORITIES_KEY = "auth";
-    private static final String BLACKLIST_PREFIX = "blackList:";
+    private static final String BLACKLIST_A_PREFIX = "blackList:a ";
+    private static final String BLACKLIST_R_PREFIX = "blackList:r ";
 
     @Value("${jwt.expiration.access-token}")
     private int accessTokenExpiration;
@@ -152,9 +153,12 @@ public class TokenService {
     }
 
     // refreshToken redis 에 블랙리스트로 저장
-    public void addToBlacklist(String refreshToken, long expirationTime) {
-        String key = BLACKLIST_PREFIX + refreshToken;
-        redisTemplate.opsForValue().set(key, BLACKLIST_PREFIX, expirationTime, TimeUnit.MILLISECONDS);
+    public void addToBlacklist(String accessToken, String refreshToken, long accessTokenTtl, long refreshTokenTtl) {
+        String accessTokenKey = BLACKLIST_A_PREFIX + accessToken;
+        String refreshTokenKey = BLACKLIST_R_PREFIX + refreshToken;
+
+        redisTemplate.opsForValue().set(accessTokenKey, accessToken, accessTokenTtl, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(refreshTokenKey, refreshToken, refreshTokenTtl, TimeUnit.MILLISECONDS);
     }
 
     // 토큰에서 이메일(Subject) 추출
@@ -169,11 +173,6 @@ public class TokenService {
             );
         }
         return email;
-    }
-
-    // refreshToken 의 남은 기간 추출
-    public long getExpirationTimeFromToken(String refreshToken) {
-        return getRemainingTime(refreshToken);
     }
 
     // 토큰에서 만료 시간 추출
