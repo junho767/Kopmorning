@@ -4,24 +4,9 @@ import com.personal.kopmorning.domain.football.dto.MatchDTO;
 import com.personal.kopmorning.domain.football.dto.RankingDTO;
 import com.personal.kopmorning.domain.football.dto.StandingDTO;
 import com.personal.kopmorning.domain.football.dto.TeamDTO;
-import com.personal.kopmorning.domain.football.dto.response.GameResponse;
-import com.personal.kopmorning.domain.football.dto.response.PlayerResponse;
-import com.personal.kopmorning.domain.football.dto.response.RankingResponse;
-import com.personal.kopmorning.domain.football.dto.response.StandingResponse;
-import com.personal.kopmorning.domain.football.dto.response.TeamDetailResponse;
-import com.personal.kopmorning.domain.football.dto.response.TeamResponse;
-import com.personal.kopmorning.domain.football.entity.Coach;
-import com.personal.kopmorning.domain.football.entity.Game;
-import com.personal.kopmorning.domain.football.entity.Player;
-import com.personal.kopmorning.domain.football.entity.Ranking;
-import com.personal.kopmorning.domain.football.entity.Standing;
-import com.personal.kopmorning.domain.football.entity.Team;
-import com.personal.kopmorning.domain.football.repository.CoachRepository;
-import com.personal.kopmorning.domain.football.repository.GameRepository;
-import com.personal.kopmorning.domain.football.repository.PlayerRepository;
-import com.personal.kopmorning.domain.football.repository.RankingRepository;
-import com.personal.kopmorning.domain.football.repository.StandingRepository;
-import com.personal.kopmorning.domain.football.repository.TeamRepository;
+import com.personal.kopmorning.domain.football.dto.response.*;
+import com.personal.kopmorning.domain.football.entity.*;
+import com.personal.kopmorning.domain.football.repository.*;
 import com.personal.kopmorning.domain.football.responseCode.FootBallErrorCode;
 import com.personal.kopmorning.global.exception.FootBall.FootBallException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -112,7 +97,7 @@ public class FootBallService {
             playerRepository.saveAll(playerList);
             coachRepository.saveAll(coachList);
         } catch (Exception e) {
-            log.error("❗ standings 저장 중 오류 발생", e);
+            log.error("❗ Team && Player 저장 중 오류 발생", e);
             throw new FootBallException(
                     FootBallErrorCode.PLAYER_API_ERROR.getCode(),
                     FootBallErrorCode.PLAYER_API_ERROR.getMessage(),
@@ -162,7 +147,8 @@ public class FootBallService {
                             .path(GAME_REQUEST_PATH)
                             .build())
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<MatchDTO>() {})
+                    .bodyToMono(new ParameterizedTypeReference<MatchDTO>() {
+                    })
                     .block();
 
             List<Game> gameList = matchDTO.getMatches().stream()
@@ -190,7 +176,8 @@ public class FootBallService {
                             .path(RANKING_REQUEST_PATH)
                             .build())
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<RankingDTO>() {})
+                    .bodyToMono(new ParameterizedTypeReference<RankingDTO>() {
+                    })
                     .block();
 
             List<Ranking> ranking = rankingDTO.getScorers().stream()
