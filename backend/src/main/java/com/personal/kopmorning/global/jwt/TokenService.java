@@ -115,11 +115,7 @@ public class TokenService {
                     .build()
                     .parseClaimsJws(token);
         } catch (ExpiredJwtException e) {
-            throw new TokenException(
-                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getCode(),
-                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage(),
-                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getHttpStatus()
-            );
+            throw e;
         } catch (JwtException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_INVALID.getCode(),
@@ -183,16 +179,23 @@ public class TokenService {
 
     // refreshToken 을 이용한 accessToken 재발급
     public TokenDto reissueRefreshToken(String refreshToken) {
-        String email = extractEmail(refreshToken);
-
-        if (getRemainingTime(refreshToken) <= 0) {
+        try {
+            validateToken(refreshToken);
+        } catch (ExpiredJwtException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getCode(),
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage(),
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getHttpStatus()
             );
+        } catch (JwtException e) {
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_INVALID.getCode(),
+                    MemberErrorCode.TOKEN_INVALID.getMessage(),
+                    MemberErrorCode.TOKEN_INVALID.getHttpStatus()
+            );
         }
 
+        String email = extractEmail(refreshToken);
         String accessToken = createAccessToken(email);
 
         return new TokenDto(accessToken, refreshToken, BEARER_TYPE);

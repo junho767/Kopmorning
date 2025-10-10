@@ -4,6 +4,7 @@ import com.personal.kopmorning.global.jwt.JwtAuthenticationFilter;
 import com.personal.kopmorning.global.jwt.TokenService;
 import com.personal.kopmorning.global.oauth.CustomOAuth2UserDetailService;
 import com.personal.kopmorning.global.oauth.OAuth2AuthenticationSuccessHandler;
+import com.personal.kopmorning.global.utils.CookieUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final TokenService tokenService;
+    private final CookieUtil cookieUtil;
     private final CustomOAuth2UserDetailService customOAuth2UserDetailService;
     private final OAuth2AuthenticationSuccessHandler successHandler;
 
@@ -70,7 +72,7 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserDetailService))
                         .successHandler(successHandler)
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(tokenService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(tokenService, cookieUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
