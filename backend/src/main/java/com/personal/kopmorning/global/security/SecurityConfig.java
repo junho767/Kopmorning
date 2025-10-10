@@ -31,8 +31,8 @@ import java.util.List;
 public class SecurityConfig {
     private final TokenService tokenService;
     private final CookieUtil cookieUtil;
-    private final CustomOAuth2UserDetailService customOAuth2UserDetailService;
     private final OAuth2AuthenticationSuccessHandler successHandler;
+    private final CustomOAuth2UserDetailService customOAuth2UserDetailService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -83,8 +83,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
         configuration.setAllowedOrigins(List.of(
-            "http://localhost:3001",
-            "https://kopmorning.vercel.app"
+                "http://localhost:3001",
+                "https://kopmorning.vercel.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

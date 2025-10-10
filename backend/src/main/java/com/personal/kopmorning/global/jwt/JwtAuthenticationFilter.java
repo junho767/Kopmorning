@@ -28,20 +28,26 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        String accessToken = CookieUtil.getAccessTokenFromCookie(httpRequest);
+        String accessToken = cookieUtil.getAccessTokenFromCookie(httpRequest);
 
         try {
             if (accessToken != null) {
                 tokenService.validateToken(accessToken);
+
+                if (tokenService.isAccessTokenBlacklisted(accessToken)) {
+                    SecurityContextHolder.clearContext();
+                    httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+
                 Authentication authentication = tokenService.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (ExpiredJwtException e) {
-            // Access token 만료 시 refresh token으로 자동 재발급 시도
             log.debug("액세스 토큰 만료, 토큰 재발급 시도: {}", e.getMessage());
             tryRefreshToken(httpRequest, httpResponse);
+            return;
         } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
-            // 무효 토큰: 인증 컨텍스트를 비우고 계속 진행
             SecurityContextHolder.clearContext();
             log.debug("유효하지 않은 토큰: {}", e.getMessage());
         }
@@ -55,30 +61,27 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
     private void tryRefreshToken(HttpServletRequest request, HttpServletResponse response) {
         try {
-            String refreshToken = CookieUtil.getRefreshTokenFromCookie(request);
-            
-            if (refreshToken != null) {
-                // Refresh token 로 새로운 access token 발급
-                TokenDto tokenDto = tokenService.reissueRefreshToken(refreshToken);
-                
-                // 새로운 access token을 쿠키에 설정
-                cookieUtil.addAccessCookie(tokenDto.getAccessToken(), response);
-                
-                // 새로운 access token 로 인증 정보 설정
-                Authentication authentication = tokenService.getAuthentication(tokenDto.getAccessToken());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                
-                log.debug("토큰 재발급 성공");
-            } else {
-                // Refresh token이 없으면 컨텍스트 비우기
+            String refreshToken = cookieUtil.getRefreshTokenFromCookie(request);
+            if (refreshToken == null) {
                 SecurityContextHolder.clearContext();
-                log.debug("리프레시 토큰이 존재하지 않습니다. 재로그인 부탁드립니다.");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
+
+            if (tokenService.isRefreshTokenBlacklisted(refreshToken)) {
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
+            TokenDto tokenDto = tokenService.reissueRefreshToken(refreshToken);
+            cookieUtil.addAccessCookie(tokenDto.getAccessToken(), response);
+            Authentication authentication = tokenService.getAuthentication(tokenDto.getAccessToken());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
         } catch (Exception e) {
-            // Refresh token 만료되었거나 유효하지 않은 경우
             SecurityContextHolder.clearContext();
-            log.debug("토큰 재발급 실패: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
     }
 }
-

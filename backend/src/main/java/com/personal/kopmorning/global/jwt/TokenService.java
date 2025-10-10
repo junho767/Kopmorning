@@ -90,7 +90,6 @@ public class TokenService {
                 .compact();
     }
 
-    // todo : 예외 처리 확실하게 해야함.
     public Authentication getAuthentication(String accessToken) {
         Claims claims = parseClaims(accessToken);
 
@@ -155,6 +154,16 @@ public class TokenService {
 
         redisTemplate.opsForValue().set(accessTokenKey, accessToken, accessTokenTtl, TimeUnit.MILLISECONDS);
         redisTemplate.opsForValue().set(refreshTokenKey, refreshToken, refreshTokenTtl, TimeUnit.MILLISECONDS);
+    }
+
+    // accessToken 이 블랙리스트에 있는지 확인
+    public boolean isAccessTokenBlacklisted(String accessToken) {
+        return redisTemplate.hasKey(BLACKLIST_A_PREFIX + accessToken);
+    }
+
+    // refreshToken 이 블랙리스트에 있는지 확인
+    public boolean isRefreshTokenBlacklisted(String refreshToken) {
+        return redisTemplate.hasKey(BLACKLIST_R_PREFIX + refreshToken);
     }
 
     // 토큰에서 이메일(Subject) 추출

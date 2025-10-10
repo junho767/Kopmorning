@@ -45,7 +45,7 @@ public class CookieUtil {
         response.addCookie(cookie);
     }
 
-    public static String getAccessTokenFromCookie(HttpServletRequest request) {
+    public String getAccessTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -57,7 +57,7 @@ public class CookieUtil {
         return null;
     }
 
-    public static String getRefreshTokenFromCookie(HttpServletRequest request) {
+    public String getRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {

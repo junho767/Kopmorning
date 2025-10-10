@@ -35,8 +35,8 @@ public class MemberController {
 
     @PostMapping("/logout")
     public RsData<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        String accessToken = CookieUtil.getAccessTokenFromCookie(request);
-        String refreshToken = CookieUtil.getRefreshTokenFromCookie(request);
+        String accessToken = cookieUtil.getAccessTokenFromCookie(request);
+        String refreshToken = cookieUtil.getRefreshTokenFromCookie(request);
 
         if (accessToken == null || refreshToken == null) {
             return new RsData<>(
