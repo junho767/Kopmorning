@@ -37,7 +37,8 @@ public class TokenService {
 
     private static final String BEARER_TYPE = "Bearer";
     private static final String AUTHORITIES_KEY = "auth";
-    private static final String BLACKLIST_PREFIX = "blackList:";
+    private static final String BLACKLIST_A_PREFIX = "blackList:a ";
+    private static final String BLACKLIST_R_PREFIX = "blackList:r ";
 
     @Value("${jwt.expiration.access-token}")
     private int accessTokenExpiration;
@@ -89,7 +90,6 @@ public class TokenService {
                 .compact();
     }
 
-    // todo : 예외 처리 확실하게 해야함.
     public Authentication getAuthentication(String accessToken) {
         Claims claims = parseClaims(accessToken);
 
@@ -114,11 +114,7 @@ public class TokenService {
                     .build()
                     .parseClaimsJws(token);
         } catch (ExpiredJwtException e) {
-            throw new TokenException(
-                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getCode(),
-                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage(),
-                    MemberErrorCode.TOKEN_REFRESH_EXPIRE.getHttpStatus()
-            );
+            throw e;
         } catch (JwtException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_INVALID.getCode(),
@@ -152,9 +148,22 @@ public class TokenService {
     }
 
     // refreshToken redis 에 블랙리스트로 저장
-    public void addToBlacklist(String refreshToken, long expirationTime) {
-        String key = BLACKLIST_PREFIX + refreshToken;
-        redisTemplate.opsForValue().set(key, BLACKLIST_PREFIX, expirationTime, TimeUnit.MILLISECONDS);
+    public void addToBlacklist(String accessToken, String refreshToken, long accessTokenTtl, long refreshTokenTtl) {
+        String accessTokenKey = BLACKLIST_A_PREFIX + accessToken;
+        String refreshTokenKey = BLACKLIST_R_PREFIX + refreshToken;
+
+        redisTemplate.opsForValue().set(accessTokenKey, accessToken, accessTokenTtl, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(refreshTokenKey, refreshToken, refreshTokenTtl, TimeUnit.MILLISECONDS);
+    }
+
+    // accessToken 이 블랙리스트에 있는지 확인
+    public boolean isAccessTokenBlacklisted(String accessToken) {
+        return redisTemplate.hasKey(BLACKLIST_A_PREFIX + accessToken);
+    }
+
+    // refreshToken 이 블랙리스트에 있는지 확인
+    public boolean isRefreshTokenBlacklisted(String refreshToken) {
+        return redisTemplate.hasKey(BLACKLIST_R_PREFIX + refreshToken);
     }
 
     // 토큰에서 이메일(Subject) 추출
@@ -171,11 +180,6 @@ public class TokenService {
         return email;
     }
 
-    // refreshToken 의 남은 기간 추출
-    public long getExpirationTimeFromToken(String refreshToken) {
-        return getRemainingTime(refreshToken);
-    }
-
     // 토큰에서 만료 시간 추출
     public long getRemainingTime(String token) {
         Date expiration = parseClaims(token).getExpiration();
@@ -184,16 +188,23 @@ public class TokenService {
 
     // refreshToken 을 이용한 accessToken 재발급
     public TokenDto reissueRefreshToken(String refreshToken) {
-        String email = extractEmail(refreshToken);
-
-        if (getRemainingTime(refreshToken) <= 0) {
+        try {
+            validateToken(refreshToken);
+        } catch (ExpiredJwtException e) {
             throw new TokenException(
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getCode(),
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getMessage(),
                     MemberErrorCode.TOKEN_REFRESH_EXPIRE.getHttpStatus()
             );
+        } catch (JwtException e) {
+            throw new TokenException(
+                    MemberErrorCode.TOKEN_INVALID.getCode(),
+                    MemberErrorCode.TOKEN_INVALID.getMessage(),
+                    MemberErrorCode.TOKEN_INVALID.getHttpStatus()
+            );
         }
 
+        String email = extractEmail(refreshToken);
         String accessToken = createAccessToken(email);
 
         return new TokenDto(accessToken, refreshToken, BEARER_TYPE);

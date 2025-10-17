@@ -35,18 +35,8 @@ public class MemberController {
 
     @PostMapping("/logout")
     public RsData<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
-        String accessToken = null;
-
-        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
-            accessToken = authHeader.substring(7);
-        }
-
-        if (accessToken == null) {
-            accessToken = CookieUtil.getAccessTokenFromCookie(request);
-        }
-
-        String refreshToken = CookieUtil.getRefreshTokenFromCookie(request);
+        String accessToken = cookieUtil.getAccessTokenFromCookie(request);
+        String refreshToken = cookieUtil.getRefreshTokenFromCookie(request);
 
         if (accessToken == null || refreshToken == null) {
             return new RsData<>(
@@ -55,7 +45,7 @@ public class MemberController {
             );
         }
 
-        memberService.logout(refreshToken);
+        memberService.logout(accessToken, refreshToken);
 
         cookieUtil.removeAccessTokenFromCookie(response);
         cookieUtil.removeRefreshTokenFromCookie(response);
