@@ -17,20 +17,6 @@ import java.util.List;
 public class FootBallController {
     private final FootBallService footBallService;
 
-    @PostMapping("/save")
-    public RsData<?> save() {
-        footBallService.saveTeamAndPlayer();
-        footBallService.saveStanding();
-        footBallService.saveFixtures();
-        footBallService.saveTopScorer();
-
-        log.info("✅ Write-Around 방식: DB만 저장");
-        return new RsData<>(
-                FootBallSuccessCode.SAVE_INFO.getCode(),
-                FootBallSuccessCode.SAVE_INFO.getMessage()
-        );
-    }
-
     @GetMapping("/team")
     public RsData<List<TeamResponse>> getTeams() {
         return new RsData<>(
