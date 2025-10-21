@@ -15,19 +15,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Ranking {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long goals;
     private Long assists;
     private Long penalties;
-    private Long playerId;
     private Long teamId;
 
     public Ranking(RankingDTO.Scorer scorer) {
+        this.id = scorer.player().id();
         this.goals = scorer.goals();
         this.assists = scorer.assists();
         this.penalties = scorer.penalties();
-        this.playerId = scorer.player().id();
         this.teamId = scorer.team().id();
     }
 }

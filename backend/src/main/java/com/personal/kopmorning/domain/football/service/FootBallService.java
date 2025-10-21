@@ -84,7 +84,9 @@ public class FootBallService {
                     .collect(Collectors.toList());
 
             for (TeamDTO.Team team : teamDTO.getTeams()) {
-                coachList.add(new Coach(team.coach()));
+                if (team.coach().id() != null) {
+                    coachList.add(new Coach(team.coach()));
+                }
 
                 for (TeamDTO.Player player : team.squad()) {
                     Player playerEntity = new Player(player);
@@ -258,7 +260,7 @@ public class FootBallService {
 
         return ranking.stream()
                 .map(r -> {
-                    Player player = playerRepository.findById(r.getPlayerId()).orElseThrow(() -> new FootBallException(
+                    Player player = playerRepository.findById(r.getId()).orElseThrow(() -> new FootBallException(
                                     FootBallErrorCode.PLAYER_NOT_FOUND.getCode(),
                                     FootBallErrorCode.PLAYER_NOT_FOUND.getMessage(),
                                     FootBallErrorCode.PLAYER_NOT_FOUND.getHttpStatus()

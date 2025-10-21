@@ -201,12 +201,12 @@ public class BaseInitData implements ApplicationRunner {
 
     private void playerInit() {
         List<Ranking> rankings = List.of(
-                new Ranking(null, 12L, 7L, 2L, 16347L, 64L),     // Dominik Szoboszlai
-                new Ranking(null, 10L, 15L, 1L, 19334L, 64L),    // Florian Wirtz
-                new Ranking(null, 9L, 5L, 0L, 22396L, 64L),      // Luis Díaz
-                new Ranking(null, 18L, 6L, 3L, 28612L, 64L),     // Darwin Núñez
-                new Ranking(null, 6L, 10L, 2L, 45681L, 64L),     // Alexis Mac Allister
-                new Ranking(null, 4L, 8L, 0L, 81793L, 64L)       // Ryan Gravenberch
+                new Ranking(12L, 7L, 2L, 16347L, 64L),     // Dominik Szoboszlai
+                new Ranking(10L, 15L, 1L, 19334L, 64L),    // Florian Wirtz
+                new Ranking(9L, 5L, 0L, 22396L, 64L),      // Luis Díaz
+                new Ranking(18L, 6L, 3L, 28612L, 64L),     // Darwin Núñez
+                new Ranking(6L, 10L, 2L, 45681L, 64L),     // Alexis Mac Allister
+                new Ranking( 4L, 8L, 0L, 81793L, 64L)       // Ryan Gravenberch
         );
 
         rankingRepository.saveAll(rankings);
