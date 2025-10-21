@@ -53,6 +53,16 @@ type ReportListResponse = {
   nextCursor: number | null;
 };
 
+type SchedulerStatus = {
+  jobName: string;
+  status: "SUCCESS" | "FAIL" | "RUNNING";
+  lastStartedAt: string;
+  lastFinishedAt: string | null;
+  durationMs: number;
+  errorMessage: string | null;
+  runId: string;
+};
+
 export default function AdminPage() {
   const { isLoggedIn, user, isLoading } = useAuth();
   const [tab, setTab] = useState<"members" | "articles" | "reports" | "football">("members");
@@ -82,18 +92,11 @@ export default function AdminPage() {
   const [reportHasMore, setReportHasMore] = useState(true);
   
   // 축구 데이터 관리 상태
-  const [footballLoading, setFootballLoading] = useState(false);
-  const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
+  const [schedulerStatus, setSchedulerStatus] = useState<SchedulerStatus | null>(null);
+  const [schedulerLoading, setSchedulerLoading] = useState(false);
   
   const isAdmin = !!user && (user.role?.toLowerCase().includes("admin"));
 
-  // 마지막 저장 시간 불러오기
-  useEffect(() => {
-    const savedTime = localStorage.getItem('footballDataLastSaved');
-    if (savedTime) {
-      setLastSavedTime(savedTime);
-    }
-  }, []);
 
   useEffect(() => {
     if (!isLoading && (!isLoggedIn || !isAdmin)) {
@@ -303,12 +306,12 @@ export default function AdminPage() {
     loadReports();
   }, [isAdmin, loadReports]);
 
-  // 축구 데이터 저장 함수
-  const saveFootballData = useCallback(async () => {
-    setFootballLoading(true);
+  // 스케줄러 상태 조회 함수
+  const fetchSchedulerStatus = useCallback(async () => {
+    setSchedulerLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/football/save`, {
-        method: "POST",
+      const res = await fetch(`${API_BASE}/admin/football/status`, {
+        method: "GET",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
@@ -316,32 +319,29 @@ export default function AdminPage() {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        // 현재 시간을 로컬 스토리지에 저장
-        const now = new Date();
-        const timeString = now.toLocaleString('ko-KR', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        });
-        
-        localStorage.setItem('footballDataLastSaved', timeString);
-        setLastSavedTime(timeString);
-        
-        alert(`축구 데이터 저장 완료: ${data.message}`);
+        const data: RsData<SchedulerStatus> = await res.json();
+        setSchedulerStatus(data.data);
       } else {
-        throw new Error("축구 데이터 저장 실패");
+        console.error("스케줄러 상태 조회 실패");
       }
     } catch (error) {
-      console.error("Error saving football data:", error);
-      alert("축구 데이터 저장 중 오류가 발생했습니다.");
+      console.error("Error fetching scheduler status:", error);
     } finally {
-      setFootballLoading(false);
+      setSchedulerLoading(false);
     }
   }, []);
+
+  // 축구 데이터 저장 함수 (기존 함수는 제거하고 스케줄러 상태만 조회)
+  const refreshSchedulerStatus = useCallback(async () => {
+    await fetchSchedulerStatus();
+  }, [fetchSchedulerStatus]);
+
+  // 축구 데이터 탭이 활성화될 때 스케줄러 상태 조회
+  useEffect(() => {
+    if (tab === "football") {
+      fetchSchedulerStatus();
+    }
+  }, [tab, fetchSchedulerStatus]);
 
 
   if (isLoading) {
@@ -682,74 +682,210 @@ export default function AdminPage() {
               background: "#fff", 
               border: "1px solid #eee", 
               borderRadius: 10, 
-              padding: 24,
-              textAlign: "center"
+              padding: 24
             }}>
               <h2 style={{ 
                 margin: "0 0 16px", 
                 color: "var(--color-primary)",
                 fontSize: 20,
-                fontWeight: 600
+                fontWeight: 600,
+                textAlign: "center"
               }}>
-                축구 데이터 관리
+                축구 데이터 스케줄러
               </h2>
               
               <p style={{ 
                 color: "var(--color-text-muted)", 
-                marginBottom: 16,
+                marginBottom: 24,
                 fontSize: 14,
-                lineHeight: 1.5
+                lineHeight: 1.5,
+                textAlign: "center"
               }}>
-                외부 API에서 최신 축구 데이터를 가져와 데이터베이스에 저장합니다.<br/>
-                팀 정보, 선수 정보, 순위표, 경기 일정, 득점왕 정보가 포함됩니다.
+                축구 데이터는 자동으로 30초마다 업데이트됩니다.<br/>
+                현재 스케줄러 상태와 마지막 실행 정보를 확인할 수 있습니다.
               </p>
-
-              {lastSavedTime && (
-                <div style={{ 
-                  marginBottom: 24,
-                  padding: 12,
-                  background: "#f8f9fa",
-                  borderRadius: 6,
-                  border: "1px solid #e9ecef"
-                }}>
-                  <p style={{ 
-                    margin: 0, 
-                    color: "var(--color-text)", 
-                    fontSize: 13,
-                    fontWeight: 500
-                  }}>
-                    📅 마지막 저장: {lastSavedTime}
-                  </p>
-                </div>
-              )}
 
               <div style={{ 
                 display: "flex", 
                 gap: 12, 
                 justifyContent: "center",
-                flexWrap: "wrap"
+                marginBottom: 24
               }}>
                 <button
-                  onClick={saveFootballData}
-                  disabled={footballLoading}
+                  onClick={refreshSchedulerStatus}
+                  disabled={schedulerLoading}
                   style={{
                     padding: "12px 24px",
-                    background: footballLoading ? "var(--color-surface-variant)" : "#4f46e5",
-                    color: footballLoading ? "var(--color-text-muted)" : "#fff",
+                    background: schedulerLoading ? "var(--color-surface-variant)" : "#4f46e5",
+                    color: schedulerLoading ? "var(--color-text-muted)" : "#fff",
                     border: "none",
                     borderRadius: 8,
                     fontSize: 15,
                     fontWeight: 600,
-                    cursor: footballLoading ? "not-allowed" : "pointer",
+                    cursor: schedulerLoading ? "not-allowed" : "pointer",
                     transition: "background-color 0.2s ease",
                     minWidth: 160
                   }}
                 >
-                  {footballLoading ? "데이터 저장 중..." : "축구 데이터 저장"}
+                  {schedulerLoading ? "조회 중..." : "상태 새로고침"}
                 </button>
               </div>
 
-              {footballLoading && (
+              {schedulerStatus && (
+                <div style={{ 
+                  marginBottom: 24,
+                  padding: 20,
+                  background: "#f8f9fa",
+                  borderRadius: 8,
+                  border: "1px solid #e9ecef"
+                }}>
+                  <div style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 12,
+                    marginBottom: 16
+                  }}>
+                    <div style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      background: schedulerStatus.status === "SUCCESS" ? "#28a745" : 
+                                 schedulerStatus.status === "FAIL" ? "#dc3545" : "#6c757d"
+                    }}></div>
+                    <span style={{ 
+                      fontSize: 16, 
+                      fontWeight: 600, 
+                      color: "var(--color-text)"
+                    }}>
+                      {schedulerStatus.jobName}
+                    </span>
+                    <span style={{
+                      padding: "4px 8px",
+                      borderRadius: 4,
+                      fontSize: 12,
+                      fontWeight: 500,
+                      background: schedulerStatus.status === "SUCCESS" ? "#d4edda" : 
+                                 schedulerStatus.status === "FAIL" ? "#f8d7da" : "#e2e3e5",
+                      color: schedulerStatus.status === "SUCCESS" ? "#155724" : 
+                             schedulerStatus.status === "FAIL" ? "#721c24" : "#6c757d"
+                    }}>
+                      {schedulerStatus.status === "SUCCESS" ? "성공" : 
+                       schedulerStatus.status === "FAIL" ? "실패" : "실행중"}
+                    </span>
+                  </div>
+
+                  <div style={{ 
+                    display: "grid", 
+                    gridTemplateColumns: "1fr 1fr", 
+                    gap: 16,
+                    marginBottom: 16
+                  }}>
+                    <div>
+                      <div style={{ 
+                        fontSize: 12, 
+                        color: "var(--color-text-muted)",
+                        marginBottom: 4
+                      }}>
+                        시작 시간
+                      </div>
+                      <div style={{ 
+                        fontSize: 14, 
+                        fontWeight: 500,
+                        color: "var(--color-text)"
+                      }}>
+                        {new Date(schedulerStatus.lastStartedAt).toLocaleString('ko-KR')}
+                      </div>
+                    </div>
+                    
+                    {schedulerStatus.lastFinishedAt && (
+                      <div>
+                        <div style={{ 
+                          fontSize: 12, 
+                          color: "var(--color-text-muted)",
+                          marginBottom: 4
+                        }}>
+                          완료 시간
+                        </div>
+                        <div style={{ 
+                          fontSize: 14, 
+                          fontWeight: 500,
+                          color: "var(--color-text)"
+                        }}>
+                          {new Date(schedulerStatus.lastFinishedAt).toLocaleString('ko-KR')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ 
+                    display: "grid", 
+                    gridTemplateColumns: "1fr 1fr", 
+                    gap: 16
+                  }}>
+                    <div>
+                      <div style={{ 
+                        fontSize: 12, 
+                        color: "var(--color-text-muted)",
+                        marginBottom: 4
+                      }}>
+                        소요 시간
+                      </div>
+                      <div style={{ 
+                        fontSize: 14, 
+                        fontWeight: 500,
+                        color: "var(--color-text)"
+                      }}>
+                        {schedulerStatus.durationMs}ms
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div style={{ 
+                        fontSize: 12, 
+                        color: "var(--color-text-muted)",
+                        marginBottom: 4
+                      }}>
+                        실행 ID
+                      </div>
+                      <div style={{ 
+                        fontSize: 12, 
+                        fontWeight: 500,
+                        color: "var(--color-text-muted)",
+                        fontFamily: "monospace"
+                      }}>
+                        {schedulerStatus.runId.substring(0, 8)}...
+                      </div>
+                    </div>
+                  </div>
+
+                  {schedulerStatus.errorMessage && (
+                    <div style={{ 
+                      marginTop: 16,
+                      padding: 12,
+                      background: "#f8d7da",
+                      borderRadius: 6,
+                      border: "1px solid #f5c6cb"
+                    }}>
+                      <div style={{ 
+                        fontSize: 12, 
+                        color: "#721c24",
+                        marginBottom: 4,
+                        fontWeight: 500
+                      }}>
+                        에러 메시지
+                      </div>
+                      <div style={{ 
+                        fontSize: 13, 
+                        color: "#721c24"
+                      }}>
+                        {schedulerStatus.errorMessage}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {schedulerLoading && (
                 <div style={{ 
                   marginTop: 16, 
                   padding: 12, 
@@ -757,13 +893,28 @@ export default function AdminPage() {
                   borderRadius: 6,
                   border: "1px solid #e9ecef"
                 }}>
-                  <p style={{ 
-                    margin: 0, 
-                    color: "var(--color-text-muted)", 
-                    fontSize: 13 
+                  <div style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 8,
+                    marginBottom: 8
                   }}>
-                    ⏳ 팀 정보, 선수 정보, 순위표, 경기 일정, 득점왕 정보를 저장하고 있습니다...
-                  </p>
+                    <div style={{
+                      width: 16,
+                      height: 16,
+                      border: "2px solid var(--color-primary)",
+                      borderTop: "2px solid transparent",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite"
+                    }}></div>
+                    <span style={{ 
+                      fontSize: 14, 
+                      fontWeight: 500, 
+                      color: "var(--color-text)"
+                    }}>
+                      스케줄러 상태 조회 중...
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
