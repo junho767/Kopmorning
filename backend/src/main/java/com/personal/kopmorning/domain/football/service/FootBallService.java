@@ -17,6 +17,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,19 +66,21 @@ public class FootBallService {
     // todo : 대회 정보, 팀 별 국가 데이터
     @Retry(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
     @CircuitBreaker(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
-    public void saveTeamAndPlayer() {
-        try {
+    public Mono<Void> saveTeamAndPlayer() {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(TEAMS_REQUEST_PATH)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<TeamDTO>() {
+                })
+                .flatMap(this::processTeamData);
+    }
+
+    private Mono<Void> processTeamData(TeamDTO teamDTO) {
+        return Mono.fromRunnable(() -> {
             List<Player> playerList = new ArrayList<>();
             List<Coach> coachList = new ArrayList<>();
-
-            TeamDTO teamDTO = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(TEAMS_REQUEST_PATH)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<TeamDTO>() {
-                    })
-                    .block();
 
             List<Team> teamEntities = Objects.requireNonNull(teamDTO.getTeams()).stream()
                     .map(Team::new)
@@ -98,30 +101,25 @@ public class FootBallService {
             teamRepository.saveAll(teamEntities);
             playerRepository.saveAll(playerList);
             coachRepository.saveAll(coachList);
-        } catch (Exception e) {
-            log.error("❗ Team && Player 저장 중 오류 발생", e);
-            throw new FootBallException(
-                    FootBallErrorCode.PLAYER_API_ERROR.getCode(),
-                    FootBallErrorCode.PLAYER_API_ERROR.getMessage(),
-                    FootBallErrorCode.PLAYER_API_ERROR.getHttpStatus()
-            );
-        }
+        });
     }
 
 
     @Retry(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
     @CircuitBreaker(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
-    public void saveStanding() {
-        try {
-            StandingDTO standingDTO = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(STANDING_REQUEST_PATH)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<StandingDTO>() {
-                    })
-                    .block();
+    public Mono<Void> saveStanding() {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(STANDING_REQUEST_PATH)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<StandingDTO>() {
+                })
+                .flatMap(this::processStandingData);
+    }
 
+    private Mono<Void> processStandingData(StandingDTO standingDTO) {
+        return Mono.fromRunnable(() -> {
             List<StandingDTO.Table> tables = standingDTO.getStandings().getFirst().table();
 
             List<Standing> standing = tables
@@ -130,76 +128,58 @@ public class FootBallService {
                     .toList();
 
             standingRepository.saveAll(standing);
-        } catch (Exception e) {
-            log.error("❗ standings 저장 중 오류 발생", e);
-            throw new FootBallException(
-                    FootBallErrorCode.STANDING_API_ERROR.getCode(),
-                    FootBallErrorCode.STANDING_API_ERROR.getMessage(),
-                    FootBallErrorCode.STANDING_API_ERROR.getHttpStatus()
-            );
-        }
+        });
     }
 
     @Retry(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
     @CircuitBreaker(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
-    public void saveFixtures() {
-        try {
-            MatchDTO matchDTO = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(GAME_REQUEST_PATH)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<MatchDTO>() {
-                    })
-                    .block();
+    public Mono<Void> saveFixtures() {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(GAME_REQUEST_PATH)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<MatchDTO>() {
+                })
+                .flatMap(this::processFixturesData);
+    }
 
+    private Mono<Void> processFixturesData(MatchDTO matchDTO) {
+        return Mono.fromRunnable(() -> {
             List<Game> gameList = matchDTO.getMatches().stream()
                     .map(Game::new)
                     .toList();
 
             gameRepository.saveAll(gameList);
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new FootBallException(
-                    FootBallErrorCode.FIXTURES_API_ERROR.getCode(),
-                    FootBallErrorCode.FIXTURES_API_ERROR.getMessage(),
-                    FootBallErrorCode.FIXTURES_API_ERROR.getHttpStatus()
-            );
-        }
+        });
     }
 
     @Retry(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
     @CircuitBreaker(name = "footballApi", fallbackMethod = "fallbackOpenAPI")
-    public void saveTopScorer() {
-        try {
-            RankingDTO rankingDTO = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(RANKING_REQUEST_PATH)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<RankingDTO>() {
-                    })
-                    .block();
+    public Mono<Void> saveTopScorer() {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(RANKING_REQUEST_PATH)
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<RankingDTO>() {
+                })
+                .flatMap(this::processTopScorerData);
+    }
 
+    private Mono<Void> processTopScorerData(RankingDTO rankingDTO) {
+        return Mono.fromRunnable(() -> {
             List<Ranking> ranking = rankingDTO.getScorers().stream()
                     .map(Ranking::new)
                     .toList();
 
             rankingRepository.saveAll(ranking);
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new FootBallException(
-                    FootBallErrorCode.TOP_SCORER_API_ERROR.getCode(),
-                    FootBallErrorCode.TOP_SCORER_API_ERROR.getMessage(),
-                    FootBallErrorCode.TOP_SCORER_API_ERROR.getHttpStatus()
-            );
-        }
+        });
     }
 
-    public void fallbackOpenAPI(Throwable t) {
-        log.error("🛑 Fallback 호출 - saveStanding() 실패", t);
+    public Mono<Void> fallbackOpenAPI(Throwable t) {
+        log.error("🛑 Fallback 호출 - API 호출 실패", t);
+        return Mono.empty();
     }
 
     public List<TeamResponse> getTeams() {

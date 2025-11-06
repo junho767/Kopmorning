@@ -76,6 +76,10 @@ api:
 logging:
   level:
     org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG
+    reactor.netty.http.client: DEBUG
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+
 
 resilience4j:
   circuitbreaker:

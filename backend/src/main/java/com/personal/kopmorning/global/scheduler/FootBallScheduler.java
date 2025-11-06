@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -33,17 +34,28 @@ public class FootBallScheduler {
         String runId = UUID.randomUUID().toString();
         String startedAt = getCurrentTimeString();
         long startTime = System.currentTimeMillis();
-
+    
         SchedulerStatus status = createStatus(runId, startedAt);
+    
+        executeFootBallDataUpdateAsync(status, startTime);
+    }
 
-        try {
-            executeFootBallDataUpdate();
+    private void executeFootBallDataUpdateAsync(SchedulerStatus status, long startTime) {
+        Mono.when(
+            footBallService.saveTeamAndPlayer(),
+            footBallService.saveStanding(),
+            footBallService.saveFixtures(),
+            footBallService.saveTopScorer()
+        )
+        .doOnSuccess(result -> {
             updateStatusSuccess(status, startTime);
             log.info("{} 완료 - 소요시간: {}ms", JOB_NAME, status.getDurationMs());
-        } catch (Exception e) {
+        })
+        .doOnError(error -> {
             updateStatusFail(status, startTime);
-            log.error("{} 실패 : {}", JOB_NAME, e.getMessage());
-        }
+            log.error("{} 실패 - 소요시간: {}ms", JOB_NAME, status.getDurationMs(), error);
+        })
+        .subscribe();
     }
 
     private SchedulerStatus createStatus(String runId, String startedAt) {
@@ -53,13 +65,6 @@ public class FootBallScheduler {
                 .lastStartedAt(startedAt)
                 .runId(runId)
                 .build();
-    }
-
-    private void executeFootBallDataUpdate() {
-        footBallService.saveTeamAndPlayer();
-        footBallService.saveStanding();
-        footBallService.saveFixtures();
-        footBallService.saveTopScorer();
     }
 
     private void updateStatusSuccess(SchedulerStatus status, long startTime) {
