@@ -11,6 +11,7 @@ public class ArticleResponse {
     private Long likeCount;
     private Long viewCount;
     private Long member_id;
+    private Long commentCount;
 
     private String title;
     private String body;
@@ -28,6 +29,7 @@ public class ArticleResponse {
         this.likeCount = article.getLikeCount();
         this.viewCount = article.getViewCount();
         this.member_id = article.getMember().getId();
+        this.commentCount = (long) article.getComments().size();
 
         this.title = article.getTitle();
         this.body = article.getBody();

@@ -13,9 +13,9 @@ public class ArticleListResponse {
     private String category;
 
     @Builder
-    public ArticleListResponse(List<ArticleResponse> articles, int total, String category, Long nextCursor) {
+    public ArticleListResponse(List<ArticleResponse> articles, String category, Long nextCursor) {
         this.articles = articles;
-        this.total = total;
+        this.total = articles.size();
         this.nextCursor = nextCursor;
         this.category = category;
     }

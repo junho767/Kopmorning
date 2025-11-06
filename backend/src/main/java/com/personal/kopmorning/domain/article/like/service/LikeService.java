@@ -10,10 +10,7 @@ import com.personal.kopmorning.domain.article.like.repository.ArticleLikeReposit
 import com.personal.kopmorning.domain.article.like.repository.CommentLikeRepository;
 import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.repository.MemberRepository;
-import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
 import com.personal.kopmorning.global.exception.Article.ArticleException;
-import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class LikeService {
     private final RedissonClient redissonClient;
-    private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
     private final ArticleLikeRepository articleLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
@@ -44,12 +40,7 @@ public class LikeService {
 
     @Transactional
     public boolean handleArticleLike(Long articleId) {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
+        Member member = SecurityUtil.getCurrentMember();
 
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new ArticleException(
@@ -94,12 +85,7 @@ public class LikeService {
     }
 
     public boolean handleArticleCommentLike(Long commentId) {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
+        Member member = SecurityUtil.getCurrentMember();
 
         ArticleComment articleComment = articleCommentRepository.findById(commentId)
                 .orElseThrow(() -> new ArticleException(
