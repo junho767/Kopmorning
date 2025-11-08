@@ -23,23 +23,13 @@ public class MemberService {
 
     // 회원 정보 수정 메서드
     @Transactional
-    // TODO: 멤버 가져오는 방식 리펙토링 해야할 듯 - getMemberBySecurityMember() 메서드 이용해서
     public void update(MemberProfileUpdate request) {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
+        Member member = SecurityUtil.getCurrentMember();
 
         if (member != null) {
             member.setNickname(request.getNickname());
             member.setUpdated_at(LocalDateTime.now());
         }
-    }
-
-    public Member getMemberBySecurityMember() {
-        return SecurityUtil.getCurrentMember();
     }
 
     public void logout(String accessToken, String refreshToken) {
@@ -49,40 +39,27 @@ public class MemberService {
     }
 
     // 회원탈퇴 신청
-    // TODO: 멤버 가져오는 방식 리펙토링 해야할 듯 - getMemberBySecurityMember() 메서드 이용해서
     @Transactional
     public void deleteRequest() {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
+        Member member = SecurityUtil.getCurrentMember();
 
         member.withdraw();
     }
 
     // 회원탈퇴 철회
-    // TODO: 멤버 가져오는 방식 리펙토링 해야할 듯 - getMemberBySecurityMember() 메서드 이용해서
     @Transactional
     public void deleteCancel() {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
+        Member member = SecurityUtil.getCurrentMember();
         member.isActive();
     }
 
     // 즉시 회원탈퇴
     public void deleteImmediately() {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
+        Member member = SecurityUtil.getCurrentMember();
         memberRepository.deleteById(member.getId());
+    }
+
+    public Member getMemberBySecurityMember() {
+        return SecurityUtil.getCurrentMember();
     }
 }

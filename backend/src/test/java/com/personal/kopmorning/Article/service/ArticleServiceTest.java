@@ -8,10 +8,10 @@ import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.entity.Category;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
 import com.personal.kopmorning.domain.article.article.service.ArticleService;
+import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.entity.MemberStatus;
 import com.personal.kopmorning.domain.member.entity.Role;
-import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +28,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,7 +48,7 @@ public class ArticleServiceTest {
     private ArticleRepository articleRepository;
 
     @Mock
-    private MemberRepository memberRepository;
+    private ArticleLikeRepository articleLikeRepository;
 
     @InjectMocks
     private ArticleService articleService;
@@ -75,6 +76,9 @@ public class ArticleServiceTest {
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0L)
                 .viewCount(0L)
+                .comments(new ArrayList<>())
+                .likes(new ArrayList<>())
+                .reports(new ArrayList<>())
                 .build();
     }
 
@@ -88,11 +92,10 @@ public class ArticleServiceTest {
                 .category("football")
                 .build();
 
-        // SecurityUtil.getRequiredMemberId() → 1L
+        // SecurityUtil.getCurrentMember() → stubMember
         try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-            utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
+            utilMock.when(SecurityUtil::getCurrentMember).thenReturn(stubMember);
 
-            when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
             when(articleRepository.save(any(Article.class)))
                     .thenAnswer(inv -> {
                         Article saved = inv.getArgument(0);
@@ -120,13 +123,17 @@ public class ArticleServiceTest {
     void getArticleOne_success() {
         // given
         when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
+        
+        try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
+            utilMock.when(SecurityUtil::getNullableMemberId).thenReturn(null);
 
-        // when
-        ArticleResponse resp = articleService.getArticleOne(10L);
+            // when
+            ArticleResponse resp = articleService.getArticleOne(10L);
 
-        // then
-        assertThat(resp.getId()).isEqualTo(10L);
-        assertThat(stubArticle.getViewCount()).isEqualTo(1L); // 조회수 0 → 1
+            // then
+            assertThat(resp.getId()).isEqualTo(10L);
+            assertThat(stubArticle.getViewCount()).isEqualTo(1L); // 조회수 0 → 1
+        }
     }
 
     @Test
@@ -138,15 +145,19 @@ public class ArticleServiceTest {
         when(articleRepository.findByCategory(eq(Category.FOOTBALL), any(Pageable.class)))
                 .thenReturn(stubPage);
 
-        // when
-        ArticleListResponse resp = articleService.getArticleListByCategory("FOOTBALL", null, size, null);
+        try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
+            utilMock.when(SecurityUtil::getNullableMemberId).thenReturn(null);
 
-        // then
-        assertThat(resp.getTotal()).isEqualTo(1);
-        assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
-        assertThat(resp.getNextCursor()).isEqualTo(stubArticle.getId()); // 다음 페이지 커서 검증
-        verify(articleRepository, times(1))
-                .findByCategory(eq(Category.FOOTBALL), any(Pageable.class));
+            // when
+            ArticleListResponse resp = articleService.getArticleListByCategory("FOOTBALL", null, size, null);
+
+            // then
+            assertThat(resp.getTotal()).isEqualTo(1);
+            assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
+            assertThat(resp.getNextCursor()).isEqualTo(stubArticle.getId()); // 다음 페이지 커서 검증
+            verify(articleRepository, times(1))
+                    .findByCategory(eq(Category.FOOTBALL), any(Pageable.class));
+        }
     }
 
     @Test
@@ -159,14 +170,18 @@ public class ArticleServiceTest {
                 eq(Category.FOOTBALL), eq(cursor), any(Pageable.class)))
                 .thenReturn(List.of(stubArticle));
 
-        // when
-        ArticleListResponse resp = articleService.getArticleListByCategory("football", cursor, size, null);
+        try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
+            utilMock.when(SecurityUtil::getNullableMemberId).thenReturn(null);
 
-        // then
-        assertThat(resp.getTotal()).isEqualTo(1);
-        assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
-        verify(articleRepository, times(1))
-                .findByCategoryAndIdLessThanOrderByIdDesc(eq(Category.FOOTBALL), eq(cursor), any(Pageable.class));
+            // when
+            ArticleListResponse resp = articleService.getArticleListByCategory("football", cursor, size, null);
+
+            // then
+            assertThat(resp.getTotal()).isEqualTo(1);
+            assertThat(resp.getArticles().getFirst().getId()).isEqualTo(stubArticle.getId());
+            verify(articleRepository, times(1))
+                    .findByCategoryAndIdLessThanOrderByIdDesc(eq(Category.FOOTBALL), eq(cursor), any(Pageable.class));
+        }
     }
 
     @Nested
@@ -183,9 +198,8 @@ public class ArticleServiceTest {
                     .build();
 
             try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-                utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
+                utilMock.when(SecurityUtil::getCurrentMember).thenReturn(stubMember);
 
-                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
 
                 // when
@@ -208,9 +222,8 @@ public class ArticleServiceTest {
                     .title("수정 제목").body("수정 본문").build();
 
             try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-                utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
+                utilMock.when(SecurityUtil::getCurrentMember).thenReturn(stubMember);
 
-                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
 
                 // when + then
@@ -228,9 +241,8 @@ public class ArticleServiceTest {
         @DisplayName("작성자 본인이면 삭제 성공")
         void delete_success() {
             try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-                utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
+                utilMock.when(SecurityUtil::getCurrentMember).thenReturn(stubMember);
 
-                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
 
                 // when
@@ -249,9 +261,8 @@ public class ArticleServiceTest {
             stubArticle.setMember(other);
 
             try (MockedStatic<SecurityUtil> utilMock = mockStatic(SecurityUtil.class)) {
-                utilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
+                utilMock.when(SecurityUtil::getCurrentMember).thenReturn(stubMember);
 
-                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
 
                 assertThrows(RuntimeException.class,
