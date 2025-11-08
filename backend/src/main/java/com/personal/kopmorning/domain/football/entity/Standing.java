@@ -15,9 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Standing {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long teamId;
     private Long position;
     private Long playedGames;
     private Long won;
@@ -29,7 +27,7 @@ public class Standing {
     private Long goalsDifference;
 
     public Standing(StandingDTO.Table table) {
-        this.teamId = table.team().id();
+        this.id = table.team().id();
         this.position = table.position();
         this.playedGames = table.playedGames();
         this.won = table.won();

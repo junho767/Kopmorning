@@ -21,6 +21,7 @@ type ArticleResponse = {
   likeCount: number;
   viewCount: number;
   member_id: number;
+  commentCount: number;
   title: string;
   category: string;
   memberName: string;
@@ -239,7 +240,7 @@ export default function ArticleCategoryPage({ params }: PageProps) {
             )}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-            {articles.map(({ id, title, createdAt, memberName, memberNickname }) => (
+            {articles.map(({ id, title, createdAt, memberName, memberNickname, likeCount, viewCount, commentCount }) => (
               <Link key={id} href={`/article/${category}/${id}`} style={{ textDecoration: "none", color: "inherit" }}>
                 <article
                   style={{
@@ -260,12 +261,26 @@ export default function ArticleCategoryPage({ params }: PageProps) {
                   />
                   <div style={{ padding: 14, display: "grid", gap: 8 }}>
                     <h3 style={{ margin: 0, fontSize: 18, color: "var(--color-text)" }}>{title}</h3>
-                    <div style={{ marginTop: 6, fontSize: 12, color: "var(--color-text-muted)", display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ marginTop: 6, fontSize: 12, color: "var(--color-text-muted)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <span style={{ marginLeft: 8, fontWeight: 600, color: "var(--color-primary)" }}>
                         작성자 : {memberNickname || memberName}
                       </span>
                       <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--color-primary)" }} />
                       {new Date(createdAt).toLocaleDateString()}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 12, color: "var(--color-text-muted)", marginTop: 4 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span>❤️</span>
+                        <span>{likeCount || 0}</span>
+                      </span>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span>💬</span>
+                        <span>{commentCount || 0}</span>
+                      </span>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span>👁️</span>
+                        <span>{viewCount || 0}</span>
+                      </span>
                     </div>
                   </div>
                 </article>

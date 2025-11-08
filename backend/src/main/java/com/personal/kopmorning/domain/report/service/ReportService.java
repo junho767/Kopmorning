@@ -6,15 +6,12 @@ import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
 import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentRepository;
 import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.repository.MemberRepository;
-import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
 import com.personal.kopmorning.domain.report.dto.request.ReportRequest;
 import com.personal.kopmorning.domain.report.dto.response.ReportListResponse;
 import com.personal.kopmorning.domain.report.dto.response.ReportResponse;
 import com.personal.kopmorning.domain.report.entity.Report;
 import com.personal.kopmorning.domain.report.repository.ReportRepository;
 import com.personal.kopmorning.global.exception.Article.ArticleException;
-import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -28,17 +25,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReportService {
     private final ReportRepository reportRepository;
-    private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
     private final ArticleCommentRepository articleCommentRepository;
 
     public void article(ReportRequest request) {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
+        Member member = SecurityUtil.getCurrentMember();
 
         Article article = articleRepository.findById(request.getId())
                 .orElseThrow(() -> new ArticleException(
@@ -54,12 +45,7 @@ public class ReportService {
 
 
     public void comment(ReportRequest request) {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
+        Member member = SecurityUtil.getCurrentMember();
 
         ArticleComment comment = articleCommentRepository.findById(request.getId())
                 .orElseThrow(() -> new ArticleException(

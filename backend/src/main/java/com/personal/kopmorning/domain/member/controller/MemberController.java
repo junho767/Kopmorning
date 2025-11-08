@@ -21,9 +21,6 @@ public class MemberController {
     private final CookieUtil cookieUtil;
     private final MemberService memberService;
 
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
-
     @GetMapping
     public RsData<MemberResponse> getMember() {
         return new RsData<>(
@@ -35,18 +32,8 @@ public class MemberController {
 
     @PostMapping("/logout")
     public RsData<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
-        String accessToken = null;
-
-        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
-            accessToken = authHeader.substring(7);
-        }
-
-        if (accessToken == null) {
-            accessToken = CookieUtil.getAccessTokenFromCookie(request);
-        }
-
-        String refreshToken = CookieUtil.getRefreshTokenFromCookie(request);
+        String accessToken = cookieUtil.getAccessTokenFromCookie(request);
+        String refreshToken = cookieUtil.getRefreshTokenFromCookie(request);
 
         if (accessToken == null || refreshToken == null) {
             return new RsData<>(
@@ -55,7 +42,7 @@ public class MemberController {
             );
         }
 
-        memberService.logout(refreshToken);
+        memberService.logout(accessToken, refreshToken);
 
         cookieUtil.removeAccessTokenFromCookie(response);
         cookieUtil.removeRefreshTokenFromCookie(response);
@@ -76,7 +63,6 @@ public class MemberController {
         );
     }
 
-    // todo : 탈퇴한 유저라면 어떤 식으로 클라이언트에게 표현해야 하는 지 고민해야 할 필요가 있음.
     @PatchMapping("/delete/cancel")
     public RsData<?> deleteCancel() {
         memberService.deleteCancel();

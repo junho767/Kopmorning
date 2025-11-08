@@ -7,6 +7,7 @@ public enum AdminSuccessCode {
     MODIFY_ROLL("200", "권한 변경 성공"),
     LOGIN_SUCCESS("200", "관리자 로그인 성공"),
     SUSPEND_MEMBER("200", "활동 정지 부여 성공"),
+    GET_SCHEDULER_STATUS("200", "스케줄러 조회 성공"),
     GET_MEMBER_LIST_BY_ADMIN("200", "회원 목록 조회"),
     GET_ARTICLE_LIST_BY_ADMIN("200", "게시물 목록 조회 성공"),
     GET_REPORT_LIST("200", "신고 목록 조회 성공"),

@@ -119,7 +119,7 @@ public class AdminService {
 
         Long nextCursor = articleResponses.isEmpty() ? null : articleResponses.getLast().getId();
 
-        return new ArticleListResponse(articleResponses, articleList.size(), category, nextCursor);
+        return new ArticleListResponse(articleResponses, category, nextCursor);
     }
 
     // 회원 정지

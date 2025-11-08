@@ -12,6 +12,7 @@ import com.personal.kopmorning.domain.member.dto.response.MemberListResponse;
 import com.personal.kopmorning.domain.report.dto.response.ReportListResponse;
 import com.personal.kopmorning.domain.report.service.ReportService;
 import com.personal.kopmorning.global.entity.RsData;
+import com.personal.kopmorning.global.scheduler.FootBallScheduler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,17 @@ public class AdminController {
     private final AdminService adminService;
     private final ReportService reportService;
     private final ArticleService articleService;
+    private final FootBallScheduler footBallScheduler;
     private final ArticleCommentService articleCommentService;
+
+    @GetMapping("/football/status")
+    public RsData<Object> getFootballSchedulerStatus() {
+        return new RsData<>(
+                AdminSuccessCode.GET_SCHEDULER_STATUS.getCode(),
+                AdminSuccessCode.GET_SCHEDULER_STATUS.getMessage(),
+                footBallScheduler.getCurrentStatus()
+        );
+    }
 
     @PatchMapping("/roll")
     public RsData<?> updateMemberRoll(@RequestBody RollUpdateRequest requestDTO) {

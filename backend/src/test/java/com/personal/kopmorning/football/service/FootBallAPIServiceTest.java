@@ -118,12 +118,12 @@ public class FootBallAPIServiceTest {
     void getStanding() {
         // given
         Standing standing1 = new Standing();
-        standing1.setTeamId(64L);
+        standing1.setId(64L);
         standing1.setPosition(1L);
         standing1.setPoints(93L);
 
         Standing standing2 = new Standing();
-        standing2.setTeamId(65L);
+        standing2.setId(65L);
         standing2.setPosition(2L);
         standing2.setPoints(92L);
 
@@ -136,8 +136,8 @@ public class FootBallAPIServiceTest {
 
         // then
         assertEquals(2, result.getStandings().size());
-        assertEquals(64L, result.getStandings().get(0).getTeamId());
-        assertEquals(65L, result.getStandings().get(1).getTeamId());
+        assertEquals(64L, result.getStandings().get(0).getId());
+        assertEquals(65L, result.getStandings().get(1).getId());
         assertEquals(1L, result.getStandings().get(0).getPosition());
         assertEquals(2L, result.getStandings().get(1).getPosition());
     }
