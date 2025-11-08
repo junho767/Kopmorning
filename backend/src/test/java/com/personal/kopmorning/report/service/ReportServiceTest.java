@@ -11,7 +11,6 @@ import com.personal.kopmorning.domain.member.entity.Role;
 import com.personal.kopmorning.domain.member.repository.MemberRepository;
 import com.personal.kopmorning.domain.report.dto.request.ReportRequest;
 import com.personal.kopmorning.domain.report.dto.response.ReportListResponse;
-import com.personal.kopmorning.domain.report.dto.response.ReportResponse;
 import com.personal.kopmorning.domain.report.entity.Report;
 import com.personal.kopmorning.domain.report.repository.ReportRepository;
 import com.personal.kopmorning.domain.report.service.ReportService;
@@ -28,8 +27,10 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -104,6 +105,9 @@ public class ReportServiceTest {
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0L)
                 .viewCount(0L)
+                .comments(new ArrayList<>())
+                .likes(new ArrayList<>())
+                .reports(new ArrayList<>())
                 .build();
 
         stubComment = ArticleComment.builder()
@@ -124,9 +128,8 @@ public class ReportServiceTest {
                 .build();
         //when
         try (MockedStatic<SecurityUtil> securityUtilMock = mockStatic(SecurityUtil.class)) {
-            securityUtilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(member2.getId());
+            securityUtilMock.when(SecurityUtil::getCurrentMember).thenReturn(member2);
 
-            when(memberRepository.findById(member2.getId())).thenReturn(Optional.of(member2));
             when(articleRepository.findById(stubArticle.getId())).thenReturn(Optional.of(stubArticle));
             // when
             reportService.article(request);
@@ -145,9 +148,8 @@ public class ReportServiceTest {
                 .build();
 
         try (MockedStatic<SecurityUtil> securityUtilMock = mockStatic(SecurityUtil.class)) {
-            securityUtilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(member2.getId());
+            securityUtilMock.when(SecurityUtil::getCurrentMember).thenReturn(member2);
 
-            when(memberRepository.findById(member2.getId())).thenReturn(Optional.of(member2));
             when(articleRepository.findById(999L)).thenReturn(Optional.empty());
 
             assertThrows(ArticleException.class, () -> reportService.article(request));
@@ -164,9 +166,8 @@ public class ReportServiceTest {
                 .build();
         //when
         try (MockedStatic<SecurityUtil> securityUtilMock = mockStatic(SecurityUtil.class)) {
-            securityUtilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(member2.getId());
+            securityUtilMock.when(SecurityUtil::getCurrentMember).thenReturn(member2);
 
-            when(memberRepository.findById(member2.getId())).thenReturn(Optional.of(member2));
             when(articleCommentRepository.findById(stubComment.getId())).thenReturn(Optional.of(stubComment));
             // when
             reportService.comment(request);
@@ -186,9 +187,9 @@ public class ReportServiceTest {
                 .build();
 
         try (MockedStatic<SecurityUtil> securityUtilMock = mockStatic(SecurityUtil.class)) {
-            securityUtilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(999L);
-
-            when(memberRepository.findById(999L)).thenReturn(Optional.empty());
+            // getCurrentMember()가 예외를 던지도록 모킹
+            securityUtilMock.when(SecurityUtil::getCurrentMember)
+                    .thenThrow(new MemberException("MEMBER_UNAUTHENTICATED", "인증되지 않은 사용자입니다", HttpStatus.UNAUTHORIZED));
 
             // when & then
             assertThrows(MemberException.class, () -> reportService.comment(request));
@@ -205,9 +206,8 @@ public class ReportServiceTest {
                 .build();
 
         try (MockedStatic<SecurityUtil> securityUtilMock = mockStatic(SecurityUtil.class)) {
-            securityUtilMock.when(SecurityUtil::getRequiredMemberId).thenReturn(member2.getId());
+            securityUtilMock.when(SecurityUtil::getCurrentMember).thenReturn(member2);
 
-            when(memberRepository.findById(member2.getId())).thenReturn(Optional.of(member2));
             when(articleCommentRepository.findById(999L)).thenReturn(Optional.empty());
 
             // when & then

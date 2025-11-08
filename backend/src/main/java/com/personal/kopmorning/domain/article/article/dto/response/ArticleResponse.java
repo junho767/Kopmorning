@@ -29,7 +29,7 @@ public class ArticleResponse {
         this.likeCount = article.getLikeCount();
         this.viewCount = article.getViewCount();
         this.member_id = article.getMember().getId();
-        this.commentCount = (long) article.getComments().size();
+        this.commentCount = article.getComments() != null ? (long) article.getComments().size() : 0L;
 
         this.title = article.getTitle();
         this.body = article.getBody();
