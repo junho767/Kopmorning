@@ -1,5 +1,5 @@
-# 1. Java 21 slim 버전 베이스 이미지 (Eclipse Temurin 사용)
-FROM eclipse-temurin:21-jdk-slim
+# 1. Java 21 베이스 이미지 (Eclipse Temurin 사용)
+FROM eclipse-temurin:21-jdk
 
 # 2. 환경 변수: jar 파일 경로
 ARG JAR_FILE=build/libs/*.jar
