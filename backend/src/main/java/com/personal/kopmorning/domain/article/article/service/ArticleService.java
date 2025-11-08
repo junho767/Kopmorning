@@ -10,10 +10,7 @@ import com.personal.kopmorning.domain.article.article.repository.ArticleReposito
 import com.personal.kopmorning.domain.article.like.repository.ArticleLikeRepository;
 import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.member.entity.Member;
-import com.personal.kopmorning.domain.member.repository.MemberRepository;
-import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
 import com.personal.kopmorning.global.exception.Article.ArticleException;
-import com.personal.kopmorning.global.exception.member.MemberException;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +25,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
-    private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
     private final ArticleLikeRepository articleLikeRepository;
 
@@ -36,12 +32,7 @@ public class ArticleService {
     private final static String CATEGORY_IS_NULL = "all";
 
     public ArticleResponse addArticle(ArticleCreate articleCreate) {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
+        Member member = SecurityUtil.getCurrentMember();
 
         Article article = Article.builder()
                 .title(articleCreate.getTitle())
@@ -61,14 +52,7 @@ public class ArticleService {
 
     @Transactional
     public ArticleResponse getArticleOne(Long articleId) {
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new ArticleException(
-                                ArticleErrorCode.INVALID_ARTICLE.getCode(),
-                                ArticleErrorCode.INVALID_ARTICLE.getMessage(),
-                                ArticleErrorCode.INVALID_ARTICLE.getHttpStatus()
-                        )
-                );
-
+        Article article = findById(articleId);
         Long memberId = SecurityUtil.getNullableMemberId();
 
         if (memberId == null) {
@@ -125,34 +109,19 @@ public class ArticleService {
                 })
                 .toList();
 
-        int total = articles.size();
-
         Long nextCursor = articles.isEmpty() ? null : articles.getLast().getId();
 
         return ArticleListResponse.builder()
                 .articles(articles)
-                .total(total)
                 .nextCursor(nextCursor)
                 .category(category)
                 .build();
     }
 
     @Transactional
-    public void updateArticle(Long id, ArticleUpdate articleUpdate) {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
-
-        Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new ArticleException(
-                                ArticleErrorCode.INVALID_ARTICLE.getCode(),
-                                ArticleErrorCode.INVALID_ARTICLE.getMessage(),
-                                ArticleErrorCode.INVALID_ARTICLE.getHttpStatus()
-                        )
-                );
+    public void updateArticle(Long articleId, ArticleUpdate articleUpdate) {
+        Member member = SecurityUtil.getCurrentMember();
+        Article article = findById(articleId);
 
         if (!member.getEmail().equals(article.getMember().getEmail())) {
             throw new ArticleException(
@@ -166,20 +135,9 @@ public class ArticleService {
         article.setBody(articleUpdate.getBody());
     }
 
-    public void deleteArticle(Long id) {
-        Member member = memberRepository.findById(SecurityUtil.getRequiredMemberId())
-                .orElseThrow(() -> new MemberException(
-                        MemberErrorCode.MEMBER_NOT_FOUND.getCode(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getMessage(),
-                        MemberErrorCode.MEMBER_NOT_FOUND.getHttpStatus()
-                ));
-        Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new ArticleException(
-                                ArticleErrorCode.INVALID_ARTICLE.getCode(),
-                                ArticleErrorCode.INVALID_ARTICLE.getMessage(),
-                                ArticleErrorCode.INVALID_ARTICLE.getHttpStatus()
-                        )
-                );
+    public void deleteArticle(Long articleId) {
+        Member member = SecurityUtil.getCurrentMember();
+        Article article = findById(articleId);
 
         if (!member.getEmail().equals(article.getMember().getEmail())) {
             throw new ArticleException(
@@ -194,14 +152,17 @@ public class ArticleService {
 
     @Transactional
     public void forceDeleteArticle(Long articleId) {
-        Article article = articleRepository.findById(articleId)
+        Article article = findById(articleId);
+        articleRepository.delete(article);
+    }
+
+    public Article findById(Long articleId) {
+        return articleRepository.findById(articleId)
                 .orElseThrow(() -> new ArticleException(
                                 ArticleErrorCode.INVALID_ARTICLE.getCode(),
                                 ArticleErrorCode.INVALID_ARTICLE.getMessage(),
                                 ArticleErrorCode.INVALID_ARTICLE.getHttpStatus()
                         )
                 );
-
-        articleRepository.delete(article);
     }
 }

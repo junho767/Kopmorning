@@ -24,6 +24,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -77,6 +78,9 @@ class LikeServiceTest {
                 .updatedAt(LocalDateTime.now())
                 .likeCount(0L)
                 .viewCount(0L)
+                .comments(new ArrayList<>())
+                .likes(new ArrayList<>())
+                .reports(new ArrayList<>())
                 .build();
     }
 
@@ -88,9 +92,8 @@ class LikeServiceTest {
         @DisplayName("좋아요 추가 성공")
         void addLike_success() throws InterruptedException {
             try (MockedStatic<SecurityUtil> util = mockStatic(SecurityUtil.class)) {
-                util.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
+                util.when(SecurityUtil::getCurrentMember).thenReturn(stubMember);
 
-                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
 
                 when(redissonClient.getLock(anyString())).thenReturn(lock);
@@ -116,10 +119,9 @@ class LikeServiceTest {
             stubArticle.increaseLikeCount(); // 초기 좋아요 수 = 1
 
             try (MockedStatic<SecurityUtil> util = mockStatic(SecurityUtil.class)) {
-                util.when(SecurityUtil::getRequiredMemberId).thenReturn(1L);
+                util.when(SecurityUtil::getCurrentMember).thenReturn(stubMember);
 
                 // given
-                when(memberRepository.findById(1L)).thenReturn(Optional.of(stubMember));
                 when(articleRepository.findById(10L)).thenReturn(Optional.of(stubArticle));
                 when(redissonClient.getLock(anyString())).thenReturn(lock);
                 when(lock.tryLock(anyLong(), anyLong(), any())).thenReturn(true);
