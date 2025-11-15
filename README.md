@@ -95,5 +95,7 @@
 ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white)
 
 ### 📜 시스템 아키텍처
+<img width="821" height="571" alt="Image" src="https://github.com/user-attachments/assets/59791271-d645-4212-bb1f-b9f6543c5ce7" />
 
-### 🎯 ERD
+### 🗒️ ERD
+<img width="801" height="831" alt="Image" src="https://github.com/user-attachments/assets/0c151fa7-99b4-459f-bfca-a83af95df670" />
