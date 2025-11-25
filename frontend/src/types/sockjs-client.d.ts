@@ -1,0 +1,4 @@
+declare module "sockjs-client";
+
+
+

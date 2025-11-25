@@ -13,14 +13,18 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:8080")
+                .setAllowedOriginPatterns(
+                        "http://localhost:3001",
+                        "http://localhost:3000",
+                        "https://kopmorning.vercel.app"
+                )
                 .withSockJS();
     }
 
     // 메세지 브로커가 행동할 행위 지정
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("sub");
-        registry.setApplicationDestinationPrefixes("pub");
+        registry.enableSimpleBroker("/sub");
+        registry.setApplicationDestinationPrefixes("/pub");
     }
 }
