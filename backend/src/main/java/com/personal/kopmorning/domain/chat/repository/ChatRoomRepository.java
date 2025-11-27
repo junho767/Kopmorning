@@ -51,16 +51,16 @@ public class ChatRoomRepository {
     }
 
     // 중복 sub 방지
-    public void enterChatRoom(String roomId) {
+    public boolean enterChatRoom(String roomId) {
         ChannelTopic topic = topics.get(roomId);
 
         if (topic == null) {
             topic = new ChannelTopic(roomId);
             redisMessageListener.addMessageListener(subscriber, topic);
             topics.put(roomId, topic);
-
+            return true;
         } else {
-            log.info("채팅방이 이미 존재하는 ID 입니다 {}", roomId);
+            return false;
         }
     }
 

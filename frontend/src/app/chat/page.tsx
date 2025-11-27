@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import { useEffect, useState } from "react";
 import SockJS from "sockjs-client";
 import { Client, IMessage } from "@stomp/stompjs";
+import { useAuth } from "../components/AuthContext";
 
 interface ChatMessage {
   chatType: "ENTER" | "TALK";
@@ -23,6 +24,7 @@ interface RsData<T> {
 const API_BASE = "http://localhost:8080";
 
 export default function HomePage() {
+  const { isLoggedIn, user, isLoading } = useAuth(); // 로그인 상태와 사용자 정보 가져오기
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [inputMessage, setInputMessage] = useState("");
   const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
@@ -35,7 +37,13 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchChatRooms();
+     if (isLoading) {
+        return <div>로딩중...</div>;
+     }
+     if (!isLoggedIn || !user) {
+        return <div>로그인이 필요합니다.</div>;
+     }
+     fetchChatRooms();
   }, []);
 
   // 채팅방 목록 조회
@@ -97,9 +105,15 @@ export default function HomePage() {
     }
   };
 
-  // 채팅방 입장
   const enterChatRoom = async (roomId: string, sender: string) => {
     try {
+      // 기존 STOMP client가 있다면 종료
+      if (stompClient) {
+        stompClient.deactivate();
+        setStompClient(null);
+        console.log("이전 웹소켓 연결 종료");
+      }
+
       const client = new Client({
         webSocketFactory: () => new SockJS(`${API_BASE}/ws`),
         reconnectDelay: 5000,
@@ -124,20 +138,19 @@ export default function HomePage() {
           console.log("웹소켓 연결 성공");
           setStompClient(client);
 
-          // 입장 메시지 전송 (ENTER)
+          // 입장 메시지 전송
           const enterMessage = {
             chatType: "ENTER",
             roomId,
-            sender,
+            sender: user?.nickname || user?.name,
             message: "",
           };
-
           client.publish({
             destination: `/pub/chat/message`,
             body: JSON.stringify(enterMessage),
           });
 
-          // 채팅 구독
+          // 채팅 구독 (단 하나만)
           client.subscribe(`/sub/chat/${roomId}`, (message: IMessage) => {
             try {
               const msgBody = JSON.parse(message.body); // ChatMessage 타입
@@ -148,19 +161,15 @@ export default function HomePage() {
           });
         };
 
-        client.onStompError = (frame) => {
-          console.log("STOMP 에러", frame);
-        };
-
-        client.onWebSocketError = (event) => {
-          console.log("웹소켓 연결 실패", event);
-        };
+        client.onStompError = (frame) => console.log("STOMP 에러", frame);
+        client.onWebSocketError = (event) => console.log("웹소켓 연결 실패", event);
 
         client.activate();
 
         // 컴포넌트 언마운트 시 연결 종료
         return () => {
           client.deactivate();
+          setStompClient(null);
           console.log("컴포넌트 언마운트로 웹소켓 연결 종료");
         };
       }
@@ -179,7 +188,7 @@ export default function HomePage() {
     if (stompClient && inputMessage.trim() && currentRoom) {
         const chatMessage: ChatMessage = {
               roomId: currentRoom.roomId,
-              sender: "유저1",
+              sender: user?.nickname || user?.name,
               message: inputMessage,
               chatType: "TALK",
             };

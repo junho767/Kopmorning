@@ -15,7 +15,6 @@ public class RedisPublisher {
 
     // 유저가 작성한 메세지를 publish 를 통해 topic 에 전송
     public void publish(ChannelTopic channelTopic, ChatMessage chatMessage) {
-        log.info("published topic : {}", channelTopic.getTopic());
         redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
     }
 }
