@@ -7,52 +7,188 @@ import { useEffect, useState } from "react";
 import SockJS from "sockjs-client";
 import { Client, IMessage } from "@stomp/stompjs";
 
+interface ChatMessage {
+  chatType: "ENTER" | "TALK";
+  roomId: string;
+  sender: string;
+  message: string;
+}
+
+interface RsData<T> {
+  code: string;
+  msg: string;
+  data?: T;
+}
+
+const API_BASE = "http://localhost:8080";
+
 export default function HomePage() {
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [inputMessage, setInputMessage] = useState("");
   const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
 
+  // 채팅방 관련 상태
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [currentRoom, setCurrentRoom] = useState<ChatRoom | null>(null);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-      reconnectDelay: 5000,
-    });
-
-    console.log("웹소켓 연결 시도");
-
-    client.onConnect = () => {
-      console.log("웹소켓 연결 성공");
-      setStompClient(client);
-      client.subscribe("/sub/message", (message: IMessage) => {
-        console.log(message);
-        setReceivedMessages((prev) => [...prev, message.body]);
-      });
-    };
-
-    client.onStompError = (frame) => {
-      console.log("STOMP 에러", frame);
-    };
-
-    client.onWebSocketError = (event) => {
-      console.log("웹소켓 연결 실패", event);
-    };
-
-    client.activate();
-
-    // 언마운트 시 연결 종료
-    return () => {
-      client.deactivate();
-      console.log("컴포넌트 언마운트로 웹소켓 연결 종료");
-    };
+    fetchChatRooms();
   }, []);
 
-  const sendMessage = () => {
-    if (stompClient && inputMessage.trim()) {
-      stompClient.publish({
-        destination: "/pub/send",
-        body: inputMessage,
+  // 채팅방 목록 조회
+  const fetchChatRooms = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/chat/rooms`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
       });
-      setInputMessage("");
+
+      if (!res.ok) throw new Error("채팅방 목록 조회 실패");
+
+      const result: RsData<ChatRoom[]> = await res.json();
+      if (result.code === "200" && result.data) {
+        setChatRooms(result.data);
+      }
+    } catch (error) {
+      console.error("채팅방 목록 조회 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 채팅방 생성
+  const createChatRoom = async () => {
+    if (!newRoomName.trim()) {
+      alert("채팅방 이름을 입력해주세요");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/chat/room?name=${encodeURIComponent(newRoomName)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) throw new Error("채팅방 생성 실패");
+
+      const result: RsData<ChatRoom> = await res.json();
+
+      if (result.code === "200" && result.data) {
+        alert("채팅방이 생성되었습니다");
+        setNewRoomName("");
+        setShowCreateModal(false);
+        fetchChatRooms(); // 목록 새로고침
+      }
+    } catch (error) {
+      console.error("채팅방 생성 실패:", error);
+    }
+  };
+
+  // 채팅방 입장
+  const enterChatRoom = async (roomId: string, sender: string) => {
+    try {
+      const client = new Client({
+        webSocketFactory: () => new SockJS(`${API_BASE}/ws`),
+        reconnectDelay: 5000,
+      });
+
+      // 채팅방 정보 조회
+      const infoRes = await fetch(`${API_BASE}/chat/room/${roomId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (!infoRes.ok) throw new Error("채팅방 정보 조회 실패");
+
+      const infoResult: RsData<ChatRoom> = await infoRes.json();
+
+      if (infoResult.code === "200" && infoResult.data) {
+        setCurrentRoom(infoResult.data);
+        setReceivedMessages([]);
+
+        client.onConnect = () => {
+          console.log("웹소켓 연결 성공");
+          setStompClient(client);
+
+          // 입장 메시지 전송 (ENTER)
+          const enterMessage = {
+            chatType: "ENTER",
+            roomId,
+            sender,
+            message: "",
+          };
+
+          client.publish({
+            destination: `/pub/chat/message`,
+            body: JSON.stringify(enterMessage),
+          });
+
+          // 채팅 구독
+          client.subscribe(`/sub/chat/${roomId}`, (message: IMessage) => {
+            try {
+              const msgBody = JSON.parse(message.body); // ChatMessage 타입
+              setReceivedMessages((prev) => [...prev, msgBody.message]);
+            } catch (err) {
+              console.error("메시지 파싱 실패", err, message.body);
+            }
+          });
+        };
+
+        client.onStompError = (frame) => {
+          console.log("STOMP 에러", frame);
+        };
+
+        client.onWebSocketError = (event) => {
+          console.log("웹소켓 연결 실패", event);
+        };
+
+        client.activate();
+
+        // 컴포넌트 언마운트 시 연결 종료
+        return () => {
+          client.deactivate();
+          console.log("컴포넌트 언마운트로 웹소켓 연결 종료");
+        };
+      }
+    } catch (error) {
+      console.error("채팅방 입장 실패:", error);
+    }
+  };
+
+  // 채팅방 나가기
+  const leaveChatRoom = () => {
+    setCurrentRoom(null);
+    setReceivedMessages([]);
+  };
+
+  const sendMessage = async (roomId: string, sender: string) => {
+    if (stompClient && inputMessage.trim() && currentRoom) {
+        const chatMessage: ChatMessage = {
+              roomId: currentRoom.roomId,
+              sender: "유저1",
+              message: inputMessage,
+              chatType: "TALK",
+            };
+
+        stompClient.publish({
+            destination: `/pub/chat/message`,
+            body: JSON.stringify(chatMessage)
+        });
+        setInputMessage("");
     }
   };
 
@@ -65,183 +201,139 @@ export default function HomePage() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <main
-        style={{
-          width: "100%",
-          minHeight: "100svh",
-          margin: 0,
-          padding: "24px 20px",
-          boxSizing: "border-box",
-        }}
-      >
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <section
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1.2fr .8fr",
-              gap: 24,
-              alignItems: "center",
-              marginBottom: 36,
-              background: "var(--color-surface-variant)",
-              border: "1px solid var(--color-border)",
-              borderRadius: 16,
-              padding: 20,
-              backgroundImage:
-                "radial-gradient(circle at 20% 10%, rgba(211,47,47,0.12) 0, rgba(211,47,47,0) 40%), repeating-linear-gradient(90deg, rgba(211,47,47,.08) 0, rgba(211,47,47,.08) 2px, transparent 2px, transparent 10px)",
-              backgroundSize: "auto, 40px 40px",
-              backgroundPosition: "center",
-            }}
-          >
-            <div>
-              <h1
-                style={{
-                  fontSize: 36,
-                  margin: "0 0 10px",
-                  color: "var(--color-primary)",
-                }}
-              >
-                Kopmorning
-              </h1>
-              <p style={{ color: "var(--color-text)", margin: 0 }}>
-                축구 소식, 분석, 커뮤니티를 한곳에서. 매일 아침 가볍게 훑어보세요.
-              </p>
-            </div>
-            <div
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(211,47,47,0.08), rgba(211,47,47,0.02))",
-                border: "2px solid var(--color-primary)",
-                borderRadius: 12,
-                height: 220,
-                display: "grid",
-                placeItems: "center",
-                color: "var(--color-primary)",
-              }}
-            >
-              <div style={{ textAlign: "center" }}>
-                <Image
-                  src="/kopmorninglogo.png"
-                  alt="Kopmorning Logo"
-                  width={200}
-                  height={100}
-                  style={{
-                    height: 100,
-                    width: "auto",
-                    marginBottom: 8,
-                  }}
-                  priority
-                />
-                <div style={{ fontSize: 12, opacity: 0.8 }}>Matchday vibes</div>
-              </div>
-            </div>
-          </section>
 
-          <section style={{ marginBottom: 32 }}>
-            <h2
-              style={{
-                fontSize: 20,
-                margin: "0 0 12px",
-                color: "var(--color-primary)",
-              }}
-            >
-              채팅 테스트
-            </h2>
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                marginBottom: 12,
-              }}
-            >
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="메시지를 입력하세요"
-                style={{
-                  flex: 1,
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "1px solid var(--color-border)",
-                }}
-              />
+      <main className="flex-1 container mx-auto p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
+          {/* 채팅방 목록 */}
+          <div className="border rounded-lg p-4 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">채팅방 목록</h2>
               <button
-                onClick={sendMessage}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: 8,
-                  border: "none",
-                  backgroundColor: "var(--color-primary)",
-                  color: "white",
-                  cursor: "pointer",
-                }}
+                onClick={() => setShowCreateModal(true)}
+                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
               >
-                보내기
-              </button>
-              <button
-                onClick={endConnection}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: 8,
-                  border: "1px solid var(--color-border)",
-                  backgroundColor: "transparent",
-                  cursor: "pointer",
-                }}
-              >
-                연결 종료
+                + 생성
               </button>
             </div>
-            <div
-              style={{
-                border: "1px solid var(--color-border)",
-                borderRadius: 8,
-                padding: 12,
-                maxHeight: 200,
-                overflowY: "auto",
-                backgroundColor: "var(--color-surface-variant)",
-              }}
-            >
-              {receivedMessages.length === 0 ? (
-                <div style={{ opacity: 0.7, fontSize: 14 }}>
-                  아직 받은 메시지가 없습니다.
-                </div>
-              ) : (
-                receivedMessages.map((msg, idx) => (
+
+            {loading ? (
+              <div className="text-center py-4">로딩중...</div>
+            ) : (
+              <div className="space-y-2">
+                {chatRooms.map((room) => (
                   <div
-                    key={idx}
-                    style={{ marginBottom: 6, fontSize: 14 }}
+                    key={room.roomId}
+                    onClick={() => enterChatRoom(room.roomId, "유저1")}
+                    className={`p-3 border rounded cursor-pointer hover:bg-gray-100 ${
+                      currentRoom?.roomId === room.roomId ? "bg-blue-50 border-blue-500" : ""
+                    }`}
                   >
-                    {msg}
+                    <div className="font-semibold">{room.name}</div>
+                    <div className="text-xs text-gray-500">ID: {room.roomId}</div>
                   </div>
-                ))
-              )}
-            </div>
-          </section>
+                ))}
+              </div>
+            )}
+          </div>
 
-          <section>
-            <h2
-              style={{
-                fontSize: 20,
-                margin: "0 0 12px",
-                color: "var(--color-primary)",
-              }}
-            >
-              최근 게시글
-            </h2>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-                gap: 16,
-              }}
-            >
-              {/* 게시글 카드들 자리 */}
-            </div>
-          </section>
+          {/* 채팅 영역 */}
+          <div className="md:col-span-2 border rounded-lg p-4 flex flex-col">
+            {currentRoom ? (
+              <>
+                <div className="flex justify-between items-center mb-4 pb-4 border-b">
+                  <h2 className="text-xl font-bold">{currentRoom.name}</h2>
+                  <button
+                    onClick={leaveChatRoom}
+                    className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
+                  >
+                    나가기
+                  </button>
+                </div>
+
+                {/* 메시지 영역 */}
+                <div className="flex-1 overflow-y-auto mb-4 p-4 bg-gray-50 rounded">
+                  {receivedMessages.length === 0 ? (
+                    <div className="text-center text-gray-500">메시지가 없습니다</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {receivedMessages.map((msg, idx) => (
+                        <div key={idx} className="bg-white p-3 rounded shadow-sm">
+                          {msg}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 메시지 입력 */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && sendMessage(currentRoom.roomId, "유저1")}
+                    placeholder="메시지를 입력하세요"
+                    className="flex-1 border rounded px-3 py-2"
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!stompClient}
+                    className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:bg-gray-300"
+                  >
+                    전송
+                  </button>
+                </div>
+
+                {/* 연결 상태 */}
+                <div className="mt-2 text-sm text-gray-600">
+                  웹소켓 상태: {stompClient ? "연결됨" : "연결 안됨"}
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-gray-500">
+                채팅방을 선택해주세요
+              </div>
+            )}
+          </div>
         </div>
       </main>
+
+      {/* 채팅방 생성 모달 */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-xl font-bold mb-4">새 채팅방 만들기</h3>
+            <input
+              type="text"
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && createChatRoom()}
+              placeholder="채팅방 이름"
+              className="w-full border rounded px-3 py-2 mb-4"
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setNewRoomName("");
+                }}
+                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+              >
+                취소
+              </button>
+              <button
+                onClick={createChatRoom}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                생성
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

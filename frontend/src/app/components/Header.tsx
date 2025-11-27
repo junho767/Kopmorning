@@ -85,6 +85,8 @@ export default function Header() {
             <Link href="/matches" style={{ color: "var(--color-text)", textDecoration: "none" }}>일정</Link>
             <span style={{ opacity: .3 }}>|</span>
             <Link href="/ranking" style={{ color: "var(--color-text)", textDecoration: "none" }}>랭킹</Link>
+            <span style={{ opacity: .3 }}>|</span>
+            <Link href="/chat" style={{ color: "var(--color-text)", textDecoration: "none" }}>채팅방</Link>
           </nav>
         </div>
 
