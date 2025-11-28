@@ -18,9 +18,8 @@ public class RedisSubscriber implements MessageListener {
     private final RedisTemplate redisTemplate;
     private final SimpMessageSendingOperations messageSendingOperations;
 
-    /*
-     리스너에서 감지하여 받아온 메세지를 역직렬화 후 메세지를 채널 구독하는 모든 유저에게 전달하게 됨
-     */
+    private final static String DESTINATION = "/sub/chat/";
+
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
@@ -28,9 +27,9 @@ public class RedisSubscriber implements MessageListener {
             String publishMessage = (String) redisTemplate.getStringSerializer().deserialize(message.getBody());
 
             // objectMapper 를 통해 JSON
-            ChatMessage roomMessage = objectMapper.readValue(publishMessage, ChatMessage.class);
+            ChatMessage chatMessage = objectMapper.readValue(publishMessage, ChatMessage.class);
 
-            messageSendingOperations.convertAndSend("/sub/chat/" + roomMessage.getRoomId(), roomMessage);
+            messageSendingOperations.convertAndSend(DESTINATION + chatMessage.getRoomId(), chatMessage);
         } catch (Exception e) {
             log.error(e.getMessage());
         }

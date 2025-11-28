@@ -12,6 +12,7 @@ interface ChatMessage {
   chatType: "ENTER" | "TALK";
   roomId: string;
   sender: string;
+  sendTime: string;
   message: string;
 }
 
@@ -27,7 +28,7 @@ export default function HomePage() {
   const { isLoggedIn, user, isLoading } = useAuth(); // 로그인 상태와 사용자 정보 가져오기
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [inputMessage, setInputMessage] = useState("");
-  const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
+  const [receivedMessages, setReceivedMessages] = useState<ChatMessage[]>([]);
 
   // 채팅방 관련 상태
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -36,15 +37,35 @@ export default function HomePage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-     if (isLoading) {
-        return <div>로딩중...</div>;
-     }
-     if (!isLoggedIn || !user) {
-        return <div>로그인이 필요합니다.</div>;
-     }
-     fetchChatRooms();
-  }, []);
+    useEffect(() => {
+      if (!isLoading && isLoggedIn && user) {
+        fetchChatRooms();
+      }
+    }, [isLoggedIn, user, isLoading]);
+
+    if (isLoading) {
+      return (
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <main className="flex-1 flex items-center justify-center">
+            <div>로딩중...</div>
+          </main>
+          <Footer />
+        </div>
+      );
+    }
+
+    if (!isLoggedIn || !user) {
+      return (
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <main className="flex-1 flex items-center justify-center">
+            <div>로그인이 필요합니다.</div>
+          </main>
+          <Footer />
+        </div>
+      );
+    }
 
   // 채팅방 목록 조회
   const fetchChatRooms = async () => {
@@ -95,7 +116,6 @@ export default function HomePage() {
       const result: RsData<ChatRoom> = await res.json();
 
       if (result.code === "200" && result.data) {
-        alert("채팅방이 생성되었습니다");
         setNewRoomName("");
         setShowCreateModal(false);
         fetchChatRooms(); // 목록 새로고침
@@ -111,7 +131,6 @@ export default function HomePage() {
       if (stompClient) {
         stompClient.deactivate();
         setStompClient(null);
-        console.log("이전 웹소켓 연결 종료");
       }
 
       const client = new Client({
@@ -135,7 +154,6 @@ export default function HomePage() {
         setReceivedMessages([]);
 
         client.onConnect = () => {
-          console.log("웹소켓 연결 성공");
           setStompClient(client);
 
           // 입장 메시지 전송
@@ -150,11 +168,10 @@ export default function HomePage() {
             body: JSON.stringify(enterMessage),
           });
 
-          // 채팅 구독 (단 하나만)
           client.subscribe(`/sub/chat/${roomId}`, (message: IMessage) => {
             try {
-              const msgBody = JSON.parse(message.body); // ChatMessage 타입
-              setReceivedMessages((prev) => [...prev, msgBody.message]);
+              const msgBody : ChatMessage = JSON.parse(message.body);
+              setReceivedMessages((prev) => [...prev, msgBody]);
             } catch (err) {
               console.error("메시지 파싱 실패", err, message.body);
             }
@@ -234,7 +251,7 @@ export default function HomePage() {
                 {chatRooms.map((room) => (
                   <div
                     key={room.roomId}
-                    onClick={() => enterChatRoom(room.roomId, "유저1")}
+                    onClick={() => enterChatRoom(room.roomId, user?.nickname || user?.name)}
                     className={`p-3 border rounded cursor-pointer hover:bg-gray-100 ${
                       currentRoom?.roomId === room.roomId ? "bg-blue-50 border-blue-500" : ""
                     }`}
@@ -268,8 +285,22 @@ export default function HomePage() {
                   ) : (
                     <div className="space-y-2">
                       {receivedMessages.map((msg, idx) => (
-                        <div key={idx} className="bg-white p-3 rounded shadow-sm">
-                          {msg}
+                        <div key={idx}>
+                          {msg.chatType === "ENTER" ? (
+                            // 입장 메시지
+                            <div className="text-center text-gray-500 text-sm py-2">
+                              {msg.sender}님이 입장하셨습니다
+                            </div>
+                          ) : (
+                            // 일반 채팅 메시지
+                            <div className="bg-white p-3 rounded shadow-sm">
+                              <div className="flex justify-between items-start mb-1">
+                                <span className="font-semibold text-gray-800">{msg.sender}</span>
+                                <span className="text-xs text-gray-400">{msg.sendTime}</span>
+                              </div>
+                              <div className="text-gray-700">{msg.message}</div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -282,7 +313,7 @@ export default function HomePage() {
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && sendMessage(currentRoom.roomId, "유저1")}
+                    onKeyPress={(e) => e.key === "Enter" && sendMessage(currentRoom.roomId, user?.nickname || user?.name)}
                     placeholder="메시지를 입력하세요"
                     className="flex-1 border rounded px-3 py-2"
                   />

@@ -74,26 +74,11 @@ public class RedisConfig {
         return Redisson.create(config);
     }
 
-
-    /**
-     *
-     * Channel 토픽 생성하는 빈
-     * redis의 pub/sub 메세징을 위해 채널 토픽 설정
-     *
-     */
     @Bean
     public ChannelTopic channelTopic() {
         return new ChannelTopic("chatroom");
     }
 
-
-    /**
-     *
-     * @param listenerAdapterChatMessage 실제 메시지를 처리할 리스너 어댑터이다.
-     *                                  즉, Redis 메시지를 받아서 메서드로 변환하는 역할
-     * @param channelTopic 구독할 Redis 채널을 뜻 함.
-     *
-     */
     @Bean
     public RedisMessageListenerContainer redisMessage(
             MessageListenerAdapter listenerAdapterChatMessage,
@@ -105,11 +90,6 @@ public class RedisConfig {
         return container;
     }
 
-    /**
-     *
-     * @param subscriber 실제 메시지를 처리하는 Subscriber 설정 추가
-     *
-     */
     @Bean
     public MessageListenerAdapter listenerAdapter(RedisSubscriber subscriber) {
         return new MessageListenerAdapter(subscriber, "onMessage");

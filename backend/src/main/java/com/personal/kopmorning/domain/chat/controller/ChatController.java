@@ -20,10 +20,10 @@ public class ChatController {
     // /pub/chat/message 로 들어오는 메세지 처리
     @MessageMapping("/chat/message")
     @SendTo("/sub/chat/{roomId}")
-    public void receiveMessage(ChatMessage message) {
-        if (ChatType.ENTER.equals(message.getChatType()) && chatRoomRepository.enterChatRoom(message.getRoomId())) {
-            message.setMessage(message.getSender() + " 님이 입장하셨습니다.");
+    public void receiveMessage(ChatMessage chatMessage) {
+        if (ChatType.ENTER.equals(chatMessage.getChatType()) && chatRoomRepository.enterChatRoom(chatMessage.getRoomId())) {
+            chatMessage.setMessage(chatMessage.getSender() + " 님이 입장하셨습니다.");
         }
-        redisPublisher.publish(chatRoomRepository.getTopic(message.getRoomId()), message);
+        redisPublisher.publish(chatRoomRepository.getTopic(chatMessage.getRoomId()), chatMessage);
     }
 }

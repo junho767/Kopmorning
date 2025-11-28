@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -15,6 +17,7 @@ public class RedisPublisher {
 
     // 유저가 작성한 메세지를 publish 를 통해 topic 에 전송
     public void publish(ChannelTopic channelTopic, ChatMessage chatMessage) {
+        chatMessage.setSendTime(String.valueOf(LocalDateTime.now()));
         redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
     }
 }
