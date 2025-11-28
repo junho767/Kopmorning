@@ -1,6 +1,6 @@
 package com.personal.kopmorning.domain.chat.entity;
 
-import lombok.*;
+import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -13,13 +13,26 @@ public class ChatRoom implements Serializable { //  Serializable은 객체를 �
     private static final long serialVersionUID = 4564516516541652156L;
 
     private String roomId;
-    private String name;
+    private String roomName;
+    private String sendMemberId;
+    private String receiveMemberId;
 
-    public static ChatRoom create(String name) {
+    public static ChatRoom create(String roomName) {
         ChatRoom chatRoom = new ChatRoom();
 
         chatRoom.roomId = UUID.randomUUID().toString();
-        chatRoom.name = name;
+        chatRoom.roomName = roomName;
+
+        return chatRoom;
+    }
+
+    public static ChatRoom create(String roomName, String sendMemberId, String receiveMemberId) {
+        ChatRoom chatRoom = new ChatRoom();
+
+        chatRoom.roomId = UUID.randomUUID().toString();
+        chatRoom.roomName = roomName;
+        chatRoom.sendMemberId = sendMemberId;
+        chatRoom.receiveMemberId = receiveMemberId;
 
         return chatRoom;
     }

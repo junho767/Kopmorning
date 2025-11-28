@@ -101,7 +101,7 @@ export default function HomePage() {
 
     try {
       const res = await fetch(
-        `${API_BASE}/chat/room?name=${encodeURIComponent(newRoomName)}`,
+        `${API_BASE}/chat/room/group?name=${encodeURIComponent(newRoomName)}`,
         {
           method: "POST",
           headers: {
@@ -256,7 +256,7 @@ export default function HomePage() {
                       currentRoom?.roomId === room.roomId ? "bg-blue-50 border-blue-500" : ""
                     }`}
                   >
-                    <div className="font-semibold">{room.name}</div>
+                    <div className="font-semibold">{room.roomName}</div>
                     <div className="text-xs text-gray-500">ID: {room.roomId}</div>
                   </div>
                 ))}

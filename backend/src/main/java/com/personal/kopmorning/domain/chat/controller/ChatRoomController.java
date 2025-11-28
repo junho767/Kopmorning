@@ -34,12 +34,25 @@ public class ChatRoomController {
         );
     }
 
-    @PostMapping("/room")
-    public RsData<ChatRoom> createRoom(@RequestParam String name) {
+    @PostMapping("/room/group")
+    public RsData<ChatRoom> groupCreateRoom(@RequestParam String roomName) {
         return new RsData<>(
                 "200",
                 "채팅방 개설 성공",
-                chatRoomRepository.createChatRoom(name)
+                chatRoomRepository.createChatRoom(roomName)
+        );
+    }
+
+    @PostMapping("/room")
+    public RsData<ChatRoom> createRoom(
+            @RequestParam String roomName,
+            @RequestParam String sendMemberId,
+            @RequestParam String receiveMemberId
+    ) {
+        return new RsData<>(
+                "200",
+                "채팅방 개설 성공",
+                chatRoomRepository.create(roomName, sendMemberId, receiveMemberId)
         );
     }
 }

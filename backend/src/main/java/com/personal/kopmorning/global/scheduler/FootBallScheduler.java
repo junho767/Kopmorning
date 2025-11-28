@@ -25,7 +25,7 @@ public class FootBallScheduler {
     private static final String RUNNING = "RUNNING";
     private static final String SUCCESS = "SUCCESS";
     private static final long CACHE_TTL_MS = 600000;
-    private static final long FIXED_DELAY_MS = 30000;
+    private static final long FIXED_DELAY_MS = 3000000;
     private static final String JOB_NAME = "축구 데이터 업데이트";
     private static final String STATUS_KEY = "scheduler:football:lastRun";
 

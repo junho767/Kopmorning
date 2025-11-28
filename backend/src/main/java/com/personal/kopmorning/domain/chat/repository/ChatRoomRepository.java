@@ -50,6 +50,12 @@ public class ChatRoomRepository {
         return chatRoom;
     }
 
+    public ChatRoom create(String name, String member1, String member2) {
+        ChatRoom chatRoom = ChatRoom.create(name, member1, member2);
+        opsHashChatRoom.put(CHAT_ROOM, chatRoom.getRoomId(), chatRoom);
+        return chatRoom;
+    }
+
     // 중복 sub 방지
     public boolean enterChatRoom(String roomId) {
         ChannelTopic topic = topics.get(roomId);
