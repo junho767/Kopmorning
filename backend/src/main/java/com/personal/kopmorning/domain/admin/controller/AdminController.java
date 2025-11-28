@@ -9,6 +9,7 @@ import com.personal.kopmorning.domain.article.article.service.ArticleService;
 import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
 import com.personal.kopmorning.domain.article.comment.service.ArticleCommentService;
 import com.personal.kopmorning.domain.member.dto.response.MemberListResponse;
+import com.personal.kopmorning.domain.member.service.MemberService;
 import com.personal.kopmorning.domain.report.dto.response.ReportListResponse;
 import com.personal.kopmorning.domain.report.service.ReportService;
 import com.personal.kopmorning.global.entity.RsData;
@@ -25,6 +26,7 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final AdminService adminService;
+    private final MemberService memberService;
     private final ReportService reportService;
     private final ArticleService articleService;
     private final FootBallScheduler footBallScheduler;
@@ -65,7 +67,7 @@ public class AdminController {
         return new RsData<>(
                 AdminSuccessCode.GET_MEMBER_LIST_BY_ADMIN.getCode(),
                 AdminSuccessCode.GET_MEMBER_LIST_BY_ADMIN.getMessage(),
-                adminService.getMemberList(nextCursor, size)
+                memberService.getMemberList(nextCursor, size)
         );
     }
 

@@ -85,7 +85,7 @@ class CommentServiceTest {
                 .body("댓글입니다")
                 .build();
 
-        when(memberService.getMemberBySecurityMember()).thenReturn(stubMember);
+        when(memberService.getCurrentMember()).thenReturn(stubMember);
         when(articleRepository.findById(stubArticle.getId())).thenReturn(Optional.of(stubArticle));
         when(articleCommentRepository.save(any())).thenAnswer(inv -> {
             ArticleComment saved = inv.getArgument(0);
@@ -134,7 +134,7 @@ class CommentServiceTest {
                 .build();
 
         when(articleCommentRepository.findById(req.getArticleCommentId())).thenReturn(Optional.of(stubComment));
-        when(memberService.getMemberBySecurityMember()).thenReturn(stubMember);
+        when(memberService.getCurrentMember()).thenReturn(stubMember);
 
         // when
         articleCommentService.update(req);
@@ -148,7 +148,7 @@ class CommentServiceTest {
     void deleteComment_success() {
         // given
         when(articleCommentRepository.findById(stubComment.getId())).thenReturn(Optional.of(stubComment));
-        when(memberService.getMemberBySecurityMember()).thenReturn(stubMember);
+        when(memberService.getCurrentMember()).thenReturn(stubMember);
 
         // when
         articleCommentService.delete(stubComment.getId());

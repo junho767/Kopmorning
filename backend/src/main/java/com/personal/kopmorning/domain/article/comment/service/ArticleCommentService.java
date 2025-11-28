@@ -57,7 +57,7 @@ public class ArticleCommentService {
     }
 
     public ArticleCommentResponse create(ArticleCommentCreate articleCommentCreate) {
-        Member member = memberService.getMemberBySecurityMember();
+        Member member = memberService.getCurrentMember();
         Article article = articleRepository.findById(articleCommentCreate.getArticleId())
                 .orElseThrow(() -> new ArticleException(
                                 ArticleErrorCode.INVALID_ARTICLE.getCode(),
@@ -87,7 +87,7 @@ public class ArticleCommentService {
                         ArticleErrorCode.INVALID_COMMENT.getMessage(),
                         HttpStatus.NOT_FOUND)
                 );
-        Member currentMember = memberService.getMemberBySecurityMember();
+        Member currentMember = memberService.getCurrentMember();
         Member member = articleComment.getMember();
 
         if(!currentMember.getId().equals(member.getId())) {
@@ -109,7 +109,7 @@ public class ArticleCommentService {
                         ArticleErrorCode.INVALID_COMMENT.getMessage(),
                         HttpStatus.NOT_FOUND)
                 );
-        Member currentMember = memberService.getMemberBySecurityMember();
+        Member currentMember = memberService.getCurrentMember();
         Member member = articleComment.getMember();
 
         if(!currentMember.getId().equals(member.getId())) {
