@@ -21,7 +21,7 @@ public class ChatRoomController {
         return new RsData<>(
             "200",
             "채팅방 목록 조회 성공",
-                chatRoomRepository.findAllRoom()
+                chatRoomRepository.findAllByCurrentMemberId()
         );
     }
 

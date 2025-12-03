@@ -2,6 +2,7 @@ package com.personal.kopmorning.domain.chat.repository;
 
 import com.personal.kopmorning.domain.chat.entity.ChatRoom;
 import com.personal.kopmorning.domain.chat.service.RedisSubscriber;
+import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,12 @@ public class ChatRoomRepository {
         topics = new HashMap<>();
     }
 
-    public List<ChatRoom> findAllRoom() {
-        return opsHashChatRoom.values(CHAT_ROOM);
+    public List<ChatRoom> findAllByCurrentMemberId() {
+        Long currentMemberId = SecurityUtil.getCurrentMember().getId();
+        return opsHashChatRoom.values(CHAT_ROOM).stream()
+                .filter(chatRoom -> chatRoom.getSendMemberId().equals(currentMemberId)
+                        || chatRoom.getReceiveMemberId().equals(currentMemberId))
+                .toList();
     }
 
     public ChatRoom findRoomById(String id) {
@@ -50,8 +55,8 @@ public class ChatRoomRepository {
         return chatRoom;
     }
 
-    public ChatRoom create(String name, String member1, String member2) {
-        ChatRoom chatRoom = ChatRoom.create(name, member1, member2);
+    public ChatRoom create(String name, String sendMemberId, String receiveMemberId) {
+        ChatRoom chatRoom = ChatRoom.create(name, sendMemberId, receiveMemberId);
         opsHashChatRoom.put(CHAT_ROOM, chatRoom.getRoomId(), chatRoom);
         return chatRoom;
     }

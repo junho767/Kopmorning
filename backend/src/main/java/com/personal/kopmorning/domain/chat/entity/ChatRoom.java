@@ -14,8 +14,8 @@ public class ChatRoom implements Serializable { //  Serializable은 객체를 �
 
     private String roomId;
     private String roomName;
-    private String sendMemberId;
-    private String receiveMemberId;
+    private Long sendMemberId;
+    private Long receiveMemberId;
 
     public static ChatRoom create(String roomName) {
         ChatRoom chatRoom = new ChatRoom();
@@ -31,8 +31,8 @@ public class ChatRoom implements Serializable { //  Serializable은 객체를 �
 
         chatRoom.roomId = UUID.randomUUID().toString();
         chatRoom.roomName = roomName;
-        chatRoom.sendMemberId = sendMemberId;
-        chatRoom.receiveMemberId = receiveMemberId;
+        chatRoom.sendMemberId = Long.valueOf(sendMemberId);
+        chatRoom.receiveMemberId = Long.valueOf(receiveMemberId);
 
         return chatRoom;
     }

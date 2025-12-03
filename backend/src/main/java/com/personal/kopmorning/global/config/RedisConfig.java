@@ -80,6 +80,11 @@ public class RedisConfig {
     }
 
     @Bean
+    public ChannelTopic adminChannelTopic() {
+        return new ChannelTopic("chatroom:admin");
+    }
+
+    @Bean
     public RedisMessageListenerContainer redisMessage(
             MessageListenerAdapter listenerAdapterChatMessage,
             ChannelTopic channelTopic
