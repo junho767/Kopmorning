@@ -1,4 +1,4 @@
-package com.personal.kopmorning.domain.chat.entity;
+package com.personal.kopmorning.chatDomain.chat.entity;
 
 import lombok.Data;
 

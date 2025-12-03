@@ -1,7 +1,7 @@
-package com.personal.kopmorning.domain.chat.repository;
+package com.personal.kopmorning.chatDomain.chat.repository;
 
-import com.personal.kopmorning.domain.chat.entity.ChatRoom;
-import com.personal.kopmorning.domain.chat.service.RedisSubscriber;
+import com.personal.kopmorning.chatDomain.chat.entity.ChatRoom;
+import com.personal.kopmorning.chatDomain.chat.service.RedisSubscriber;
 import com.personal.kopmorning.global.utils.SecurityUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

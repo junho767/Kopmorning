@@ -1,6 +1,6 @@
-package com.personal.kopmorning.domain.chat.service;
+package com.personal.kopmorning.chatDomain.chat.service;
 
-import com.personal.kopmorning.domain.chat.entity.ChatMessage;
+import com.personal.kopmorning.chatDomain.chat.entity.ChatMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;

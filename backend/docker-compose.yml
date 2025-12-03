@@ -11,6 +11,18 @@ services:
       - kop-network
     restart: always
 
+  chatdb:
+    image: mysql:8.0
+    container_name: chatdb
+    environment:
+      MYSQL_ROOT_PASSWORD: qnfwhtla0913
+      MYSQL_DATABASE: chatdb
+    ports:
+      - "3307:3306"
+    networks:
+      - kop-network
+    restart: always
+
   redis:
     image: redis:7.0
     container_name: redis
@@ -29,6 +41,7 @@ services:
       SPRING_PROFILES_ACTIVE: prod
     depends_on:
       - mysql
+      - chatdb
       - redis
     networks:
       - kop-network

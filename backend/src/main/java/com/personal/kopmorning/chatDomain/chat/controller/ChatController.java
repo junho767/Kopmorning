@@ -1,9 +1,9 @@
-package com.personal.kopmorning.domain.chat.controller;
+package com.personal.kopmorning.chatDomain.chat.controller;
 
-import com.personal.kopmorning.domain.chat.entity.ChatMessage;
-import com.personal.kopmorning.domain.chat.entity.ChatType;
-import com.personal.kopmorning.domain.chat.repository.ChatRoomRepository;
-import com.personal.kopmorning.domain.chat.service.RedisPublisher;
+import com.personal.kopmorning.chatDomain.chat.entity.ChatMessage;
+import com.personal.kopmorning.chatDomain.chat.entity.ChatType;
+import com.personal.kopmorning.chatDomain.chat.repository.ChatRoomRepository;
+import com.personal.kopmorning.chatDomain.chat.service.RedisPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
