@@ -20,6 +20,13 @@ type Member = {
   createdAt: string;
 };
 
+type ChatRoom = {
+  roomId: string;
+  roomName: string;
+  sendMemberId: string;
+  receiveMemberId: string;
+};
+
 type MemberListResponse = {
   memberResponses: Member[];
   totalMembers: number;
@@ -81,7 +88,7 @@ export default function MemberListPage() {
       const result: RsData<ChatRoom> = await res.json();
 
       if (result.code === "200" && result.data) {
-        router.push('/chat');
+        router.push("/chat");
       } else {
         alert("채팅방 생성 실패");
       }
@@ -89,7 +96,6 @@ export default function MemberListPage() {
       console.error(err);
     }
   };
-
 
   useEffect(() => {
     if (isLoggedIn) loadMembers();

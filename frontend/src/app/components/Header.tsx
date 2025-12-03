@@ -86,7 +86,7 @@ export default function Header() {
             <span style={{ opacity: .3 }}>|</span>
             <Link href="/ranking" style={{ color: "var(--color-text)", textDecoration: "none" }}>랭킹</Link>
             <span style={{ opacity: .3 }}>|</span>
-            <Link href="/member/list" style={{ color: "var(--color-text)", textDecoration: "none" }}>채팅방</Link>
+            <Link href="/chat" style={{ color: "var(--color-text)", textDecoration: "none" }}>채팅방</Link>
           </nav>
         </div>
 

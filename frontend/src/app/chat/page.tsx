@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import SockJS from "sockjs-client";
 import { Client, IMessage } from "@stomp/stompjs";
 import { useAuth } from "../components/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface ChatMessage {
   chatType: "ENTER" | "TALK";
@@ -29,6 +30,7 @@ export default function HomePage() {
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [inputMessage, setInputMessage] = useState("");
   const [receivedMessages, setReceivedMessages] = useState<ChatMessage[]>([]);
+  const router = useRouter();
 
   // 채팅방 관련 상태
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -237,7 +239,7 @@ export default function HomePage() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">채팅방 목록</h2>
               <button
-                onClick={() => setShowCreateModal(true)}
+                onClick={() => router.push("/member/list")}
                 className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
               >
                 + 생성
@@ -257,7 +259,6 @@ export default function HomePage() {
                     }`}
                   >
                     <div className="font-semibold">{room.roomName}</div>
-                    <div className="text-xs text-gray-500">ID: {room.roomId}</div>
                   </div>
                 ))}
               </div>
@@ -339,41 +340,6 @@ export default function HomePage() {
           </div>
         </div>
       </main>
-
-      {/* 채팅방 생성 모달 */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-xl font-bold mb-4">새 채팅방 만들기</h3>
-            <input
-              type="text"
-              value={newRoomName}
-              onChange={(e) => setNewRoomName(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && createChatRoom()}
-              placeholder="채팅방 이름"
-              className="w-full border rounded px-3 py-2 mb-4"
-            />
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setNewRoomName("");
-                }}
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                취소
-              </button>
-              <button
-                onClick={createChatRoom}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                생성
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <Footer />
     </div>
   );
