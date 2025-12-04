@@ -13,11 +13,13 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class RedisPublisher {
+    private final ChatMessageService chatMessageService;
     private final RedisTemplate<String, Object> redisTemplate;
 
     // 유저가 작성한 메세지를 publish 를 통해 topic 에 전송
     public void publish(ChannelTopic channelTopic, ChatMessage chatMessage) {
         chatMessage.setSendTime(String.valueOf(LocalDateTime.now()));
+        chatMessageService.saveMessage(chatMessage);
         redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
     }
 }

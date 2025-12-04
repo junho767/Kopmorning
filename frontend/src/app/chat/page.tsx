@@ -129,7 +129,7 @@ export default function HomePage() {
 
   const enterChatRoom = async (roomId: string, sender: string) => {
     try {
-      // 기존 STOMP client가 있다면 종료
+      // 기존 STOMP close
       if (stompClient) {
         stompClient.deactivate();
         setStompClient(null);
@@ -153,12 +153,27 @@ export default function HomePage() {
 
       if (infoResult.code === "200" && infoResult.data) {
         setCurrentRoom(infoResult.data);
-        setReceivedMessages([]);
+        const messageRes = await fetch(`${API_BASE}/api/message/room?roomId=${roomId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+
+        if (!messageRes.ok) throw new Error("메시지 조회 실패");
+
+        const messageResult: RsData<ChatMessage[]> = await messageRes.json();
+
+        if (messageResult.code === "200" && messageResult.data) {
+          // 기존 메시지 세팅
+          setReceivedMessages(messageResult.data);
+        } else {
+          setReceivedMessages([]);
+        }
 
         client.onConnect = () => {
           setStompClient(client);
 
-          // 입장 메시지 전송
+          // 입장 메시지 publish
           const enterMessage = {
             chatType: "ENTER",
             roomId,
@@ -170,9 +185,10 @@ export default function HomePage() {
             body: JSON.stringify(enterMessage),
           });
 
+          // 구독
           client.subscribe(`/sub/chat/${roomId}`, (message: IMessage) => {
             try {
-              const msgBody : ChatMessage = JSON.parse(message.body);
+              const msgBody: ChatMessage = JSON.parse(message.body);
               setReceivedMessages((prev) => [...prev, msgBody]);
             } catch (err) {
               console.error("메시지 파싱 실패", err, message.body);
@@ -180,17 +196,7 @@ export default function HomePage() {
           });
         };
 
-        client.onStompError = (frame) => console.log("STOMP 에러", frame);
-        client.onWebSocketError = (event) => console.log("웹소켓 연결 실패", event);
-
         client.activate();
-
-        // 컴포넌트 언마운트 시 연결 종료
-        return () => {
-          client.deactivate();
-          setStompClient(null);
-          console.log("컴포넌트 언마운트로 웹소켓 연결 종료");
-        };
       }
     } catch (error) {
       console.error("채팅방 입장 실패:", error);
