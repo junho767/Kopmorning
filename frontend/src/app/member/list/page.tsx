@@ -63,7 +63,7 @@ export default function MemberListPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loading]);
 
   const loadMore = () => {
     if (nextCursor && hasMore && !loading) {

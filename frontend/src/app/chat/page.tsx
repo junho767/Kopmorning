@@ -91,13 +91,6 @@ export default function ChatPage() {
     }
   };
 
-  // 채팅방 생성
-  const createChatRoom = async () => {
-    if (!newRoomName.trim()) {
-      alert("채팅방 이름을 입력해주세요");
-      return;
-    }
-
     try {
       const res = await fetch(
         `${API_BASE}/chat/room/group?name=${encodeURIComponent(newRoomName)}`,
