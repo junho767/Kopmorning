@@ -62,16 +62,13 @@ public class ChatRoomRepository {
     }
 
     // 중복 sub 방지
-    public boolean enterChatRoom(String roomId) {
+    public void enterChatRoom(String roomId) {
         ChannelTopic topic = topics.get(roomId);
 
         if (topic == null) {
             topic = new ChannelTopic(roomId);
             redisMessageListener.addMessageListener(subscriber, topic);
             topics.put(roomId, topic);
-            return true;
-        } else {
-            return false;
         }
     }
 
@@ -81,5 +78,9 @@ public class ChatRoomRepository {
             log.warn("채팅방을 찾을 수 없습니다.");
         }
         return topic;
+    }
+
+    public void deleteRoom(String roomId) {
+        opsHashChatRoom.delete(CHAT_ROOM, roomId);
     }
 }

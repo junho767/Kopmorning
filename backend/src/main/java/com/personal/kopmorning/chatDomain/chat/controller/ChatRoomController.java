@@ -55,4 +55,13 @@ public class ChatRoomController {
                 chatRoomRepository.create(roomName, sendMemberId, receiveMemberId)
         );
     }
+
+    @DeleteMapping("/room")
+    public RsData<String> deleteRoom(@RequestParam String roomId) {
+        chatRoomRepository.deleteRoom(roomId);
+        return new RsData<>(
+                "200",
+                "채팅방 삭제 성공"
+        );
+    }
 }

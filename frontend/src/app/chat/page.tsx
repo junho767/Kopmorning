@@ -204,9 +204,20 @@ export default function HomePage() {
   };
 
   // 채팅방 나가기
-  const leaveChatRoom = () => {
-    setCurrentRoom(null);
-    setReceivedMessages([]);
+  const leaveChatRoom = async () => {
+    if (!currentRoom) return;
+    try {
+      await fetch(`${API_BASE}/chat/room?roomId=${currentRoom.roomId}`, {
+        method: 'DELETE',
+         credentials: "include",
+      });
+
+      // 나가기 성공 후 상태 초기화
+      setCurrentRoom(null);
+      setReceivedMessages([]);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const sendMessage = async (roomId: string, sender: string) => {
@@ -294,18 +305,28 @@ export default function HomePage() {
                       {receivedMessages.map((msg, idx) => (
                         <div key={idx}>
                           {msg.chatType === "ENTER" ? (
-                            // 입장 메시지
+                            // 입장 메시지 (중앙)
                             <div className="text-center text-gray-500 text-sm py-2">
                               {msg.sender}님이 입장하셨습니다
                             </div>
                           ) : (
-                            // 일반 채팅 메시지
-                            <div className="bg-white p-3 rounded shadow-sm">
-                              <div className="flex justify-between items-start mb-1">
-                                <span className="font-semibold text-gray-800">{msg.sender}</span>
-                                <span className="text-xs text-gray-400">{msg.sendTime}</span>
+                            // 일반 채팅 메시지 (왼쪽/오른쪽 정렬)
+                            <div className={`flex ${msg.sender === (user?.nickname || user?.name) ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`max-w-xs lg:max-w-md p-3 rounded-lg shadow-sm ${
+                                msg.sender === (user?.nickname || user?.name)
+                                  ? 'bg-blue-500 text-white'
+                                  : 'bg-white text-gray-800 border'
+                              }`}>
+                                <div className="flex justify-between items-start mb-1">
+                                  <span className={`font-semibold ${msg.sender === (user?.nickname || user?.name) ? 'text-blue-100' : 'text-gray-700'}`}>
+                                    {msg.sender}
+                                  </span>
+                                  <span className={`text-xs ${msg.sender === (user?.nickname || user?.name) ? 'text-blue-200' : 'text-gray-400'}`}>
+                                    {msg.sendTime}
+                                  </span>
+                                </div>
+                                <div>{msg.message}</div>
                               </div>
-                              <div className="text-gray-700">{msg.message}</div>
                             </div>
                           )}
                         </div>

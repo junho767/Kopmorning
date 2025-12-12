@@ -21,9 +21,7 @@ public class ChatController {
     @MessageMapping("/chat/message")
     @SendTo("/sub/chat/{roomId}")
     public void receiveMessage(ChatMessage chatMessage) {
-        if (ChatType.ENTER.equals(chatMessage.getChatType()) && chatRoomRepository.enterChatRoom(chatMessage.getRoomId())) {
-            chatMessage.setMessage(chatMessage.getSender() + " 님이 입장하셨습니다.");
-        }
+        chatRoomRepository.enterChatRoom(chatMessage.getRoomId());
         redisPublisher.publish(chatRoomRepository.getTopic(chatMessage.getRoomId()), chatMessage);
     }
 }
