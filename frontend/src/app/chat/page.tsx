@@ -91,32 +91,9 @@ export default function ChatPage() {
     }
   };
 
-    try {
-      const res = await fetch(
-        `${API_BASE}/chat/room/group?name=${encodeURIComponent(newRoomName)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        },
-      );
-
-      if (!res.ok) throw new Error("채팅방 생성 실패");
-      const result: RsData<ChatRoom> = await res.json();
-
-      if (result.code === "200" && result.data) {
-        setNewRoomName("");
-        await fetchChatRooms();
-      }
-    } catch (error) {
-      console.error("채팅방 생성 실패:", error);
-    }
-  };
-
   // 채팅방 입장
   const enterChatRoom = async (roomId: string) => {
     try {
-      // 기존 연결 종료
       if (stompClient) {
         stompClient.deactivate();
         setStompClient(null);
@@ -127,7 +104,6 @@ export default function ChatPage() {
         reconnectDelay: 5000,
       });
 
-      // 채팅방 정보 조회
       const infoRes = await fetch(`${API_BASE}/chat/room/${roomId}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -140,7 +116,6 @@ export default function ChatPage() {
       if (infoResult.code === "200" && infoResult.data) {
         setCurrentRoom(infoResult.data);
 
-        // 과거 메시지 불러오기
         const msgRes = await fetch(`${API_BASE}/api/message/room?roomId=${roomId}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -154,7 +129,6 @@ export default function ChatPage() {
           setReceivedMessages([]);
         }
 
-        // 소켓 연결 설정
         client.onConnect = () => {
           setStompClient(client);
 
@@ -186,7 +160,6 @@ export default function ChatPage() {
     }
   };
 
-  // 나가기
   const leaveChatRoom = async () => {
     if (!currentRoom) return;
     try {
@@ -201,7 +174,6 @@ export default function ChatPage() {
     }
   };
 
-  // 메시지 전송
   const sendMessage = () => {
     if (stompClient && inputMessage.trim() && currentRoom) {
       const chatMessage: ChatMessage = {
@@ -223,7 +195,6 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-
       <main className="flex-1 container mx-auto p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
           {/* 채팅방 목록 */}
@@ -327,15 +298,12 @@ export default function ChatPage() {
                   )}
                 </div>
 
-                {/* 메시지 입력 */}
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" && sendMessage()
-                    }
+                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                     placeholder="메시지를 입력하세요"
                     className="flex-1 border rounded px-3 py-2"
                   />
@@ -363,5 +331,4 @@ export default function ChatPage() {
       <Footer />
     </div>
   );
-}
 }
