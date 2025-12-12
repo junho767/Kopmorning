@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${DATABASE.URL}
-    username: ${DATABASE.USERNAME}
-    password: ${DATABASE.PASSWORD}
+    jdbc-url: ${DATABASE.MAIN.URL}
+    username: ${DATABASE.MAIN.USERNAME}
+    password: ${DATABASE.MAIN.PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,3 +13,22 @@ spring:
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
+        generate_statistics: true
+#        default_batch_fetch_size: 100
+
+chatdb:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ${DATABASE.CHAT.URL}
+    username: ${DATABASE.CHAT.USERNAME}
+    password: ${DATABASE.CHAT.PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        generate_statistics: true
