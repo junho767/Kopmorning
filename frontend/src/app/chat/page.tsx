@@ -36,7 +36,6 @@ export default function ChatPage() {
   const [receivedMessages, setReceivedMessages] = useState<ChatMessage[]>([]);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [currentRoom, setCurrentRoom] = useState<ChatRoom | null>(null);
-  const [newRoomName, setNewRoomName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
