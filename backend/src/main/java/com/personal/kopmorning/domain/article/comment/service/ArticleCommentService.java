@@ -2,25 +2,23 @@ package com.personal.kopmorning.domain.article.comment.service;
 
 import com.personal.kopmorning.domain.article.article.entity.Article;
 import com.personal.kopmorning.domain.article.article.repository.ArticleRepository;
-import com.personal.kopmorning.domain.article.comment.dto.response.CommentsResponse;
-import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.article.comment.dto.request.ArticleCommentCreate;
 import com.personal.kopmorning.domain.article.comment.dto.request.ArticleCommentUpdate;
 import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
+import com.personal.kopmorning.domain.article.comment.dto.response.CommentsResponse;
 import com.personal.kopmorning.domain.article.comment.entity.ArticleComment;
 import com.personal.kopmorning.domain.article.comment.repository.ArticleCommentRepository;
+import com.personal.kopmorning.domain.article.responseCode.ArticleErrorCode;
 import com.personal.kopmorning.domain.member.entity.Member;
 import com.personal.kopmorning.domain.member.service.MemberService;
 import com.personal.kopmorning.global.exception.Article.ArticleException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -57,7 +55,7 @@ public class ArticleCommentService {
     }
 
     public ArticleCommentResponse create(ArticleCommentCreate articleCommentCreate) {
-        Member member = memberService.getMemberBySecurityMember();
+        Member member = memberService.getCurrentMember();
         Article article = articleRepository.findById(articleCommentCreate.getArticleId())
                 .orElseThrow(() -> new ArticleException(
                                 ArticleErrorCode.INVALID_ARTICLE.getCode(),
@@ -87,7 +85,7 @@ public class ArticleCommentService {
                         ArticleErrorCode.INVALID_COMMENT.getMessage(),
                         HttpStatus.NOT_FOUND)
                 );
-        Member currentMember = memberService.getMemberBySecurityMember();
+        Member currentMember = memberService.getCurrentMember();
         Member member = articleComment.getMember();
 
         if(!currentMember.getId().equals(member.getId())) {
@@ -109,7 +107,7 @@ public class ArticleCommentService {
                         ArticleErrorCode.INVALID_COMMENT.getMessage(),
                         HttpStatus.NOT_FOUND)
                 );
-        Member currentMember = memberService.getMemberBySecurityMember();
+        Member currentMember = memberService.getCurrentMember();
         Member member = articleComment.getMember();
 
         if(!currentMember.getId().equals(member.getId())) {

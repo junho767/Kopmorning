@@ -16,8 +16,11 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
@@ -46,6 +49,7 @@ class MemberServiceTest {
 
         try (MockedStatic<SecurityUtil> securityUtilMock = mockStatic(SecurityUtil.class)) {
             securityUtilMock.when(SecurityUtil::getCurrentMember).thenReturn(member);
+            when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
 
             // when
             memberService.update(dto);
@@ -61,6 +65,7 @@ class MemberServiceTest {
     void requestMemberDeletion_success() {
         try (MockedStatic<SecurityUtil> securityUtilMock = mockStatic(SecurityUtil.class)) {
             securityUtilMock.when(SecurityUtil::getCurrentMember).thenReturn(member);
+            when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
 
             // when
             memberService.deleteRequest();
@@ -79,6 +84,7 @@ class MemberServiceTest {
 
         try (MockedStatic<SecurityUtil> securityUtilMock = mockStatic(SecurityUtil.class)) {
             securityUtilMock.when(SecurityUtil::getCurrentMember).thenReturn(member);
+            when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
 
             // when
             memberService.deleteCancel();

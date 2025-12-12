@@ -1,36 +1,48 @@
 package com.personal.kopmorning.admin.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.personal.kopmorning.domain.admin.controller.AdminController;
 import com.personal.kopmorning.domain.admin.dto.request.RollUpdateRequest;
+import com.personal.kopmorning.domain.admin.service.AdminService;
+import com.personal.kopmorning.domain.member.service.MemberService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@ExtendWith(SpringExtension.class)
-public class AdminControllerTest {
+@ExtendWith(MockitoExtension.class)
+class AdminControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private AdminController adminController;
+
+    @Mock
+    private AdminService adminService;
+
+    @Mock
+    private MemberService memberService;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(adminController)
+                .build();
+    }
 
     @Nested
     @DisplayName("ADMIN 권한 접근 허용 테스트")
@@ -58,7 +70,7 @@ public class AdminControllerTest {
             mockMvc.perform(patch("/admin/roll")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(dto)))
+                            .content(new ObjectMapper().writeValueAsString(dto)))
                     .andExpect(status().isOk());
         }
     }
