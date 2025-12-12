@@ -153,7 +153,7 @@ export default function MemberListPage() {
                         <td style={{ padding: "12px 8px" }}>{m.nickname || m.name}</td>
                         <td style={{ padding: "12px 8px" }}>
                           <button
-                            onClick={() => handleTalk(user.id.toString(), m.id.toString() ,m.nickname)}
+                            onClick={() => handleTalk(user!.id.toString(), m.id.toString() ,m.nickname)}
                             style={{
                               background: "var(--color-primary)",
                               color: "white",
