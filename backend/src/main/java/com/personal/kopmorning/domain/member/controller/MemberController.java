@@ -1,6 +1,7 @@
 package com.personal.kopmorning.domain.member.controller;
 
 import com.personal.kopmorning.domain.member.dto.request.MemberProfileUpdate;
+import com.personal.kopmorning.domain.member.dto.response.MemberListResponse;
 import com.personal.kopmorning.domain.member.dto.response.MemberResponse;
 import com.personal.kopmorning.domain.member.responseCode.MemberErrorCode;
 import com.personal.kopmorning.domain.member.responseCode.MemberSuccessCode;
@@ -30,6 +31,18 @@ public class MemberController {
         );
     }
 
+    @GetMapping("/list")
+    public RsData<MemberListResponse> getMemberList(
+            @RequestParam(required = false) Long nextCursor,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return new RsData<>(
+                MemberSuccessCode.GET_MEMBER.getCode(),
+                MemberSuccessCode.GET_MEMBER.getMessage(),
+                memberService.getMemberList(nextCursor, size)
+        );
+    }
+
     @PostMapping("/logout")
     public RsData<?> logout(HttpServletRequest request, HttpServletResponse response) {
         String accessToken = cookieUtil.getAccessTokenFromCookie(request);
@@ -56,7 +69,6 @@ public class MemberController {
     @PatchMapping
     public RsData<?> updateMember(@RequestBody MemberProfileUpdate request) {
         memberService.update(request);
-
         return new RsData<>(
                 MemberSuccessCode.UPDATE_MEMBER.getCode(),
                 MemberSuccessCode.UPDATE_MEMBER.getMessage()

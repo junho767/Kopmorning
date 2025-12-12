@@ -2,15 +2,12 @@ package com.personal.kopmorning.domain.article.comment.controller;
 
 import com.personal.kopmorning.domain.article.comment.dto.request.ArticleCommentCreate;
 import com.personal.kopmorning.domain.article.comment.dto.request.ArticleCommentUpdate;
-import com.personal.kopmorning.domain.article.comment.dto.response.ArticleCommentResponse;
 import com.personal.kopmorning.domain.article.comment.dto.response.CommentsResponse;
 import com.personal.kopmorning.domain.article.comment.service.ArticleCommentService;
 import com.personal.kopmorning.domain.article.responseCode.ArticleSuccessCode;
 import com.personal.kopmorning.global.entity.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/article/comment")
